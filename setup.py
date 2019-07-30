@@ -10,12 +10,12 @@ with open("README.md", "r") as fh:
 setup(
     name="movekit",
     version="0.1",
-    author="Arjun Majumdar; Eren Cakmak; Jolle Jolles",
-    author_email="arjun.majumdar@uni-konstanz.de; eren.cakmak@uni-konstanz.de; jjolles@orn.mpg.de",
+    author="Arjun Majumdar, Eren Cakmak, Jolle Jolles",
+    author_email="arjun.majumdar@uni-konstanz.de, eren.cakmak@uni-konstanz.de, jjolles@orn.mpg.de",
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    # url="https://github.com/pypa/sampleproject",
+    url="https://github.com/dbvis-ukon/movekit",
     packages=['movekit',
               'movekit.features',
               'movekit.io',
@@ -26,8 +26,5 @@ setup(
         'tsfresh'
     ],
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU GENERAL PUBLIC LICENSE",
-        "Operating System :: OS Independent",
-    ],
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"],
 )
