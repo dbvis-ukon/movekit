@@ -15,7 +15,7 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    # url="https://github.com/pypa/sampleproject",
+    url="https://github.com/dbvis-ukon/movekit",
     packages=['movekit',
               'movekit.features',
               'movekit.io',
