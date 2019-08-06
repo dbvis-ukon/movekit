@@ -24,6 +24,21 @@ def compute_absolute_features(data_animal_id_groups):
     avg_acceleration_data = compute_average_acceleration(avg_speed_data, 3)
     print(avg_acceleration_data)
     return avg_acceleration_data
+ 
+
+def computing_stops(threshold_speed = 0.5):
+	'''
+	Calculate absolute feature called 'Stopped' where the value is 'yes'
+	if 'Average_Speed' <= threshold_speed and 'no' otherwise
+	'''
+	data['Stopped'] = np.where(data['Average_Speed'] <= threshold_speed, 'yes', 'no')
+
+	print("\nNumber of fishes stopped according to threshold speed = {0} is {1}".format(threshold_speed, data['Stopped'].eq('yes').sum()))
+	print("Number of fishes moving according to threshold speed = {0} is {1}\n".format(threshold_speed, data['Stopped'].eq('no').sum()))
+
+
+# In this example, threshold_speed = 0.8
+computing_stops(threshold_speed = 0.8)
 
 
 def compute_distance_and_direction(data_animal_id_groups):
