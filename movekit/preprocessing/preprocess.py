@@ -35,16 +35,16 @@ def data_preprocessing(data):
         data = data[pd.notnull(data['animal_id'])]
 
     # Find duplicate rows based on 'time' & 'animal_id' attributes-
-    duplicate_rows = data[data.duplicated(subset=['x', 'y'], keep='first')]
+    duplicate_rows = data[data.duplicated(subset=['time', 'animal_id'], keep='first')]
 
     # Get indices for duplicate rows-
     # duplicate_rows.index
     # OR-
     # list(duplicate_rows.index)
 
-    print("\nNumber of duplicate rows in data for 'x' & 'y' attributes are = {0}\n".format(
+    print("\nNumber of duplicate rows in data for 'animal_id' & 'time' attributes are = {0}\n".format(
         len(list(duplicate_rows.index))))
-    print("\nDuplicate rows for 'x' & 'y' attributes will be removed.\n")
+    print("\nDuplicate rows for 'animal_id' & 'time' attributes will be removed.\n")
 
     # Remove the duplicated rows found above-
     data.drop(axis=0, index=list(duplicate_rows.index), inplace=True)

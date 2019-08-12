@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="movekit",
-    version="0.1.1",
+    version="0.1.2",
     author="Arjun Majumdar, Eren Cakmak, Jolle Jolles",
     author_email="arjun.majumdar@uni-konstanz.de, eren.cakmak@uni-konstanz.de, jjolles@orn.mpg.de",
     description="Simple and effective tools for the analysis of movement data",
