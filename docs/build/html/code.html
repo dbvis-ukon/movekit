@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Auto Generated Documentation &#8212; movekit 0.1.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to movekit’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-preprocess">
+<span id="auto-generated-documentation"></span><h1>Auto Generated Documentation<a class="headerlink" href="#module-preprocess" title="Permalink to this headline">¶</a></h1>
+<p>Preprocess the data frame 
+Author: Arjun Majumdar, Eren Cakmak
+Created: July, 2019</p>
+<dl class="function">
+<dt id="preprocess.data_preprocessing">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">data_preprocessing</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#preprocess.data_preprocessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function to perform data preprocessing and interpolation
+Expects ‘data’ as input which is the Pandas DataFrame to be processed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="preprocess.grouping_data">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">grouping_data</code><span class="sig-paren">(</span><em class="sig-param">processed_data</em><span class="sig-paren">)</span><a class="headerlink" href="#preprocess.grouping_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function to group all values for each ‘animal_id’
+Input is ‘processed_data’ which is processed Pandas DataFrame
+Returns a dictionary where-
+key is animal_id, value in Pandas DataFrame for that ‘animal_id’</p>
+</dd></dl>
+
+<span class="target" id="module-interpolation"></span><p>Preprocess the Pandas Data frame
+Author: Arjun Majumdar, Eren Cakmak
+Created: July, 2019</p>
+<dl class="function">
+<dt id="interpolation.linear_interpolation">
+<code class="sig-prename descclassname">interpolation.</code><code class="sig-name descname">linear_interpolation</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#interpolation.linear_interpolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to interpolate missing values for ‘x’ and ‘y’ attributes
+in dataset.
+‘threshold’ parameter decides the number of rows till which, data
+should NOT be deleted.</p>
+</dd></dl>
+
+<span class="target" id="module-csv"></span><p>CSV parsing and writing.</p>
+<p>This module provides classes that assist in the reading and writing
+of Comma Separated Value (CSV) files, and implements the interface
+described by PEP 305.  Although many CSV files are simple to parse,
+the format is not formally defined by a stable specification and
+is subtle enough that parsing lines of a CSV file with something
+like line.split(“,”) is bound to fail.  The module supports three
+basic APIs: reading, writing, and registration of dialects.</p>
+<p>DIALECT REGISTRATION:</p>
+<p>Readers and writers support a dialect argument, which is a convenient
+handle on a group of settings.  When the dialect argument is a string,
+it identifies one of the dialects previously registered with the module.
+If it is a class or instance, the attributes of the argument are used as
+the settings for the reader or writer:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>class excel:</dt><dd><p>delimiter = ‘,’
+quotechar = ‘”’
+escapechar = None
+doublequote = True
+skipinitialspace = False
+lineterminator = ‘rn’
+quoting = QUOTE_MINIMAL</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>SETTINGS:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>quotechar - specifies a one-character string to use as the </dt><dd><p>quoting character.  It defaults to ‘”’.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>delimiter - specifies a one-character string to use as the </dt><dd><p>field separator.  It defaults to ‘,’.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>skipinitialspace - specifies how to interpret whitespace which</dt><dd><p>immediately follows a delimiter.  It defaults to False, which
+means that whitespace immediately following a delimiter is part
+of the following field.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>lineterminator -  specifies the character sequence which should </dt><dd><p>terminate rows.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>quoting - controls when quotes should be generated by the writer.</dt><dd><p>It can take on any of the following module constants:</p>
+<dl class="simple">
+<dt>csv.QUOTE_MINIMAL means only when required, for example, when a</dt><dd><p>field contains either the quotechar or the delimiter</p>
+</dd>
+</dl>
+<p>csv.QUOTE_ALL means that quotes are always placed around fields.
+csv.QUOTE_NONNUMERIC means that quotes are always placed around</p>
+<blockquote>
+<div><p>fields which do not parse as integers or floating point
+numbers.</p>
+</div></blockquote>
+<p>csv.QUOTE_NONE means that quotes are never placed around fields.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>escapechar - specifies a one-character string used to escape </dt><dd><p>the delimiter when quoting is set to QUOTE_NONE.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>doublequote - controls the handling of quotes inside fields.  When</dt><dd><p>True, two consecutive quotes are interpreted as one during read,
+and when writing, each quote character embedded in the data is
+written as two quotes</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="exception">
+<dt id="csv.Error">
+<em class="property">exception </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">Error</code><a class="headerlink" href="#csv.Error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="csv.Dialect">
+<em class="property">class </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">Dialect</code><a class="headerlink" href="#csv.Dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe a CSV dialect.</p>
+<p>This must be subclassed (see csv.excel).  Valid attributes are:
+delimiter, quotechar, escapechar, doublequote, skipinitialspace,
+lineterminator, quoting.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="csv.excel">
+<em class="property">class </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">excel</code><a class="headerlink" href="#csv.excel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe the usual properties of Excel-generated CSV files.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="csv.excel_tab">
+<em class="property">class </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">excel_tab</code><a class="headerlink" href="#csv.excel_tab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe the usual properties of Excel-generated TAB-delimited files.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.field_size_limit">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">field_size_limit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.field_size_limit" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Sets an upper limit on parsed fields.</dt><dd><p>csv.field_size_limit([limit])</p>
+</dd>
+</dl>
+<p>Returns old limit. If limit is not given, no new limit is set and
+the old limit is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.reader">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">reader</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.reader" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>csv_reader = reader(iterable [, dialect=’excel’]</dt><dd><blockquote>
+<div><p>[optional keyword args])</p>
+</div></blockquote>
+<dl class="simple">
+<dt>for row in csv_reader:</dt><dd><p>process(row)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>The “iterable” argument can be any object that returns a line
+of input for each iteration, such as a file object or a list.  The
+optional “dialect” parameter is discussed below.  The function
+also accepts optional keyword arguments which override settings
+provided by the dialect.</p>
+<p>The returned object is an iterator.  Each iteration returns a row
+of the CSV file (which can span multiple input lines).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.writer">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">writer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.writer" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>csv_writer = csv.writer(fileobj [, dialect=’excel’]</dt><dd><blockquote>
+<div><p>[optional keyword args])</p>
+</div></blockquote>
+<dl class="simple">
+<dt>for row in sequence:</dt><dd><p>csv_writer.writerow(row)</p>
+</dd>
+</dl>
+<p>[or]</p>
+<dl class="simple">
+<dt>csv_writer = csv.writer(fileobj [, dialect=’excel’]</dt><dd><p>[optional keyword args])</p>
+</dd>
+</dl>
+<p>csv_writer.writerows(rows)</p>
+</dd>
+</dl>
+<p>The “fileobj” argument can be any object that supports the file API.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.register_dialect">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">register_dialect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.register_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a mapping from a string name to a dialect class.
+dialect = csv.register_dialect(name[, dialect[, <a href="#id1"><span class="problematic" id="id2">**</span></a>fmtparams]])</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.get_dialect">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">get_dialect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.get_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dialect instance associated with name.
+dialect = csv.get_dialect(name)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.list_dialects">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">list_dialects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.list_dialects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all know dialect names.
+names = csv.list_dialects()</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="csv.Sniffer">
+<em class="property">class </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">Sniffer</code><a class="headerlink" href="#csv.Sniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>“Sniffs” the format of a CSV file (i.e. delimiter, quotechar)
+Returns a Dialect object.</p>
+<dl class="method">
+<dt id="csv.Sniffer.sniff">
+<code class="sig-name descname">sniff</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">delimiters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#csv.Sniffer.sniff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dialect (or None) corresponding to the sample</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="csv.unregister_dialect">
+<code class="sig-prename descclassname">csv.</code><code class="sig-name descname">unregister_dialect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#csv.unregister_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the name/dialect mapping associated with a string name.
+csv.unregister_dialect(name)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="csv.unix_dialect">
+<em class="property">class </em><code class="sig-prename descclassname">csv.</code><code class="sig-name descname">unix_dialect</code><a class="headerlink" href="#csv.unix_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe the usual properties of Unix-generated CSV files.</p>
+</dd></dl>
+
+<span class="target" id="module-excel"></span><p>Microsoft (MS) Excel I/O in Python.
+Load the MS Excel data into pandas dataframe.
+Author: Arjun Majumdar, Eren Cakmak
+Created: August, 2019</p>
+<dl class="function">
+<dt id="excel.parse_excel">
+<code class="sig-prename descclassname">excel.</code><code class="sig-name descname">parse_excel</code><span class="sig-paren">(</span><em class="sig-param">path_to_file</em><span class="sig-paren">)</span><a class="headerlink" href="#excel.parse_excel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to read Excel file into a Pandas DataFrame-
+Expects complete path/relative path to CSV file along with file name
+Expects package ‘xlrd’ to be installed for this to work!</p>
+</dd></dl>
+
+<span class="target" id="module-absolute"></span><p>Extract features for individual moving entities
+Author: Arjun Majumdar, Eren Cakmak
+Created: July, 2019</p>
+<dl class="function">
+<dt id="absolute.compute_absolute_features">
+<code class="sig-prename descclassname">absolute.</code><code class="sig-name descname">compute_absolute_features</code><span class="sig-paren">(</span><em class="sig-param">data_animal_id_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#absolute.compute_absolute_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate absolute features for the data animal group-</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="absolute.compute_average_acceleration">
+<code class="sig-prename descclassname">absolute.</code><code class="sig-name descname">compute_average_acceleration</code><span class="sig-paren">(</span><em class="sig-param">data_animal_id_groups</em>, <em class="sig-param">fps</em><span class="sig-paren">)</span><a class="headerlink" href="#absolute.compute_average_acceleration" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function to compute average acceleration of an animal based on fps
+(frames per second) parameter.</p>
+<p>Formulas used are-
+Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="absolute.compute_average_speed">
+<code class="sig-prename descclassname">absolute.</code><code class="sig-name descname">compute_average_speed</code><span class="sig-paren">(</span><em class="sig-param">data_animal_id_groups</em>, <em class="sig-param">fps</em><span class="sig-paren">)</span><a class="headerlink" href="#absolute.compute_average_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average Speed-</p>
+<p>A function to compute average speed of an animal based on fps
+(frames per second) parameter. Calculate the average speed of a mover,
+based on the pandas dataframe and a frames per second (fps) parameter</p>
+<p>Formula used-
+Average Speed = Total Distance Travelled / Total Time taken</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="absolute.compute_distance_and_direction">
+<code class="sig-prename descclassname">absolute.</code><code class="sig-name descname">compute_distance_and_direction</code><span class="sig-paren">(</span><em class="sig-param">data_animal_id_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#absolute.compute_distance_and_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate metric distance and direction-</p>
+<p>Calculate the metric distance between two consecutive time frames/time stamps
+for each moving entity (in this case, fish)</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Auto Generated Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to movekit’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Arjun Majumdar, Eren Cakmak.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/code.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
