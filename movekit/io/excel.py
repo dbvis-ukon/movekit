@@ -1,6 +1,6 @@
 """
-  Microsoft Excel I/O in Python.
-  Load the csv data into pandas dataframe.
+  Microsoft (MS) Excel I/O in Python.
+  Load the MS Excel data into pandas dataframe.
   Author: Arjun Majumdar, Eren Cakmak
   Created: August, 2019
 """
