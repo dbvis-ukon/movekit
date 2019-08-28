@@ -17,7 +17,8 @@ setup(
     install_requires=[
         'pandas',
         'scipy',
-        'tsfresh'
+        'tsfresh',
+        'xlrd'
     ],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"],
