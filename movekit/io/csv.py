@@ -7,6 +7,7 @@
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_string_dtype
+from pandas.io.common import EmptyDataError
 
 
 def parse_csv(path_to_file):
@@ -21,16 +22,22 @@ def parse_csv(path_to_file):
         else:
             data = pd.read_csv(path_to_file + '.csv')
 
-            # Check if 'time' attribute is integer-
+        # change column names all to lower case values
+        data.columns = map(str.lower, data.columns)
+
+        # check if all required columns are there in the right format
+        if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
+                # Check if 'time' attribute is integer-
             if is_numeric_dtype(data['time']):
                 data.sort_values('time', ascending=True, inplace=True)
-            # Check if 'time' attribute is string-
+                # Check if 'time' attribute is string-
             elif is_string_dtype(data['time']):
                 data['time'] = pd.to_datetime(data['time'])
                 data.sort_values('time', ascending=True, inplace=True)
 
-        return data
-
+            return data
     except FileNotFoundError:
         print(
-            "Your file below could not be found. Please check path and/or file name and try again.\nPath given: {0}\n\n".format(path_to_file))
+            "Your file below could not be found.\nPath given: {0}\n\n".format(path_to_file))
+    except EmptyDataError:
+        print('Your file is empty, has no header, or misses some required columns.')

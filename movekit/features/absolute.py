@@ -7,6 +7,7 @@ import math
 # import time
 
 import pandas as pd
+import numpy as np
 
 from tsfresh import select_features
 from tsfresh import extract_features
@@ -14,31 +15,33 @@ from tsfresh import extract_relevant_features
 from tsfresh.utilities.dataframe_functions import impute
 
 
-def compute_absolute_features(data_animal_id_groups):
+def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
     '''
    Calculate absolute features for the data animal group-
    '''
     direction_distance_data = compute_distance_and_direction(
         data_animal_id_groups)
-    avg_speed_data = compute_average_speed(direction_distance_data, 3)
-    avg_acceleration_data = compute_average_acceleration(avg_speed_data, 3)
-    print(avg_acceleration_data)
-    return avg_acceleration_data
- 
-
-def computing_stops(threshold_speed = 0.5):
-	'''
-	Calculate absolute feature called 'Stopped' where the value is 'yes'
-	if 'Average_Speed' <= threshold_speed and 'no' otherwise
-	'''
-	data['Stopped'] = np.where(data['Average_Speed'] <= threshold_speed, 'yes', 'no')
-
-	print("\nNumber of fishes stopped according to threshold speed = {0} is {1}".format(threshold_speed, data['Stopped'].eq('yes').sum()))
-	print("Number of fishes moving according to threshold speed = {0} is {1}\n".format(threshold_speed, data['Stopped'].eq('no').sum()))
+    avg_speed_data = compute_average_speed(direction_distance_data, fps)
+    avg_acceleration_data = compute_average_acceleration(avg_speed_data, fps)
+    stop_data = computing_stops(avg_acceleration_data, stop_threshold)
+    print(stop_data)
+    return stop_data
 
 
-# In this example, threshold_speed = 0.8
-computing_stops(threshold_speed = 0.8)
+def computing_stops(data_animal_id_groups, threshold_speed):
+    '''
+    Calculate absolute feature called 'Stopped' where the value is 'yes'
+    if 'Average_Speed' <= threshold_speed and 'no' otherwise
+    '''
+    data_animal_id_groups['Stopped'] = np.where(
+        data_animal_id_groups['Average_Speed'] <= threshold_speed, 1, 0)
+
+    print("\nNumber of movers stopped according to threshold speed = {0} is {1}".format(
+        threshold_speed, data_animal_id_groups['Stopped'].eq(1).sum()))
+    print("Number of movers moving according to threshold speed = {0} is {1}\n".format(
+        threshold_speed, data_animal_id_groups['Stopped'].eq(0).sum()))
+
+    return data_animal_id_groups
 
 
 def compute_distance_and_direction(data_animal_id_groups):
