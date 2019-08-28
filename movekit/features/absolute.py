@@ -34,14 +34,15 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     if 'Average_Speed' <= threshold_speed and 'no' otherwise
     '''
     data_animal_id_groups['Stopped'] = np.where(
-        data_animal_id_groups['Average_Speed'] <= threshold_speed, 'yes', 'no')
+        data_animal_id_groups['Average_Speed'] <= threshold_speed, 1, 0)
 
     print("\nNumber of movers stopped according to threshold speed = {0} is {1}".format(
-        threshold_speed, data_animal_id_groups['Stopped'].eq('yes').sum()))
+        threshold_speed, data_animal_id_groups['Stopped'].eq(1).sum()))
     print("Number of movers moving according to threshold speed = {0} is {1}\n".format(
-        threshold_speed, data_animal_id_groups['Stopped'].eq('no').sum()))
+        threshold_speed, data_animal_id_groups['Stopped'].eq(0).sum()))
 
     return data_animal_id_groups
+
 
 def compute_distance_and_direction(data_animal_id_groups):
     '''
