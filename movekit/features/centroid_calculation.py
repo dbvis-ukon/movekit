@@ -10,6 +10,8 @@ Example code:
 # Read in Pandas Data Frame-
 data = pd.read_csv("fish-5.csv")
 
+data.sort_values("time", ascending=True, inplace = True)
+
 data.columns.tolist()
 # ['time', 'animal_id', 'x', 'y']
 
@@ -43,7 +45,7 @@ def calculate_centroid(data_groups):
 	
 	Use Pandas group by to create such a Python 3 dictionary
 	
-	Returns: A Pandas Data Frame
+	Returns: A modified Pandas Data Frame containing 'distance_centroid' attribute
 	"""
 
 	for group in data_groups.keys():
@@ -51,8 +53,14 @@ def calculate_centroid(data_groups):
 		y_mean = data_groups[group]['y'].mean()
 		# print("\nGroup = {0}, x_mean = {1:.3f} and y_mean = {2:.3f}".format(group, x_mean, y_mean))
 
-		data_groups[group] = data_groups[group].assign(distance_x = np.around(data_groups[group]['x'] - x_mean, decimals = 3))
-		data_groups[group] = data_groups[group].assign(distance_y = np.around(data_groups[group]['y'] - y_mean, decimals = 3))
+		x = np.asarray(data_groups[312]['x'])
+		y = np.asarray(data_groups[312]['y'])
+
+		x_temp = (x - x_mean) ** 2
+		y_temp = (y - y_mean) ** 2
+		dist = np.sqrt(x_temp + y_temp)
+
+		data_groups[group] = data_groups[group].assign(distance_centroid = np.around(dist, decimals = 3))
 
 
 	# Show 'distance_x' attribute less than zero-
