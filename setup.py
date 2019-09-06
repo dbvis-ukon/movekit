@@ -18,7 +18,8 @@ setup(
         'pandas',
         'scipy',
         'tsfresh',
-        'xlrd'
+        'xlrd',
+        'seaborn'
     ],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"],
