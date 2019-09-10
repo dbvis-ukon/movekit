@@ -1,56 +1,48 @@
 """
-  Preprocess the data frame 
+  Preprocess the data frame
   Author: Arjun Majumdar, Eren Cakmak
   Created: July, 2019
 """
 
 import pandas as pd
+import numpy as np
 
 
-def data_preprocessing(data):
+def clean(data):
     '''
-    A function to perform data preprocessing and interpolation
+    A function to perform data preprocessing
     Expects 'data' as input which is the Pandas DataFrame to be processed
     '''
+    # Print the number of missing values per column
+    print_missing(data)
 
-    print(
-        "\nThe dimensions/shape of the raw data file is: {0}\n".format(data.shape))
-    print("\nNumber of unique animals in raw data are: {0}\n".format(
-        data['animal_id'].nunique()))
+    # Drop columns with  missing values for 'time'  and 'animal_id'
+    data.dropna(subset=['animal_id', 'time'], inplace=True)
+    # Change column type of animal_id and time
+    data['animal_id'] = data['animal_id'].astype(np.int64)
+    data['time'] = data['time'].astype(np.int64)
 
-    print("\nNumber of rows in data having missing values for 'time' attribute are = {0}\n".format(
-        len(list(data[data['time'].isnull()].index))))
-    print("\nNumber of rows in data having missing values for 'animal_id' attribute are = {0}\n".format(
-        len(list(data[data['animal_id'].isnull()].index))))
-    print("\nRows having missing values for 'time' and 'animal_id' will be deleted.\n")
+    # Print duplicate rows
+    print_duplicate(data)
+    # Remove the duplicated rows found above
+    data.drop_duplicates(subset=['animal_id', 'time'], inplace=True)
 
-    # Check if 'time' attribute has missing values
-    # If yes, delete all rows having missing values
-    if data['time'].isnull().values.any():
-        data = data[pd.notnull(data['time'])]
-
-    # Check if 'animal_id' attribute has missing values
-    # If yes, delete all rows having missing values
-    if data['animal_id'].isnull().values.any():
-        data = data[pd.notnull(data['animal_id'])]
-
-    # Find duplicate rows based on 'time' & 'animal_id' attributes-
-    duplicate_rows = data[data.duplicated(subset=['time', 'animal_id'], keep='first')]
-
-    # Get indices for duplicate rows-
-    # duplicate_rows.index
-    # OR-
-    # list(duplicate_rows.index)
-
-    print("\nNumber of duplicate rows in data for 'animal_id' & 'time' attributes are = {0}\n".format(
-        len(list(duplicate_rows.index))))
-    print("\nDuplicate rows for 'animal_id' & 'time' attributes will be removed.\n")
-
-    # Remove the duplicated rows found above-
-    data.drop(axis=0, index=list(duplicate_rows.index), inplace=True)
-
-    # Return processed data-
     return data
+
+
+def print_missing(df):
+    '''
+    Print the missing values for each column
+    '''
+    print('Missing values:\n', df.isnull().sum().sort_values(ascending=False))
+
+
+def print_duplicate(df):
+    '''
+    Print the duplicate rows 
+    '''
+    dup = df[df.duplicated(['time', 'animal_id'])]
+    print("Removed duplicate rows based on the columns 'animal_id' and 'time' column are:", dup, sep='\n')
 
 
 def grouping_data(processed_data):
@@ -88,3 +80,52 @@ def grouping_data(processed_data):
             Direction=data)
 
     return data_animal_id_groups
+
+
+def filter_dataframe(data, frm, to):
+    """
+    A function to filter the dataset, which is the first
+    argument to the function using 'frm' and 'to' as the
+    second and third arguments.
+    Please note that both 'frm' and 'to' are included in
+    the returned filtered Pandas Data frame.
+
+    Returns a filtered Pandas Data frame according to 'frm'
+    and 'to' arguments
+    """
+
+    return data.loc[(data['time'] >= frm) & (data['time'] < to), :]
+
+
+def replace_parts_animal_movement(data_groups, animal_id, time_array, replacement_value_x, replacement_value_y):
+    """
+    Replace subsets (segments) of animal movement based on some indices e.g. time
+    This function can be used to remove outliers
+
+    Input:
+    1.) First argument is a Python 3 dictionary whose key is 'animal_id'and value is
+    Pandas DataFrame for that 'animal_id'
+    2.) Second argument is 'animal_id' whose movements have to replaced
+    3.) Third argument is an array of time indices whose movements have to replaced
+    4.) Fourth argument is the value which will be replaced for all values contained
+    in 'time_array' for 'x' attribute
+    5.) Fifth argument is the value which will be replaced for all values contained
+    in 'time_array' for 'y' attribute
+
+    Returns:
+    Modified Python 3 dictionary which was passed as first argument to it
+
+    An example usage-
+
+    data = csv_to_pandas(path)
+
+    data_groups = group_animals(data)
+
+    arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
+
+    replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
+        """
+    data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
+    data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
+
+    return data_groups
