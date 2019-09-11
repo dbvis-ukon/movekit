@@ -47,6 +47,7 @@ def setup_package():
         classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
         platforms=["Windows", "Linux", "Mac OS-X"],
         packages=find_namespace_packages(
+            include=['movekit.*'],
             exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
         install_requires=['tsfresh>=0.12.0',
                           'pandas>=0.20.3,<=0.23.4',
