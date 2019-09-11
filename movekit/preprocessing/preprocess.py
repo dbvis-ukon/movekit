@@ -39,7 +39,7 @@ def print_missing(df):
 
 def print_duplicate(df):
     '''
-    Print the duplicate rows 
+    Print the duplicate rows
     '''
     dup = df[df.duplicated(['time', 'animal_id'])]
     print("Removed duplicate rows based on the columns 'animal_id' and 'time' column are:", dup, sep='\n')
@@ -49,8 +49,7 @@ def grouping_data(processed_data):
     '''
     A function to group all values for each 'animal_id'
     Input is 'processed_data' which is processed Pandas DataFrame
-    Returns a dictionary where-
-    key is animal_id, value in Pandas DataFrame for that 'animal_id'
+    Returns a dictionary where- key is animal_id, value in Pandas DataFrame for that 'animal_id'
     '''
     # A dictionary object to hold all groups obtained using group by-
     data_animal_id_groups = {}
@@ -124,7 +123,7 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array, replacemen
     arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
 
     replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
-        """
+    """
     data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
     data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
 
