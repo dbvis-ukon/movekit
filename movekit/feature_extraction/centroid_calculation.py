@@ -1,9 +1,5 @@
-
-
 import pandas as pd
 import numpy as np
-
-
 """
 Example code:
 
@@ -37,7 +33,7 @@ for aid in data_animals.groups.keys():
 
 
 def calculate_centroid(data_groups):
-	"""
+    """
 	Computes the distance of each animal from the centroid of the group
 	
 	Input: Expects a dictionary containing:
@@ -48,38 +44,35 @@ def calculate_centroid(data_groups):
 	Returns: A modified Pandas Data Frame containing 'distance_centroid' attribute
 	"""
 
-	for group in data_groups.keys():
-		x_mean = data_groups[group]['x'].mean()
-		y_mean = data_groups[group]['y'].mean()
-		# print("\nGroup = {0}, x_mean = {1:.3f} and y_mean = {2:.3f}".format(group, x_mean, y_mean))
+    for group in data_groups.keys():
+        x_mean = data_groups[group]['x'].mean()
+        y_mean = data_groups[group]['y'].mean()
+        # print("\nGroup = {0}, x_mean = {1:.3f} and y_mean = {2:.3f}".format(group, x_mean, y_mean))
 
-		x = np.asarray(data_groups[312]['x'])
-		y = np.asarray(data_groups[312]['y'])
+        x = np.asarray(data_groups[312]['x'])
+        y = np.asarray(data_groups[312]['y'])
 
-		x_temp = (x - x_mean) ** 2
-		y_temp = (y - y_mean) ** 2
-		dist = np.sqrt(x_temp + y_temp)
+        x_temp = (x - x_mean)**2
+        y_temp = (y - y_mean)**2
+        dist = np.sqrt(x_temp + y_temp)
 
-		data_groups[group] = data_groups[group].assign(distance_centroid = np.around(dist, decimals = 3))
+        data_groups[group] = data_groups[group].assign(
+            distance_centroid=np.around(dist, decimals=3))
 
+    # Show 'distance_x' attribute less than zero-
+    # data_groups[905].loc[data_groups[905]['distance_x'] < 0, ]
 
-	# Show 'distance_x' attribute less than zero-
-	# data_groups[905].loc[data_groups[905]['distance_x'] < 0, ]
+    # Concatenate different groups into one Pandas DataFrame-
+    result = pd.concat(data_groups[aid] for aid in data_groups.keys())
 
+    # Reset indices-
+    result.reset_index(drop=True, inplace=True)
 
-	# Concatenate different groups into one Pandas DataFrame-
-	result = pd.concat(data_groups[aid] for aid in data_groups.keys())
+    # Write file to HDD (optional)-
+    # result.to_csv("fish-5_centroid.csv", index=False)
 
-	# Reset indices-
-	result.reset_index(drop = True, inplace = True)
-
-	# Write file to HDD (optional)-
-	# result.to_csv("fish-5_centroid.csv", index=False)
-
-	return result
+    return result
 
 
 # Example usage-
 # data_processed = calculate_centroid(data_groups)
-
-

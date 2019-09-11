@@ -5,7 +5,6 @@
   Created: August, 2019
 """
 
-
 import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.io.common import EmptyDataError
@@ -30,7 +29,7 @@ def parse_excel(path_to_file):
 
         # check if all required columns are there in the right format
         if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
-                # Check if 'time' attribute is integer-
+            # Check if 'time' attribute is integer-
             if is_numeric_dtype(data['time']):
                 data.sort_values('time', ascending=True, inplace=True)
                 # Check if 'time' attribute is string-
@@ -42,6 +41,9 @@ def parse_excel(path_to_file):
 
     except FileNotFoundError:
         print(
-            "Your file below could not be found.\nPath given: {0}\n\n".format(path_to_file))
+            "Your file below could not be found.\nPath given: {0}\n\n".format(
+                path_to_file))
     except EmptyDataError:
-        print('Your file is empty, has no header, or misses some required columns.')
+        print(
+            'Your file is empty, has no header, or misses some required columns.'
+        )

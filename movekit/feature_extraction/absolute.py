@@ -15,7 +15,9 @@ from tsfresh import extract_relevant_features
 from tsfresh.utilities.dataframe_functions import impute
 
 
-def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
+def compute_absolute_features(data_animal_id_groups,
+                              fps=10,
+                              stop_threshold=0.5):
     '''
    Calculate absolute features for the data animal group-
    '''
@@ -36,10 +38,12 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     data_animal_id_groups['Stopped'] = np.where(
         data_animal_id_groups['Average_Speed'] <= threshold_speed, 1, 0)
 
-    print("\nNumber of movers stopped according to threshold speed = {0} is {1}".format(
-        threshold_speed, data_animal_id_groups['Stopped'].eq(1).sum()))
-    print("Number of movers moving according to threshold speed = {0} is {1}\n".format(
-        threshold_speed, data_animal_id_groups['Stopped'].eq(0).sum()))
+    print(
+        "\nNumber of movers stopped according to threshold speed = {0} is {1}".
+        format(threshold_speed, data_animal_id_groups['Stopped'].eq(1).sum()))
+    print(
+        "Number of movers moving according to threshold speed = {0} is {1}\n".
+        format(threshold_speed, data_animal_id_groups['Stopped'].eq(0).sum()))
 
     return data_animal_id_groups
 
@@ -54,8 +58,8 @@ def compute_distance_and_direction(data_animal_id_groups):
     # start_time = time.time()
 
     for aid in data_animal_id_groups.keys():
-        print(
-            "\nComputing Distance & Direction for Animal ID = {0}\n".format(aid))
+        print("\nComputing Distance & Direction for Animal ID = {0}\n".format(
+            aid))
 
         # for i in range(1, animal_id.shape[0] - 1):
         for i in range(1, data_animal_id_groups[aid].shape[0] - 1):
@@ -67,8 +71,8 @@ def compute_distance_and_direction(data_animal_id_groups):
             y2 = data_animal_id_groups[aid].iloc[i + 1, 3]
 
             # Compute distance between 2 points-
-            distance = math.sqrt(math.pow((x2 - x1), 2) +
-                                 math.pow((y2 - y1), 2))
+            distance = math.sqrt(
+                math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
 
             # Compute the direction in DEGREES-
             direction = math.degrees(math.atan((y2 - y1) / (x2 - x1)))
@@ -85,7 +89,7 @@ def compute_distance_and_direction(data_animal_id_groups):
 
     # end_time = time.time()
     # print("\nTime taken to create distance & direction data = {0:.4f} seconds\n\n".format(
-        # end_time - start_time))
+    # end_time - start_time))
     # Time taken to create distance & direction data = 1013.1692 seconds
 
     return data_animal_id_groups
@@ -121,8 +125,8 @@ def compute_average_speed(data_animal_id_groups, fps):
                 tot_dist += data_animal_id_groups[aid].loc[j, "Distance"]
 
             # animal_id.loc[i, "Average_Speed"] = (tot_dist / fps)
-            data_animal_id_groups[aid].loc[i,
-                                           "Average_Speed"] = (tot_dist / fps)
+            data_animal_id_groups[aid].loc[i, "Average_Speed"] = (tot_dist /
+                                                                  fps)
 
     # end_time = time.time()
     # print("\nTime taken to create Average Speed data = {0:.4f} seconds.\n".format(
@@ -157,8 +161,8 @@ def compute_average_acceleration(data_animal_id_groups, fps):
             # avg_speed = animal_id.loc[i, "Average_Speed"] - animal_id.loc[i + 1, "Average_Speed"]
             # print("\navg_speed = {0:.4f}\n".format(avg_speed))
             # animal_id.loc[i, "Average_Acceleration"] = (avg_speed / fps)
-            data_animal_id_groups[aid].loc[i,
-                                           'Average_Acceleration'] = (avg_speed / fps)
+            data_animal_id_groups[aid].loc[i, 'Average_Acceleration'] = (
+                avg_speed / fps)
 
     # end_time = time.time()
     # print("\nTime taken to create Average Acceleration data = {0:.4f} seconds.\n".format(
@@ -176,7 +180,11 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 
 
 def time_series_analyis(data):
-    extracted_features = extract_features(
-        data, column_id='animal_id', column_sort='time')
+    # remove the columns stopped as it has nominal values
+    rm_colm = ['Stopped']
+    df = data[data.columns.difference(rm_colm)]
+    extracted_features = extract_features(df,
+                                          column_id='animal_id',
+                                          column_sort='time')
     impute(extracted_features)
     return extracted_features
