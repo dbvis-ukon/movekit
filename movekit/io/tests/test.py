@@ -20,7 +20,6 @@ class TestIO(unittest.TestCase):
     '''
         CSV Tests
     '''
-
     def test_read_csv_file(self):
         path = 'fish-5.csv'
         df = parse_csv(datafile(path))
@@ -46,7 +45,6 @@ class TestIO(unittest.TestCase):
     '''
         Excel tests
     '''
-
     def test_read_excel_file(self):
         path = 'fish-5.xlsx'
         df = parse_excel(datafile(path))
@@ -72,7 +70,6 @@ class TestIO(unittest.TestCase):
     '''
         Comparison
     '''
-
     def test_csv_excel_equal(self):
         csv_path = 'fish-5.csv'
         df1 = parse_csv(datafile(csv_path))

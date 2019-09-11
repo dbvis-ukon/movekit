@@ -42,7 +42,10 @@ def print_duplicate(df):
     Print the duplicate rows
     '''
     dup = df[df.duplicated(['time', 'animal_id'])]
-    print("Removed duplicate rows based on the columns 'animal_id' and 'time' column are:", dup, sep='\n')
+    print(
+        "Removed duplicate rows based on the columns 'animal_id' and 'time' column are:",
+        dup,
+        sep='\n')
 
 
 def grouping_data(processed_data):
@@ -96,7 +99,8 @@ def filter_dataframe(data, frm, to):
     return data.loc[(data['time'] >= frm) & (data['time'] < to), :]
 
 
-def replace_parts_animal_movement(data_groups, animal_id, time_array, replacement_value_x, replacement_value_y):
+def replace_parts_animal_movement(data_groups, animal_id, time_array,
+                                  replacement_value_x, replacement_value_y):
     """
     Replace subsets (segments) of animal movement based on some indices e.g. time
     This function can be used to remove outliers

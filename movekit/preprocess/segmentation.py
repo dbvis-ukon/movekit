@@ -1,4 +1,3 @@
-
 """
 	Split trajectories into segments
 	Author: Arjun Majumdar, Eren Cakmak
@@ -51,8 +50,8 @@ def split_trajectories(data_groups, segment=1):
         # groups['group_' + str(aid)] = data_groups[aid]
         for l in range(segment):
             # groups['group_' + str(aid)]['df' + str(l + 1)] = data_groups[aid].iloc[beg: end, :]
-            groups['group_' + str(aid) + '_df' + str(l + 1)
-                   ] = data_groups[aid].iloc[beg: end, :]
+            groups['group_' + str(aid) + '_df' +
+                   str(l + 1)] = data_groups[aid].iloc[beg:end, :]
             beg, end = end, end + segment_size
 
     for k in groups.keys():
@@ -61,7 +60,9 @@ def split_trajectories(data_groups, segment=1):
     return None
 
 
-def split_trajectories_fuzzy_segmentation(data_groups, segment=1, fuzzy_segment=2):
+def split_trajectories_fuzzy_segmentation(data_groups,
+                                          segment=1,
+                                          fuzzy_segment=2):
     """
     Split the trajectory of a single animal into several intervals (segments)
     according to some specific criterion.
@@ -103,13 +104,12 @@ def split_trajectories_fuzzy_segmentation(data_groups, segment=1, fuzzy_segment=
         # groups['group_' + str(aid)] = data_groups[aid]
         for l in range(segment):
             # groups['group_' + str(aid)]['df' + str(l + 1)] = data_groups[aid].iloc[beg: end, :]
-            groups['group_' + str(aid) + '_df' + str(l + 1)
-                   ] = data_groups[aid].iloc[beg: end, :]
+            groups['group_' + str(aid) + '_df' +
+                   str(l + 1)] = data_groups[aid].iloc[beg:end, :]
             beg, end = end - fuzzy_segment, end + segment_size + fuzzy_segment
 
     for k in groups.keys():
         groups[k].to_csv(k + '.csv', index=False)
-
     """
 	# Code to check indexing for fuzzy segmentation-
 	groups = {}
