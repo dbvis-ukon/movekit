@@ -6,7 +6,12 @@
 
 import pandas as pd
 import numpy as np
-from scipy.spatial import distance_matrix
+from scipy.spatial.distance import pdist, squareform
+
+
+import movekit.io
+import movekit.preprocess
+import movekit.feature_extraction
 
 
 def distance_euclidean_matrix(data):
@@ -19,55 +24,27 @@ def distance_euclidean_matrix(data):
 
     example usage
     distance_matrix = distance_euclidean_matrix(data)
-
-    Write file to HDD (optional)-
-    distance_matrix.to_csv("fish-5_processed.csv", index=False)
     """
+    return data.groupby('time').apply(euclidean_dist).sort_values(by=['time', 'animal_id'])
 
-    # Group by 'time' attribute-
-    data_time = {}
 
-    groups = data.groupby('time')
-
-    for time in groups.groups.keys():
-        data_time[time] = groups.get_group(time)
-
-    # Reset index-
-    for time in data_time.keys():
-        data_time[time].reset_index(drop=True, inplace=True)
-
-    # distance_matrix(data_time[1].loc[:, ['x', 'y']].values, data_time[1].loc[:, ['x', 'y']])
-
-    final_matrix = {}
-
-    for time in data_time.keys():
-        final_matrix[time] = pd.DataFrame(
-            distance_matrix(data_time[1].loc[:, ['x', 'y']].values,
-                            data_time[1].loc[:, ['x', 'y']]),
-            index=data_time[1].loc[:, 'animal_id'].values,
-            columns=data_time[1].loc[:, 'animal_id'].values)
-
-    # Concatenate different groups into one Pandas DataFrame-
-    result = pd.concat(final_matrix[time] for time in final_matrix.keys())
-
-    # Save index in 'first_col' attribute-
-    first_col = result.index
-
-    # Add this as 'first_column' attribute-
-    result['animal_id'] = first_col
+def euclidean_dist(group):
     """
-	time_step = np.repeat(np.arange(1, data['time'].max()), 5)
-	result['time_step'] = time_step
-	"""
+    Compute the distance for one individual grouped time step using the 
+    Scipy pdist and squareform methods 
+    """
+    # ids of each animal
+    ids = group['animal_id'].tolist()
+    # compute and assign the distances for each time step
+    group[ids] = pd.DataFrame(squareform(
+        pdist(group[['x', 'y']], 'euclidean')),
+        index=group.index, columns=ids)
+    return group
 
-    cols = result.columns.tolist()
 
-    # Re-arrange columns-
-    cols = cols[-1:] + cols[:-1]
-
-    result = result[cols]
-
-    # Reset indices-
-    result.reset_index(drop=True, inplace=True)
-
-    return result
+if __name__ == "__main__":
+    path_to_file = "examples/datasets/fish-5.csv"
+    # Read in CSV file using 'path_to_file' variable-
+    data = movekit.io.parse_csv(path_to_file)
+    distance_data = distance_euclidean_matrix(data)
+    print(distance_data)
