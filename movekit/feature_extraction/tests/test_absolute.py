@@ -1,5 +1,3 @@
-
-
 import unittest
 import math
 import pandas as pd
@@ -7,7 +5,6 @@ import numpy as np
 
 
 class Test_Data(unittest.TestCase):
-
     def test_average_speed(self):
         fps = 10
         # result = pd.read_csv("Complete-Processed_Data-fps_10-02_May_2019.csv")
@@ -193,8 +190,8 @@ class Test_Data(unittest.TestCase):
         index = 3
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         # print("\nFor index = {0}, avg_acceleration = {1:.5f}\n".format(index, avg_acceleration))
 
         self.assertEqual(avg_acceleration, -0.01727, "Should be -0.01727")
@@ -202,22 +199,22 @@ class Test_Data(unittest.TestCase):
         index = 1234
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         self.assertEqual(avg_acceleration, -0.00725, "Should be -0.00725")
 
         index = 26063
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         self.assertEqual(avg_acceleration, 0.0982, "Should be 0.0982")
 
         index = 43193
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         self.assertEqual(avg_acceleration, -5.09769, "Should be -5.09769")
 
         # Animal ID = 511
@@ -225,155 +222,155 @@ class Test_Data(unittest.TestCase):
         index = 43204
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         self.assertEqual(avg_acceleration, 0.00622, "Should be 0.00622")
 
         index = 49867
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
         self.assertEqual(avg_acceleration, -0.05845, "Should be -0.05845")
 
         index = 63338
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.01581, "Should be  -0.01581")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.01581, "Should be  -0.01581")
 
         index = 86393
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.2445, "Should be  -0.2445")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.2445, "Should be  -0.2445")
 
         index = 86394
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -2.24186, "Should be  -2.24186")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -2.24186, "Should be  -2.24186")
 
         # Animal ID = 607
 
         index = 86406
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.005, "Should be  -0.005")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.005, "Should be  -0.005")
 
         index = 88094
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.07114, "Should be  0.07144")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.07114, "Should be  0.07144")
 
         index = 106887
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.06882, "Should be  -0.06882")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.06882, "Should be  -0.06882")
 
         index = 123964
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.05577, "Should be  0.05577")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.05577, "Should be  0.05577")
 
         index = 123964
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.05577, "Should be  0.05577")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.05577, "Should be  0.05577")
 
         index = 127558
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.1769, "Should be  0.1769")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.1769, "Should be  0.1769")
 
         # Animal ID = 811
 
         index = 127558
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.1769, "Should be  0.1769")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.1769, "Should be  0.1769")
 
         index = 144159
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.06426, "Should be  -0.06426")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.06426, "Should be  -0.06426")
 
         index = 151357
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.03585, "Should be  0.03585")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.03585, "Should be  0.03585")
 
         index = 167519
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.17758, "Should be  0.17758")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.17758, "Should be  0.17758")
 
         index = 172781
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.33583, "Should be  0.33583")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.33583, "Should be  0.33583")
 
         # Animal ID = 905
 
         index = 172819
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.00106, "Should be  -0.00106")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.00106, "Should be  -0.00106")
 
         index = 188276
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.09047, "Should be  -0.09047")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.09047, "Should be  -0.09047")
 
         index = 199828
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.27189, "Should be  -0.27189")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.27189, "Should be  -0.27189")
 
         index = 211538
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  0.08766, "Should be  0.08766")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, 0.08766, "Should be  0.08766")
 
         index = 215996
         i = index - 2
 
-        avg_acceleration = round(
-            (result.loc[i + 1, "Average_Speed"] - result.loc[i, "Average_Speed"]), 5)
-        self.assertEqual(avg_acceleration,  -0.36341, "Should be -0.36341")
+        avg_acceleration = round((result.loc[i + 1, "Average_Speed"] -
+                                  result.loc[i, "Average_Speed"]), 5)
+        self.assertEqual(avg_acceleration, -0.36341, "Should be -0.36341")
 
     def test_direction(self):
 
@@ -398,7 +395,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -92.7263, "Should be -92.7263")
+        self.assertEqual(direction, -92.7263, "Should be -92.7263")
 
         index = 28751
         i = index - 2
@@ -417,7 +414,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -158.7723, "Should be -158.7723")
+        self.assertEqual(direction, -158.7723, "Should be -158.7723")
 
         index = 31360
         i = index - 2
@@ -436,7 +433,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -162.3818, "Should be -162.3818")
+        self.assertEqual(direction, -162.3818, "Should be -162.3818")
 
         # Animal ID = 511
 
@@ -457,7 +454,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -141.4908, "Should be -141.4908")
+        self.assertEqual(direction, -141.4908, "Should be -141.4908")
 
         index = 69619
         i = index - 2
@@ -476,7 +473,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  7.6961, "Should be 7.6961")
+        self.assertEqual(direction, 7.6961, "Should be 7.6961")
 
         index = 84505
         i = index - 2
@@ -495,7 +492,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  35.8377, "Should be 35.8377")
+        self.assertEqual(direction, 35.8377, "Should be 35.8377")
 
         # Animal ID = 607
 
@@ -516,7 +513,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  176.5318, "Should be 176.5318")
+        self.assertEqual(direction, 176.5318, "Should be 176.5318")
 
         index = 103299
         i = index - 2
@@ -535,7 +532,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  156.1048, "Should be 156.1048")
+        self.assertEqual(direction, 156.1048, "Should be 156.1048")
 
         index = 124863
         i = index - 2
@@ -554,7 +551,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  157.3801, "Should be 157.3801")
+        self.assertEqual(direction, 157.3801, "Should be 157.3801")
 
         # Animal ID = 811
 
@@ -575,7 +572,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  40.9144, "Should be 40.9144")
+        self.assertEqual(direction, 40.9144, "Should be 40.9144")
 
         index = 149561
         i = index - 2
@@ -594,7 +591,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  171.5626, "Should be 171.5626")
+        self.assertEqual(direction, 171.5626, "Should be 171.5626")
 
         index = 168876
         i = index - 2
@@ -613,7 +610,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -71.2135, "Should be -71.2135")
+        self.assertEqual(direction, -71.2135, "Should be -71.2135")
 
         # Animal ID = 905
 
@@ -634,7 +631,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -37.9477, "Should be -37.9477")
+        self.assertEqual(direction, -37.9477, "Should be -37.9477")
 
         index = 203893
         i = index - 2
@@ -653,7 +650,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  22.8337, "Should be 22.8337")
+        self.assertEqual(direction, 22.8337, "Should be 22.8337")
 
         index = 215650
         i = index - 2
@@ -672,7 +669,7 @@ class Test_Data(unittest.TestCase):
         elif math.isnan(direction):
             direction = 0
 
-        self.assertEqual(direction,  -18.0490, "Should be -18.0490")
+        self.assertEqual(direction, -18.0490, "Should be -18.0490")
 
 
 if __name__ == '__main__':
