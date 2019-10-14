@@ -35,15 +35,15 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     Calculate absolute feature called 'Stopped' where the value is 'yes'
     if 'Average_Speed' <= threshold_speed and 'no' otherwise
     '''
-    data_animal_id_groups['Stopped'] = np.where(
-        data_animal_id_groups['Average_Speed'] <= threshold_speed, 1, 0)
+    data_animal_id_groups['stopped'] = np.where(
+        data_animal_id_groups['average_Speed'] <= threshold_speed, 1, 0)
 
     print(
         "\nNumber of movers stopped according to threshold speed = {0} is {1}".
-        format(threshold_speed, data_animal_id_groups['Stopped'].eq(1).sum()))
+        format(threshold_speed, data_animal_id_groups['stopped'].eq(1).sum()))
     print(
         "Number of movers moving according to threshold speed = {0} is {1}\n".
-        format(threshold_speed, data_animal_id_groups['Stopped'].eq(0).sum()))
+        format(threshold_speed, data_animal_id_groups['stopped'].eq(0).sum()))
 
     return data_animal_id_groups
 
@@ -77,15 +77,15 @@ def compute_distance_and_direction(data_animal_id_groups):
             # Compute the direction in DEGREES-
             direction = math.degrees(math.atan((y2 - y1) / (x2 - x1)))
             if math.isnan(direction):
-                data_animal_id_groups[aid].loc[i, 'Direction'] = 0
+                data_animal_id_groups[aid].loc[i, 'direction'] = 0
                 # animal_id.loc[i, 'Direction'] = 0
             else:
-                data_animal_id_groups[aid].loc[i, 'Direction'] = direction
+                data_animal_id_groups[aid].loc[i, 'direction'] = direction
                 # animal_id.loc[i, 'Direction'] = direction
 
             # Insert computed distance to column/attribute 'Distance'-
             # animal_id.loc[i, 'Distance'] = distance
-            data_animal_id_groups[aid].loc[i, 'Distance'] = distance
+            data_animal_id_groups[aid].loc[i, 'distance'] = distance
 
     # end_time = time.time()
     # print("\nTime taken to create distance & direction data = {0:.4f} seconds\n\n".format(
@@ -122,10 +122,10 @@ def compute_average_speed(data_animal_id_groups, fps):
 
             for j in range(i, i + fps):
                 # tot_dist += animal_id.loc[j, "Distance"]
-                tot_dist += data_animal_id_groups[aid].loc[j, "Distance"]
+                tot_dist += data_animal_id_groups[aid].loc[j, "distance"]
 
             # animal_id.loc[i, "Average_Speed"] = (tot_dist / fps)
-            data_animal_id_groups[aid].loc[i, "Average_Speed"] = (tot_dist /
+            data_animal_id_groups[aid].loc[i, "average_speed"] = (tot_dist /
                                                                   fps)
 
     # end_time = time.time()
@@ -156,12 +156,12 @@ def compute_average_acceleration(data_animal_id_groups, fps):
             avg_speed = 0
 
             # Calculating Average Speed-
-            avg_speed = data_animal_id_groups[aid].loc[i, 'Average_Speed'] - \
-                data_animal_id_groups[aid].loc[i + 1, 'Average_Speed']
+            avg_speed = data_animal_id_groups[aid].loc[i, 'average_speed'] - \
+                data_animal_id_groups[aid].loc[i + 1, 'average_speed']
             # avg_speed = animal_id.loc[i, "Average_Speed"] - animal_id.loc[i + 1, "Average_Speed"]
             # print("\navg_speed = {0:.4f}\n".format(avg_speed))
             # animal_id.loc[i, "Average_Acceleration"] = (avg_speed / fps)
-            data_animal_id_groups[aid].loc[i, 'Average_Acceleration'] = (
+            data_animal_id_groups[aid].loc[i, 'average_acceleration'] = (
                 avg_speed / fps)
 
     # end_time = time.time()
@@ -181,7 +181,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 
 def time_series_analyis(data):
     # remove the columns stopped as it has nominal values
-    rm_colm = ['Stopped']
+    rm_colm = ['stopped']
     df = data[data.columns.difference(rm_colm)]
     extracted_features = extract_features(df,
                                           column_id='animal_id',
