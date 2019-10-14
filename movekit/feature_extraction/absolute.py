@@ -36,7 +36,7 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     if 'Average_Speed' <= threshold_speed and 'no' otherwise
     '''
     data_animal_id_groups['stopped'] = np.where(
-        data_animal_id_groups['average_Speed'] <= threshold_speed, 1, 0)
+        data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
     print(
         "\nNumber of movers stopped according to threshold speed = {0} is {1}".

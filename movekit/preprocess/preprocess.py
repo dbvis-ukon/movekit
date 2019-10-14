@@ -73,13 +73,13 @@ def grouping_data(processed_data):
         data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
 
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            Distance=data)
+            distance=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            Average_Speed=data)
+            average_speed=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            Average_Acceleration=data)
+            average_acceleration=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            Direction=data)
+            direction=data)
 
     return data_animal_id_groups
 
