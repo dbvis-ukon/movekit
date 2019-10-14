@@ -34,6 +34,6 @@ For an overview of version changes see the [CHANGELOG](https://github.com/dbvis-
 Please submit bugs or feature requests to the GitHub issue tracker [here](https://github.com/dbvis-ukon/movekit/issues).
 
 ## License
-This package was developed by Eren Cakmak, Arjun Majumdar, and Jolle Jolles from the [Data Analysis and Visualization Group](https://www.vis.uni-konstanz.de/) and the [Department of Collective Behaviour](http://collectivebehaviour.com) at the University Konstanz, with funding from the DFG Centre of Excellence 2117 "Centre for the Advanced Study of Collective Behaviour" (ID: 422037984). 
+This package was developed by Eren Cakmak, Arjun Majumdar, and Jolle Jolles from the [Data Analysis and Visualization Group](https://www.vis.uni-konstanz.de/) and the [Department of Collective Behaviour](http://collectivebehaviour.com) at the University Konstanz, with funding from the DFG Centre of Excellence 2117 "Centre for the Advanced Study of Collective Behaviour" (ID: 422037984).
 
 Released under a GNU General Public License. See the [LICENSE](LICENSE) file for details.
