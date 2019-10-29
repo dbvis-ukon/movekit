@@ -1,19 +1,23 @@
+"""
+  Group features for the whole swarm 
+  Author: Arjun Majumdar, Eren Cakmak
+  Created: October, 2019
+"""
 
-
+import math
 import pandas as pd
 import numpy as np
-import math
 
 
 def calculate_centroid(data_groups):
     """
     Computes the distance of each animal from the centroid of the group
-	
+
     Input: Expects a dictionary containing-
     animal_id as key and Pandas Data Frame for that animal_id as value
-	
+
     Use Pandas group by to create such a Python 3 dictionary
-	
+
     Returns: A modified Pandas Data Frame containing 'distance_centroid'
     attribute
     """
@@ -60,7 +64,6 @@ def medoid_computation(data):
                 Pandas DataFrame associated with it
     '''
 
-
     # Group by 'time'-
     # Group according to 'animal_id' attribute-
     data_time = data.groupby('time')
@@ -73,8 +76,7 @@ def medoid_computation(data):
 
     # Reset index-
     for aid in data_time.groups.keys():
-        data_groups_time[aid].reset_index(drop = True, inplace = True)
-
+        data_groups_time[aid].reset_index(drop=True, inplace=True)
 
     # Each group has the dimension-
     # data_groups_time[10].shape
@@ -99,22 +101,23 @@ def medoid_computation(data):
 
         dist = np.sqrt(x_temp + y_temp)
 
-        data_groups_time[tid] = data_groups_time[tid].assign(distance_to_centroid = np.around(dist, decimals = 3))
+        data_groups_time[tid] = data_groups_time[tid].assign(
+            distance_to_centroid=np.around(dist, decimals=3))
 
         # Find 'animal_id' nearest to centroid for this group-
         pos = np.argmin(data_groups_time[tid]['distance_to_centroid'].values)
         nearest = data_groups_time[tid].loc[pos, 'animal_id']
 
         # Assign 'medoid' for this group-
-        data_groups_time[tid] = data_groups_time[tid].assign(medoid = nearest)
-
+        data_groups_time[tid] = data_groups_time[tid].assign(medoid=nearest)
 
     # Concatenate different groups into one Pandas DataFrame-
-    result = pd.concat(data_groups_time[aid] for aid in data_groups_time.keys())
+    result = pd.concat(data_groups_time[aid]
+                       for aid in data_groups_time.keys())
 
     # Reset indices-
     result.reset_index(drop=True, inplace=True)
- 
+
     # return data_groups_time
     return result
 
@@ -152,12 +155,10 @@ for aid in data_animals.groups.keys():
 
 
 # Compute medoid-
-data_medoid = medoid_computation(data)
+# data_medoid = medoid_computation(data)
 
 # Check for rows where 'medod' != 312-
 # data_medoid[data_medoid['medoid'] != 312]
 
 # Optional (Save to HDD)-
 # data_medoid.to_csv("medoid_computation.csv", index=False)
-
-
