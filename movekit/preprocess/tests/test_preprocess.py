@@ -9,7 +9,7 @@ from pandas.util.testing import assert_frame_equal
 from pandas.io.common import EmptyDataError
 import numpy as np
 
-from movekit.preprocessing.preprocess import clean
+from movekit.preprocess import clean
 
 
 class TestPreprocess(unittest.TestCase):
