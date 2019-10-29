@@ -152,7 +152,7 @@ for aid in data_animals.groups.keys():
 
 
 # Compute medoid-
-data_medoid = medoid_computation(data)
+# data_medoid = medoid_computation(data)
 
 # Check for rows where 'medod' != 312-
 # data_medoid[data_medoid['medoid'] != 312]
