@@ -3,6 +3,7 @@
   Author: Arjun Majumdar, Eren Cakmak
   Created: July, 2019
 """
+
 import math
 # import time
 
@@ -15,18 +16,58 @@ from tsfresh import extract_relevant_features
 from tsfresh.utilities.dataframe_functions import impute
 
 
-def compute_absolute_features(data_animal_id_groups,
-                              fps=10,
-                              stop_threshold=0.5):
+def grouping_data(processed_data):
+    '''
+    A function to group all values for each 'animal_id' attribute
+
+    Input is 'processed_data' which is processed Pandas DataFrame
+    Returns a dictionary where- key is animal_id & value is Pandas DataFrame
+    for that 'animal_id'
+    '''
+    # A dictionary object to hold all groups obtained using group by-
+    data_animal_id_groups = {}
+
+    # Group by using 'animal_id' attribute-
+    data_animal_id = processed_data.groupby('animal_id')
+
+    # Get each animal_id's data from grouping performed-
+    for animal_id in data_animal_id.groups.keys():
+        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
+
+    # To reset index for each group-
+    for animal_id in data_animal_id_groups.keys():
+        data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
+
+    # Add additional attributes/columns to each groups-
+    for aid in data_animal_id_groups.keys():
+        data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
+
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            distance=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            average_speed=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            average_acceleration=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            direction=data)
+
+    return data_animal_id_groups
+
+
+def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
     '''
    Calculate absolute features for the data animal group-
    '''
-    direction_distance_data = compute_distance_and_direction(
-        data_animal_id_groups)
+    direction_distance_data = compute_distance_and_direction(data_animal_id_groups)
+
     avg_speed_data = compute_average_speed(direction_distance_data, fps)
+
     avg_acceleration_data = compute_average_acceleration(avg_speed_data, fps)
+
     stop_data = computing_stops(avg_acceleration_data, stop_threshold)
+
     print(stop_data)
+
     return stop_data
 
 
@@ -35,12 +76,12 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     Calculate absolute feature called 'Stopped' where the value is 'yes'
     if 'Average_Speed' <= threshold_speed and 'no' otherwise
     '''
-    data_animal_id_groups['stopped'] = np.where(
-        data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
+    data_animal_id_groups['stopped'] = np.where(data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
     print(
         "\nNumber of movers stopped according to threshold speed = {0} is {1}".
         format(threshold_speed, data_animal_id_groups['stopped'].eq(1).sum()))
+
     print(
         "Number of movers moving according to threshold speed = {0} is {1}\n".
         format(threshold_speed, data_animal_id_groups['stopped'].eq(0).sum()))
@@ -188,3 +229,5 @@ def time_series_analyis(data):
                                           column_sort='time')
     impute(extracted_features)
     return extracted_features
+
+
