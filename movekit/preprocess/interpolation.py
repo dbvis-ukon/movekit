@@ -1,17 +1,11 @@
-"""
-  Preprocess the data frame
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: July, 2019
-"""
-
 
 def linear_interpolation(data, threshold):
-    '''
-        Function to interpolate missing values for 'x' and 'y' attributes
-        in dataset.
-        'threshold' parameter decides the number of rows till which, data
-        should NOT be deleted.
-        '''
+
+    """
+    Function to interpolate missing values for 'x' and 'y' attributes in a
+    dataset. The threshold parameter decides the number of rows until which data
+    should NOT be deleted.
+    """
 
     # Get indices of missing values for 'x' attribute in a list-
     missing_x_values = list(data[data['x'].isnull()].index)
@@ -24,13 +18,9 @@ def linear_interpolation(data, threshold):
     print("Number of missing values in 'y' attribute = {0}\n".format(
         len(missing_y_values)))
 
-    # counter for outer loop-
     i = 0
-    # counter for inner loop-
     j = 0
-    # start and end counters-
     start = end = 0
-    # count length of sequence found-
     k = 1
 
     # List containing indices to be deleted-

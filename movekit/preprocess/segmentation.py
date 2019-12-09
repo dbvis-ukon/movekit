@@ -1,16 +1,11 @@
-"""
-	Split trajectories into segments
-	Author: Arjun Majumdar, Eren Cakmak
-	Created: September, 2019
-"""
-
 import pandas as pd
 import numpy as np
 import math
 
 
 def split_trajectories(data_groups, segment=1):
-    """
+
+	"""
     Split the trajectory of a single animal into several intervals (segments)
     according to some specific criterion.
 
@@ -25,13 +20,9 @@ def split_trajectories(data_groups, segment=1):
     Returns: Nothing. All segmented Pandas Data Frames are saved to HDD
 
     # An example usage-
-
-    data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
-
-    data_groups = group_animals(data)
-
-    split_trajectories(data_groups, segment = 3)
-
+    	data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
+    	data_groups = group_animals(data)
+    	split_trajectories(data_groups, segment = 3)
     """
 
     # Method-1:
@@ -60,10 +51,10 @@ def split_trajectories(data_groups, segment=1):
     return None
 
 
-def split_trajectories_fuzzy_segmentation(data_groups,
-                                          segment=1,
-                                          fuzzy_segment=2):
-    """
+def split_trajectories_fuzzy_segmentation(data_groups, segment=1,
+										  fuzzy_segment=2):
+
+	"""
     Split the trajectory of a single animal into several intervals (segments)
     according to some specific criterion.
 
@@ -83,12 +74,9 @@ def split_trajectories_fuzzy_segmentation(data_groups,
     Returns: Nothing. All segmented Pandas Data Frames are saved to HDD
 
     # An example usage-
-
-    data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
-
-    data_groups = group_animals(data)
-
-    split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
+    	data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
+    	data_groups = group_animals(data)
+    	split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
     """
 
     # Get first key-
@@ -110,7 +98,8 @@ def split_trajectories_fuzzy_segmentation(data_groups,
 
     for k in groups.keys():
         groups[k].to_csv(k + '.csv', index=False)
-    """
+
+	"""
 	# Code to check indexing for fuzzy segmentation-
 	groups = {}
 

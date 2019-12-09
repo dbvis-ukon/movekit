@@ -1,9 +1,3 @@
-"""
-  Plot missing values 
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: September, 2019
-"""
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,16 +5,14 @@ import seaborn as sns
 
 
 def plot_missing_values(data, animal_id):
+
     """
-    Plot the missing values of an animal id against the time
+    Plot the missing values of an animal id against time
 
     Input:
     'data' is the Pandas Data Frame containing CSV file
     'animal_id' is the ID of the animal who's missing values have to be plotted
     against the time
-
-    Returns:
-    Nothing
     """
 
     missing_time = data[data['time'].isnull()].index.tolist()

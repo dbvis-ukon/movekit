@@ -1,29 +1,27 @@
-"""
-  Preprocess the data frame
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: July, 2019
-"""
-
 import pandas as pd
 import numpy as np
 
 
 def clean(data):
-    '''
-    A function to perform data preprocessing
-    Expects 'data' as input which is the Pandas DataFrame to be processed
-    '''
+
+    """
+    A function to perform data preprocessing. Expects 'data' as input which is
+    the Pandas DataFrame to be processed
+    """
+
     # Print the number of missing values per column
     print_missing(data)
 
     # Drop columns with  missing values for 'time'  and 'animal_id'
     data.dropna(subset=['animal_id', 'time'], inplace=True)
+
     # Change column type of animal_id and time
     data['animal_id'] = data['animal_id'].astype(np.int64)
     data['time'] = data['time'].astype(np.int64)
 
     # Print duplicate rows
     print_duplicate(data)
+
     # Remove the duplicated rows found above
     data.drop_duplicates(subset=['animal_id', 'time'], inplace=True)
 
@@ -31,29 +29,28 @@ def clean(data):
 
 
 def print_missing(df):
-    '''
-    Print the missing values for each column
-    '''
+
+    """Print the missing values for each column"""
+
     print('Missing values:\n', df.isnull().sum().sort_values(ascending=False))
 
 
 def print_duplicate(df):
-    '''
-    Print the duplicate rows
-    '''
+
+    """Print the duplicate rows"""
+
     dup = df[df.duplicated(['time', 'animal_id'])]
-    print(
-        "Removed duplicate rows based on the columns 'animal_id' and 'time' column are:",
-        dup,
-        sep='\n')
+    print("Removed duplicate rows based on 'animal_id' and 'time':",dup,sep='\n')
 
 
 def grouping_data(processed_data):
-    '''
-    A function to group all values for each 'animal_id'
-    Input is 'processed_data' which is processed Pandas DataFrame
-    Returns a dictionary where- key is animal_id, value in Pandas DataFrame for that 'animal_id'
-    '''
+
+    """
+    A function to group all values for each 'animal_id'. Input is
+    'processed_data' which is processed Pandas DataFrame. Returns a dictionary
+    where- key is animal_id, value in Pandas DataFrame for that 'animal_id'.
+    """
+
     # A dictionary object to hold all groups obtained using group by-
     data_animal_id_groups = {}
 
@@ -85,12 +82,11 @@ def grouping_data(processed_data):
 
 
 def filter_dataframe(data, frm, to):
+
     """
-    A function to filter the dataset, which is the first
-    argument to the function using 'frm' and 'to' as the
-    second and third arguments.
-    Please note that both 'frm' and 'to' are included in
-    the returned filtered Pandas Data frame.
+    A function to filter the dataset, which is the first argument to the
+    function using 'frm' and 'to' as the second and third arguments. Note that
+    both 'frm' and 'to' are included in the returned filtered Pandas Data frame.
 
     Returns a filtered Pandas Data frame according to 'frm'
     and 'to' arguments
@@ -101,9 +97,10 @@ def filter_dataframe(data, frm, to):
 
 def replace_parts_animal_movement(data_groups, animal_id, time_array,
                                   replacement_value_x, replacement_value_y):
+
     """
-    Replace subsets (segments) of animal movement based on some indices e.g. time
-    This function can be used to remove outliers
+    Replace subsets (segments) of animal movement based on some indice e.g. time
+    This function can be used to remove outliers.
 
     Input:
     1.) First argument is a Python 3 dictionary whose key is 'animal_id'and value is
@@ -118,16 +115,13 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
     Returns:
     Modified Python 3 dictionary which was passed as first argument to it
 
-    An example usage-
-
-    data = csv_to_pandas(path)
-
-    data_groups = group_animals(data)
-
-    arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
-
-    replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
+    An example usage:
+        data = csv_to_pandas(path)
+        data_groups = group_animals(data)
+        arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
+        replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
     """
+
     data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
     data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
 

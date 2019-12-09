@@ -1,16 +1,11 @@
-"""
-  Extract aggregated absolute features - e.g. traveled distance for one animal
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: September, 2019
-"""
-
 import pandas as pd
 import numpy as np
 import math
 
 
 def compute_distance_summary(data_featrues):
-    '''
+
+    """
     Function to calculate the sum of metric distance travelled by an animal.
     Also calculates the maximum distance travelled by an animal.
 
@@ -20,7 +15,8 @@ def compute_distance_summary(data_featrues):
     Returns: A Python 3 dictionary containing two nested dictionaries computing-
     sum of total metric distance travelled by each animal
     maximum distance travelled by each animal
-    '''
+    """
+
     result = {}
 
     # doing a new grouping
@@ -39,7 +35,8 @@ def compute_distance_summary(data_featrues):
 
 
 def compute_stop_summary(data_featrues):
-    '''
+
+    """
     Function to compute how long/time steps, each animal (animal_id)
     is in motion and is stationary
     This is done for each 'animal_id'
@@ -47,7 +44,8 @@ def compute_stop_summary(data_featrues):
     Input: Python 3 dictionary containing 'Stopped' attribute from using 'computing_stops()' function
     Returns: Textual description per animal_id of the number of time steps for which they were
     in motion and were stationary
-    '''
+    """
+    
     result = {}
 
     # doing a grouping

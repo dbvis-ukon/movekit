@@ -1,15 +1,10 @@
-"""
-  Group features for the whole swarm 
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: October, 2019
-"""
-
 import math
 import pandas as pd
 import numpy as np
 
 
 def calculate_centroid(data_groups):
+
     """
     Computes the distance of each animal from the centroid of the group
 
@@ -54,15 +49,51 @@ def calculate_centroid(data_groups):
 
 
 def medoid_computation(data):
-    '''
-    Calculates the data point (animal_id) closest to center/centroid
-    for a time step
-    Uses group by on 'time' attribute
+
+    """
+    Calculates the data point (animal_id) closest to center/centroid for a time
+    step. Uses group by on 'time' attribute.
 
     Input:      Expects a Pandas CSV input parameter containing the dataset
     Returns:    Python 3 dictionary having as key, 'time' and as values,
                 Pandas DataFrame associated with it
-    '''
+
+    # Example usage:
+
+        # Read in data-
+        data = pd.read_csv("fish-5.csv")
+
+        # Sort values by 'time' attribute-
+        data.sort_values("time", ascending=True, inplace = True)
+
+        # Group according to 'animal_id' attribute-
+        data_animals = data.groupby('animal_id')
+
+        # A dict object to store different groups created above as-
+        # animal_id: pandas dataframe for that animal_id
+        data_groups = {}
+
+        # Add different 'animal_id' in dict-
+        for aid in data_animals.groups.keys():
+        	data_groups[aid] = data_animals.get_group(aid)
+
+        # Reset index-
+        for aid in data_animals.groups.keys():
+        	data_groups[aid].reset_index(drop = True, inplace = True)
+
+        # Compute centroid-
+        data_centroid = calculate_centroid(data_groups)
+
+        # Compute medoid-
+        data_medoid = medoid_computation(data)
+
+        # Check for rows where 'medod' != 312-
+        data_medoid[data_medoid['medoid'] != 312]
+
+        # Optional (Save to HDD)-
+        data_medoid.to_csv("medoid_computation.csv", index=False)
+
+    """
 
     # Group by 'time'-
     # Group according to 'animal_id' attribute-
@@ -120,45 +151,3 @@ def medoid_computation(data):
 
     # return data_groups_time
     return result
-
-
-# Example usage-
-
-# Read in data-
-# data = pd.read_csv("fish-5.csv")
-
-# Sort values by 'time' attribute-
-# data.sort_values("time", ascending=True, inplace = True)
-
-
-"""
-# Group according to 'animal_id' attribute-
-data_animals = data.groupby('animal_id')
-
-# A dict object to store different groups created above as-
-# animal_id: pandas dataframe for that animal_id
-data_groups = {}
-
-# Add different 'animal_id' in dict-
-for aid in data_animals.groups.keys():
-	data_groups[aid] = data_animals.get_group(aid)
-
-# Reset index-
-for aid in data_animals.groups.keys():
-	data_groups[aid].reset_index(drop = True, inplace = True)
-
-
-# Compute centroid-
-# data_centroid = calculate_centroid(data_groups)
-
-"""
-
-
-# Compute medoid-
-# data_medoid = medoid_computation(data)
-
-# Check for rows where 'medod' != 312-
-# data_medoid[data_medoid['medoid'] != 312]
-
-# Optional (Save to HDD)-
-# data_medoid.to_csv("medoid_computation.csv", index=False)

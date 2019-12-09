@@ -1,6 +1,7 @@
 """
-Ensure that we can use all relevant IO functions
+Ensures that all relevant IO functions are functioning
 """
+
 import os
 
 import unittest

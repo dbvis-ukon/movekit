@@ -1,12 +1,4 @@
-"""
-  Extract features for individual moving entities
-  Author: Arjun Majumdar, Eren Cakmak
-  Created: July, 2019
-"""
-
 import math
-# import time
-
 import pandas as pd
 import numpy as np
 
@@ -17,13 +9,15 @@ from tsfresh.utilities.dataframe_functions import impute
 
 
 def grouping_data(processed_data):
-    '''
+
+    """
     A function to group all values for each 'animal_id' attribute
 
     Input is 'processed_data' which is processed Pandas DataFrame
     Returns a dictionary where- key is animal_id & value is Pandas DataFrame
     for that 'animal_id'
-    '''
+    """
+
     # A dictionary object to hold all groups obtained using group by-
     data_animal_id_groups = {}
 
@@ -57,26 +51,26 @@ def grouping_data(processed_data):
 
 
 def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
-    '''
-   Calculate absolute features for the data animal group-
-   '''
+
+    """Calculate absolute features for the data animal group"""
+
     direction_distance_data = compute_distance_and_direction(
         data_animal_id_groups)
 
     avg_speed_data = compute_average_speed(direction_distance_data, fps)
-
     avg_acceleration_data = compute_average_acceleration(avg_speed_data, fps)
-
     stop_data = computing_stops(avg_acceleration_data, stop_threshold)
 
     return stop_data
 
 
 def computing_stops(data_animal_id_groups, threshold_speed):
-    '''
-    Calculate absolute feature called 'Stopped' where the value is 'yes'
-    if 'Average_Speed' <= threshold_speed and 'no' otherwise
-    '''
+
+    """
+    Calculate absolute feature called 'Stopped' where the value is 'yes' if
+    'Average_Speed' <= threshold_speed and 'no' otherwise
+    """
+
     data_animal_id_groups['stopped'] = np.where(
         data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
@@ -92,12 +86,13 @@ def computing_stops(data_animal_id_groups, threshold_speed):
 
 
 def compute_distance_and_direction(data_animal_id_groups):
-    '''
+
+    """
     Calculate metric distance and direction-
 
     Calculate the metric distance between two consecutive time frames/time stamps
     for each moving entity (in this case, fish)
-    '''
+    """
 
     for aid in data_animal_id_groups.keys():
         print("\nComputing Distance & Direction for Animal ID = {0}\n".format(
@@ -130,7 +125,8 @@ def compute_distance_and_direction(data_animal_id_groups):
 
 
 def compute_average_speed(data_animal_id_groups, fps):
-    '''
+
+    """
     Average Speed-
 
     A function to compute average speed of an animal based on fps
@@ -139,7 +135,7 @@ def compute_average_speed(data_animal_id_groups, fps):
 
     Formula used-
     Average Speed = Total Distance Travelled / Total Time taken
-    '''
+    """
 
     # start_time = time.time()
 
@@ -163,13 +159,11 @@ def compute_average_speed(data_animal_id_groups, fps):
 
 
 def compute_average_acceleration(data_animal_id_groups, fps):
-    '''
-    A function to compute average acceleration of an animal based on fps
-    (frames per second) parameter.
 
-    Formulas used are-
-    Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken
-    '''
+    """
+    A function to compute average acceleration of an animal based on fps
+    parameter.
+    """
 
     for aid in data_animal_id_groups.keys():
         print("\nComputing Average Speed for Animal ID = {0}\n".format(aid))
@@ -206,6 +200,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 
 
 def time_series_analyis(data):
+
     # remove the columns stopped as it has nominal values
     rm_colm = ['stopped']
     df = data[data.columns.difference(rm_colm)]
@@ -213,4 +208,5 @@ def time_series_analyis(data):
                                           column_id='animal_id',
                                           column_sort='time')
     impute(extracted_features)
+    
     return extracted_features
