@@ -12,8 +12,11 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('/home/arjun/University_of_Konstanz/Hiwi/Git-Clone/movekit-master/movekit/'))
-
+sys.path.insert(
+    0,
+    os.path.abspath(
+        '/home/arjun/University_of_Konstanz/Hiwi/Git-Clone/movekit-master/movekit/'
+    ))
 
 # -- Project information -----------------------------------------------------
 
@@ -23,7 +26,6 @@ author = 'Arjun Majumdar, Eren Cakmak'
 
 # The full version, including alpha/beta/rc tags
 release = '0.1.2'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -39,7 +41,6 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
-
 
 # -- Options for HTML output -------------------------------------------------
 
