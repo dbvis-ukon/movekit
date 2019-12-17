@@ -1,13 +1,16 @@
+
+
+import pandas as pd
+from pandas.errors import EmptyDataError
+from pandas.api.types import is_numeric_dtype, is_string_dtype
+
+
 """
   Microsoft (MS) Excel I/O in Python.
   Load the MS Excel data into pandas dataframe.
   Author: Arjun Majumdar, Eren Cakmak
   Created: August, 2019
 """
-
-import pandas as pd
-from pandas.api.types import is_numeric_dtype, is_string_dtype
-from pandas.io.common import EmptyDataError
 
 
 def parse_excel(path_to_file):
@@ -37,6 +40,14 @@ def parse_excel(path_to_file):
                 data['time'] = pd.to_datetime(data['time'])
                 data.sort_values('time', ascending=True, inplace=True)
 
+            # Check if 'heading_angle' attribute is given in CSV file-
+            if 'heading_angle' in data and np.issubdtype(data['heading_angle'].dtype, np.number):
+                print("\n'heading_angle' attribute is found (numeric type) and will be processed\n")
+                # do nothing, as 'heading_angle' attribute exists
+            else:
+                print("\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n")
+
+
             return data
 
     except FileNotFoundError:
@@ -47,3 +58,10 @@ def parse_excel(path_to_file):
         print(
             'Your file is empty, has no header, or misses some required columns.'
         )
+
+
+# Example usage-
+# data_xl = parse_excel(path_to_file/fish-5.xlsx)
+
+# Get dimension/shape-
+# data_xl.shape
