@@ -117,14 +117,19 @@ def compute_distance_and_direction(data_animal_id_groups):
                 math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
 
             # Compute the direction in DEGREES-
-            direction = math.degrees(math.atan((y2 - y1) / (x2 - x1)))
-            if math.isnan(direction):
-                data_animal_id_groups[aid].loc[i, 'direction'] = 0
-            else:
-                data_animal_id_groups[aid].loc[i, 'direction'] = direction
+            # direction = math.degrees(math.atan2((y2 - y1), (x2 - x1)))
+            # if math.isnan(direction):
+            #     data_animal_id_groups[aid].loc[i, 'direction'] = 0
+            # else:
+            #     data_animal_id_groups[aid].loc[i, 'direction'] = direction
 
             # Insert computed distance to column/attribute 'Distance'-
             data_animal_id_groups[aid].loc[i, 'distance'] = distance
+        
+        data_animal_id_groups[aid]['direction'] = np.rad2deg(np.arctan2((data_animal_id_groups[aid]['y'] - data_animal_id_groups[aid]['y'].shift()), (data_animal_id_groups[aid]['x'] - data_animal_id_groups[aid]['x'].shift())))
+
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].fillna(0)
+
 
     return data_animal_id_groups
 
