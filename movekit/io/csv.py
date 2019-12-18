@@ -6,6 +6,7 @@
 """
 
 import pandas as pd
+import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 
@@ -52,10 +53,3 @@ def parse_csv(path_to_file):
         print(
             'Your file is empty, has no header, or misses some required columns.'
         )
-
-
-# Example usage-
-# data = parse_csv(path_to_file/fish-5.csv)
-
-# Get shape/dimension-
-# data.shape

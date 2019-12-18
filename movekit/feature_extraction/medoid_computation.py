@@ -96,31 +96,3 @@ def medoid_computation(data):
 
 	# return medoid_data, data_groups_time
 	return medoid_data
-
-
-# dist_scipy = distance.euclidean(a, b)
-# dist_np = np.linalg.norm(a-b, ord = 2)
-
-
-# Example usage-
-
-# Read in CSV file-
-data = pd.read_csv("fish-5.csv")
-
-# Sort file by 'time' attribute-
-data.sort_values('time', ascending=True, inplace = True)
-
-
-# start_time = time.time()
-
-# Compute medoid of data-
-medoid_data = medoid_computation(data)
-
-# end_time = time.time()
-# print("\nTotal time taken for medoid computation = {0:.4f} seconds\n".format(end_time - start_time))
-# Total time taken for medoid computation = 824.1987 seconds
-# Total time taken for medoid computation = 899.4437 seconds
-
-
-# Optional-
-# medoid_data.to_csv("medoid_computation.csv", index=False)

@@ -78,20 +78,3 @@ def similarity_computation(group, w, p):
     # compute and assign the distances for each time step
     return pd.DataFrame(squareform(pdist(group, 'wminkowski', p=p, w=w)),
                         index=group.index, columns=ids)
-
-
-# Usage example
-# if __name__ == "__main__":
-#     path_to_file = "examples/datasets/fish-5.csv"
-#     # Read in CSV file using 'path_to_file' variable-
-#     data = movekit.io.parse_csv(path_to_file)
-#     data_grouped = movekit.preprocess.grouping_data(data)
-#     data_features = movekit.feature_extraction.compute_absolute_features(
-#         data_grouped)
-#     # print(data_features)
-
-#     weights = {'Distance': 1,  'Average_Speed': 1,
-#                'Average_Acceleration': 1, 'x': 1, 'y': 1}
-#     result_data = compute_similarity(data_features, weights)
-
-#     print(result_data)

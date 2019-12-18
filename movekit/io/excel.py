@@ -1,6 +1,7 @@
 
 
 import pandas as pd
+import numpy as np
 from pandas.errors import EmptyDataError
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 
@@ -58,10 +59,3 @@ def parse_excel(path_to_file):
         print(
             'Your file is empty, has no header, or misses some required columns.'
         )
-
-
-# Example usage-
-# data_xl = parse_excel(path_to_file/fish-5.xlsx)
-
-# Get dimension/shape-
-# data_xl.shape

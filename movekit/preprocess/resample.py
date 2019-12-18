@@ -83,38 +83,3 @@ def resample_random(data_groups, downsample_size):
 
     return data_groups_downsampled
 
-
-"""
-# An example usage-
-
-data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
-
-data_groups = group_animals(data)
-
-modified_data_groups = resample_systematic(data_groups, 200)
-
-print("\nPrinting dimensions of downsampled systematic dataset Python 3 dict:\n")
-for aid in modified_data_groups.keys():
-	print("animal_id = {0} & shape = {1}".format(aid, modified_data_groups[aid].shape))
-'''
-animal_id = 312 & shape = (200, 4)
-animal_id = 511 & shape = (200, 4)
-animal_id = 607 & shape = (200, 4)
-animal_id = 811 & shape = (200, 4)
-animal_id = 905 & shape = (200, 4)
-'''
-
-
-modified_data_groups_random = resample_random(data_groups, 1000)
-
-print("\nPrinting dimensions of downsampled random dataset Python 3 dict:\n")
-for aid in modified_data_groups_random.keys():
-	print("animal_id = {0} & shape = {1}".format(aid, modified_data_groups_random[aid].shape))
-'''
-animal_id = 312 & shape = (1000, 4)
-animal_id = 511 & shape = (1000, 4)
-animal_id = 607 & shape = (1000, 4)
-animal_id = 811 & shape = (1000, 4)
-animal_id = 905 & shape = (1000, 4)
-'''
-"""

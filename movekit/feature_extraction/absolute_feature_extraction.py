@@ -1,36 +1,11 @@
-
+"""
+  Extract features for individual moving entities
+  Author: Arjun Majumdar, Eren Cakmak
+  Created: September, 2019
+"""
 
 import numpy as np
 import pandas as pd
-
-
-# Read in CSV file-
-def csv_to_pandas(path_to_file):
-	'''
-	A function to read CSV file into a Pandas DataFrame-
-	Expects complete path/relative path to CSV file along with file name
-	'''
-	# data = pd.read_csv("fish-5.csv")
-
-	try:
-
-		if path_to_file[-3:] == 'csv':
-			data = pd.read_csv(path_to_file)
-		else:
-			data = pd.read_csv(path_to_file + '.csv')
-
-			# Check if 'time' attribute is integer-
-			if is_numeric_dtype(data['time']):
-				data.sort_values('time', ascending = True, inplace = True)
-			# Check if 'time' attribute is string-
-			elif is_string_dtype(data['time']):
-				data['time'] = pd.to_datetime(data['time'])
-				data.sort_values('time', ascending = True, inplace = True)
-
-		return data
-
-	except FileNotFoundError:
-		print("Your file below could not be found. Please check path and/or file name and try again.\nPath given: {0}\n\n".format(path_to_file))
 
 
 def grouping_data(processed_data):
@@ -159,43 +134,3 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 	result.reset_index(drop=True, inplace=True)
 
 	return result
-
-
-
-
-# Get absolute path and file name with extension from user-
-path_to_file = input("Enter path to data file: ")
-
-# /home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv
-
-# Get CSV data file as Pandas DataFrame-
-data = csv_to_pandas(path_to_file)
-
-
-# Group given data according to 'animal_id' attribute-
-data_animal_id_groups = grouping_data(data)
-
-# Compute distance and direction attributes-
-distance_and_direction_data = compute_distance_and_direction(data_animal_id_groups)
-
-
-# Get fps input from user-
-fps = int(input("\nEnter frames per second (fps) parameter: "))
-
-# Compute 'average_speed' attribute using 'fps' attribute-
-avg_speed_data = compute_average_speed(distance_and_direction_data, fps)
-
-# Compute 'average_acceleration' attribute using 'fps' attribute-
-avg_acc_data = compute_average_acceleration(avg_speed_data, fps)
-
-# NOTE: 'avg_acc_data' is Panda DataFrame and NOT a Python 3 dict!
-
-# Sanity check-
-type(avg_acc_data)
-# pandas.core.frame.DataFrame
-
-
-
-
-# Optional- Write computed CSV to HDD-
-# result.to_csv("fish-5_{0}_fps_computed_attributes.csv".format(fps), index=False)
