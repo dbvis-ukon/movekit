@@ -4,23 +4,15 @@
 
 *Movekit* is an open-source software package for the processing and analysis of movement data, including modules for:
 
- - Data pre-processing (e.g. data checks, smoothing, duplicate removal, interpolation, outlier detection)
- - Feature extraction (e.g. speed, acceleration, heading)
- - Individual-level movement analysis (e.g. autocorrelation, speed distribution, environment exploration)
- - Group-level analysis (e.g. cohesion, polarisation, coordination, leadership)
+- Data pre-processing (e.g. data checks, smoothing, duplicate removal, interpolation, outlier detection)
+- Feature extraction (e.g. speed, acceleration, heading)
+- Individual-level movement analysis (e.g. autocorrelation, speed distribution, environment exploration)
+- Group-level analysis (e.g. cohesion, polarisation, coordination, leadership)
 
 ## Installation
 The easiest way to install *movekit* is by using `pip` :
 
     pip install movekit
-
-## Dependencies
-- Python >=3.5
-- Pandas (>=0.20.3, <=0.23.4)
-- SciPy (>= 1.3.1)
-- tsfresh (>= 0.12.0)
-- xlrd (>= 1.2.0)
-- seaborn (>= 0.9.0)
 
 ## Usage
 You can view a demo of common features in this
