@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
@@ -32,12 +30,16 @@ def parse_csv(path_to_file):
                 data.sort_values('time', ascending=True, inplace=True)
 
             # Check if 'heading_angle' attribute is given in CSV file-
-            if 'heading_angle' in data and np.issubdtype(data['heading_angle'].dtype, np.number):
-                print("\n'heading_angle' attribute is found (numeric type) and will be processed\n")
+            if 'heading_angle' in data and np.issubdtype(
+                    data['heading_angle'].dtype, np.number):
+                print(
+                    "\n'heading_angle' attribute is found (numeric type) and will be processed\n"
+                )
                 # do nothing, as 'heading_angle' attribute exists
             else:
-                print("\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n")
-
+                print(
+                    "\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n"
+                )
 
             return data
     except FileNotFoundError:
@@ -78,12 +80,16 @@ def parse_excel(path_to_file):
                 data.sort_values('time', ascending=True, inplace=True)
 
             # Check if 'heading_angle' attribute is given in CSV file-
-            if 'heading_angle' in data and np.issubdtype(data['heading_angle'].dtype, np.number):
-                print("\n'heading_angle' attribute is found (numeric type) and will be processed\n")
+            if 'heading_angle' in data and np.issubdtype(
+                    data['heading_angle'].dtype, np.number):
+                print(
+                    "\n'heading_angle' attribute is found (numeric type) and will be processed\n"
+                )
                 # do nothing, as 'heading_angle' attribute exists
             else:
-                print("\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n")
-
+                print(
+                    "\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n"
+                )
 
             return data
 
@@ -95,5 +101,3 @@ def parse_excel(path_to_file):
         print(
             'Your file is empty, has no header, or misses some required columns.'
         )
-
-
