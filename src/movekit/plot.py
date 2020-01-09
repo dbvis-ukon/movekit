@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def plot_x_y_attributes(data, frm, to):
-	"""
+    """
 	Plot 'x' and 'y' attributes for given Pandas
 	DataFrame
 
@@ -18,13 +18,13 @@ def plot_x_y_attributes(data, frm, to):
 	Nothing
 	"""
 
-	plt.scatter(x = 'x', y = 'y',
-		data = data.loc[(data['time'] >= frm) & (data['time'] <= to), :])
-	plt.title("Plotting 'x' and 'y' coordinates")
-	plt.xlabel("'x' coordinate")
-	plt.ylabel("'y' coordinate")
-	plt.grid()
-	plt.show()
+    plt.scatter(x='x',
+                y='y',
+                data=data.loc[(data['time'] >= frm) & (data['time'] <= to), :])
+    plt.title("Plotting 'x' and 'y' coordinates")
+    plt.xlabel("'x' coordinate")
+    plt.ylabel("'y' coordinate")
+    plt.grid()
+    plt.show()
 
-	return None
-
+    return None
