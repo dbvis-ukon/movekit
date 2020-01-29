@@ -5,7 +5,7 @@ import pandas as pd
 import time
 from scipy.spatial import distance
 from scipy.spatial import distance_matrix
-
+from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from tsfresh import select_features
 from tsfresh import extract_features
@@ -80,7 +80,7 @@ def compute_distance_and_direction(data_animal_id_groups):
 
 	# Compute 'distance' for 'animal_id' groups-
 	for aid in data_animal_id_groups.keys():
-		print("\nComputing 'distance' attribute for Animal ID = {0}\n".format(aid))
+		# print("\nComputing 'distance' attribute for Animal ID = {0}\n".format(aid))
 
 		p1 = data_animal_id_groups[aid].loc[:, ['x', 'y']]
 		p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods = 1)
@@ -112,7 +112,7 @@ def compute_average_speed(data_animal_id_groups, fps):
 	Returns- Python dict
 	'''
 	for aid in data_animal_id_groups.keys():
-		print("\nComputing 'average_speed' attribute for animal id = {0}\n".format(aid))
+		# print("\nComputing 'average_speed' attribute for animal id = {0}\n".format(aid))
 		data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid] \
 		['distance'].rolling(window = fps, win_type = None).sum() / fps
 
@@ -133,8 +133,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 	Returns- Pandas DataFrame containing computations
 	'''
 	for aid in data_animal_id_groups.keys():
-		print("\nComputing 'average_acceleration' attribute for animal ID = {0}\n". \
-			format(aid))
+		# print("\nComputing 'average_acceleration' attribute for animal ID = {0}\n".format(aid))
 
 		a = data_animal_id_groups[aid]['average_speed']
 		b = data_animal_id_groups[aid]['average_speed'].shift(periods = 1)
@@ -392,16 +391,102 @@ def euclidean_dist(group):
 	return group
 
 
+def explore_features(data):
+	"""
+	Function to perform percentage of environment space
+	explored by each animal using minumum and maximum of
+	2-D coordinates
+
+	Input:
+	data-		Pandas DataFrame containing data
+
+	Returns:	None
+	"""
+	x_min = 0; y_min = 0
+	x_max = 0; y_max = 0
+
+	# Compute global minimum and maximum if user
+	# has NOT specified the values-
+	x_min = data['x'].min()
+	x_max = data['x'].max()
+
+	y_min = data['y'].min()
+	y_max = data['y'].max()
+
+	# Group 'data' using 'animal_id' attribute-
+	data_groups = grouping_data(data)
+
+	# for each animal, how much of the area has the animal covered?
+	# % of space explored by each animal?
+	for aid in data_groups:
+		aid_x_min = data_groups[aid]['x'].min() 
+		aid_x_max = data_groups[aid]['x'].max()
+
+		aid_y_min = data_groups[aid]['y'].min() 
+		aid_y_max = data_groups[aid]['y'].max()
+
+		print("\nAnimal ID: {0} covered % of area:".format(aid))
+		print("x-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
+			(x_min / aid_x_min) * 100, (aid_x_max / x_max) * 100))
+
+		print("y-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
+			(y_min / aid_y_min) * 100, (aid_y_max / y_max) * 100))
+
+	
+	return None
+
+
+def explore_features_geospatial(data_groups):
+	"""
+	Function to perform exploration of environment space
+	by each animal using 'shapely' package
+
+	Input:
+	data_groups-	Python 3 dictonary containing
+					grouping of data by 'animal_id'
+					attribute
+
+	Returns:	None
+	"""
+
+	# Python dict to hold X-Y coordinates for each animal-
+	xy_coord = {}
+
+	for aid in data_groups.keys():
+		xy_coord[aid] = []
+
+	for aid in data_groups.keys():
+		for x in range(data_groups[aid].shape[0]):
+			temp_tuple = (
+				data_groups[aid].loc[x, 'x'], data_groups[aid].loc[x,'y']
+				)
+			xy_coord[aid].append(temp_tuple)
+
+
+	for aid in data_groups.keys():
+		# Creat a 'Polygon' object using all coordinates for animal ID-
+		poly = Polygon(xy_coord[aid])
+
+		# Compute area of polygon-
+		print("\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n".format(
+			aid, poly.area))
+
+		# OPTIONAL:
+		# Plot shapely polygon and objects-
+		# plt.plot(*poly.exterior.xy)
+		# plt.show()
+
+	return None
+
 
 
 
 def feature_extraction_methods(
-	grouping_data_fn = False, compute_distance_and_direction_fn = False,
-	compute_average_speed_fn = False,
-	compute_average_acceleration_fn = False,
-	compute_absolute_features_fn = False, computing_stops_fn = False,
-	time_series_analyis_fn = False, medoid_computation_fn = False,
-	distance_euclidean_matrix_fn = False,
+	grouping_data_fn = True, compute_distance_and_direction_fn = True,
+	compute_average_speed_fn = True,
+	compute_average_acceleration_fn = True,
+	compute_absolute_features_fn = False,
+	computing_stops_fn = True,
 
 	processed_data = 0, data_animal_id_groups = 0,
 	fps = 0, threshold = 0,
@@ -412,31 +497,60 @@ def feature_extraction_methods(
 	as function arguments (which by default are False)
 	"""
 
+	if grouping_data_fn == False:
+		print("\nError! You need to group data first to use other functions.\n")
+		return None
+
 	if grouping_data_fn == True:
-		return grouping_data(processed_data)
+		# return grouping_data(processed_data)
+		data_animal_id_groups = grouping_data(processed_data)
 
-	elif compute_distance_and_direction_fn == True:
-		return compute_distance_and_direction(data_animal_id_groups)
+	if compute_distance_and_direction_fn == True:
+		# return compute_distance_and_direction(data_animal_id_groups)
+		data_distance_direction = compute_distance_and_direction(data_animal_id_groups)
 
-	elif compute_average_speed_fn == True:
-		return compute_average_speed(data_animal_id_groups, fps)
+	if compute_average_speed_fn == True:
+		if fps == False:
+			print("\nError! You need to provide 'fps' parameter.\\n")
+		else:
+			# return compute_average_speed(data_animal_id_groups, fps)
+			data_avg_speed = compute_average_speed(data_animal_id_groups, fps)
 
-	elif compute_average_acceleration_fn == True:
-		return compute_average_acceleration(data_animal_id_groups, fps)
+	if compute_average_acceleration_fn == True:
+		if compute_average_speed_fn == False:
+			print("\nError! You need to compute average speed first.\n")
+		elif fps == False:
+			print("\nError! You need to provide 'fps' parameter also.")
+		else:
+			data_avg_acc = compute_average_acceleration(data_animal_id_groups, fps)
+			# return compute_average_acceleration(data_animal_id_groups, fps)
 
-	elif compute_absolute_features_fn == True:
+	if compute_absolute_features_fn == True:
 		return compute_absolute_features(data_animal_id_groups,
 			fps, stop_threshold = threshold)
 
-	elif computing_stops_fn == True:
-		return computing_stops(data_animal_id_groups, threshold_speed)
+	if computing_stops_fn == True:
+		if threshold_speed == False:
+			print("\nError! You need to provide 'threshold_speed' parameter also.")
+		else:
+			# return computing_stops(data_animal_id_groups, threshold_speed)
+			data_avg_speed = computing_stops(data_avg_speed, threshold_speed)
 
-	elif time_series_analyis_fn == True:
-		return time_series_analyis(data)
+	return data_avg_acc
 
-	elif medoid_computation_fn == True:
-		return medoid_computation(data)
 
-	elif distance_euclidean_matrix_fn == True:
-		return distance_euclidean_matrix(data)
+def extract_group_feature(
+	medoid_computation_fn = True,
 
+	data = 0):
+	'''
+
+	'''
+
+	if medoid_computation_fn == True:
+		if data == 0:
+			print("\nError! 'data' cannot be zero.\n")
+			return None
+		else:
+			medoids = medoid_computation(data)
+			return medoids
