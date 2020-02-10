@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 import numpy as np
 import math
@@ -6,7 +8,7 @@ import seaborn as sns
 
 
 def linear_interpolation(data, threshold):
-    '''
+	'''
 	Function to interpolate missing values for 'x' and 'y' attributes
 	in dataset.
 	'threshold' parameter decides the number of rows till which, data
@@ -16,72 +18,73 @@ def linear_interpolation(data, threshold):
 	Returns- Processed Pandas DataFrame
 	'''
 
-    # Get indices of missing values for 'x' attribute in a list-
-    missing_x_values = list(data[data['x'].isnull()].index)
+	# Get indices of missing values for 'x' attribute in a list-
+	missing_x_values = list(data[data['x'].isnull()].index)
 
-    # Get indices of missing values for 'y' attribute in a list-
-    missing_y_values = list(data[data['y'].isnull()].index)
+	# Get indices of missing values for 'y' attribute in a list-
+	missing_y_values = list(data[data['y'].isnull()].index)
 
-    print("\nNumber of missing values in 'x' attribute = {0}". \
-     format(len(missing_x_values)))
-    print("Number of missing values in 'y' attribute = {0}\n". \
-     format(len(missing_y_values)))
+	print("\nNumber of missing values in 'x' attribute = {0}". \
+		format(len(missing_x_values)))
+	print("Number of missing values in 'y' attribute = {0}\n". \
+		format(len(missing_y_values)))
 
-    # counter for outer loop-
-    i = 0
 
-    # counter for inner loop-
-    j = 0
+	# counter for outer loop-
+	i = 0
 
-    # start & end counters-
-    start = end = 0
+	# counter for inner loop-
+	j = 0
 
-    # count length of sequence found-
-    k = 1
+	# start & end counters-
+	start = end = 0
 
-    # list containing indices to be deleted-
-    indices_to_delete = []
+	# count length of sequence found-
+	k = 1
 
-    # threshold = 10
+	# list containing indices to be deleted-
+	indices_to_delete = []
 
-    while i < (len(missing_x_values) - 1):
-        start = end = missing_x_values[i]
-        k = 1
-        # j = missing_x_values[i]
-        j = i
+	# threshold = 10
 
-        # print("\ni = {0} & j = {1}".format(i, j))
+	while i < (len(missing_x_values) - 1):
+		start = end = missing_x_values[i]
+		k = 1
+		# j = missing_x_values[i]
+		j = i
 
-        while j < (len(missing_x_values) - 1):
-            # print("j = ", j)
-            if missing_x_values[j] + 1 == missing_x_values[j + 1]:
-                k += 1
-                j += 1
-                # end = j
-                end = missing_x_values[j]
-            else:
-                # i = j + 1
-                break
+		# print("\ni = {0} & j = {1}".format(i, j))
 
-        i = j + 1
+		while j < (len(missing_x_values) - 1):
+			# print("j = ", j)
+			if missing_x_values[j] + 1 == missing_x_values[j + 1]:
+				k += 1
+				j += 1
+				# end = j
+				end = missing_x_values[j]
+			else:
+				# i = j + 1
+				break
 
-        if k >= threshold:
-            # Delete rows-
-            print("\nDelete sequence from {0} to {1}\n".format(start, end))
-            # data = data.drop(data.index[start:end + 1])
-            # data.drop(data.index[start: end + 1], inplace = True, axis = 0)
-            for x in range(start, end + 1):
-                indices_to_delete.append(x)
+		i = j + 1
 
-        elif k > 1:
-            # Perform Linear Interpolation-
-            print("\nSequence length = {0}. Start = {1} & End = {2}". \
-             format(k, start, end))
+		if k >= threshold:
+			# Delete rows-
+			print("\nDelete sequence from {0} to {1}\n".format(start, end))
+			# data = data.drop(data.index[start:end + 1])
+			# data.drop(data.index[start: end + 1], inplace = True, axis = 0)
+			for x in range(start, end + 1):
+				indices_to_delete.append(x)
 
-    # Delete indices-
-    data_del = data.drop(data.index[indices_to_delete], axis=0)
+		elif k > 1:
+			# Perform Linear Interpolation-
+			print("\nSequence length = {0}. Start = {1} & End = {2}". \
+				format(k, start, end))
 
-    return data_del
+	# Delete indices-
+	data_del = data.drop(data.index[indices_to_delete], axis=0)
+
+	return data_del
 
 
 def plot_missing_values(data, animal_id):
@@ -144,7 +147,7 @@ def print_missing(df):
     Return- No return
     '''
     print("\n Number of missing values = {0}\n". \
-     format(df.isnull().sum().sort_values(ascending=False)))
+    	format(df.isnull().sum().sort_values(ascending=False)))
 
     return None
 
@@ -437,68 +440,61 @@ def split_trajectories_fuzzy_segmentation(data_groups,
     return None
 
 
-def preprocessing_methods(linear_interpolation_fn=False,
-                          plot_missing_values_fn=False,
-                          clean_fn=False,
-                          print_missing_fn=False,
-                          filter_dataframe_fn=False,
-                          replace_parts_animal_movement_fn=False,
-                          resample_systematic_fn=False,
-                          resample_random_fn=False,
-                          split_trajectories_fn=False,
-                          split_trajectories_fuzzy_segmentation_fn=False,
-                          frm=0,
-                          to=0,
-                          data=0,
-                          threshold=0,
-                          data_groups=0,
-                          animal_id=0,
-                          time_array=0,
-                          replacement_value_x=0,
-                          replacement_value_y=0,
-                          downsample_size=0,
-                          segment=0,
-                          fuzzy_segment=0):
-    """
+def preprocessing_methods(
+	linear_interpolation_fn = False, plot_missing_values_fn = False,
+	clean_fn = False, print_missing_fn = False, filter_dataframe_fn = False,
+	replace_parts_animal_movement_fn = False,
+	resample_systematic_fn = False,
+	resample_random_fn = False,
+	split_trajectories_fn = False,
+	split_trajectories_fuzzy_segmentation_fn = False,
+	frm = 0, to = 0, data = 0, threshold = 0,
+	data_groups = 0, animal_id = 0, time_array = 0,
+	replacement_value_x = 0, replacement_value_y = 0,
+	downsample_size = 0, segment = 0, fuzzy_segment = 0
+	):
+	"""
 	Function containing all of preprocessing functions as function
 	arguments (which by default are False)
 	"""
 
-    if linear_interpolation_fn == True:
-        return linear_interpolation(data, 5)
+	if linear_interpolation_fn == True:
+		return linear_interpolation(data, 5)
 
-    elif plot_missing_values_fn == True:
-        plot_missing_values(data, animal_id)
-        return None
+	elif plot_missing_values_fn == True:
+		plot_missing_values(data, animal_id)
+		return None
 
-    elif print_missing_fn == True:
-        print_missing(data)
-        return None
+	elif print_missing_fn == True:
+		print_missing(data)
+		return None
 
-    elif clean_fn == True:
-        clean(data)
-        return None
+	elif clean_fn == True:
+		clean(data)
+		return None
 
-    elif filter_dataframe_fn == True:
-        return filter_dataframe(data, frm, to)
+	elif filter_dataframe_fn == True:
+		return filter_dataframe(data, frm, to)
 
-    elif replace_parts_animal_movement_fn == True:
-        return replace_parts_animal_movement(data_groups, animal_id,
-                                             time_array, replacement_value_x,
-                                             replacement_value_y)
+	elif replace_parts_animal_movement_fn == True:
+		return replace_parts_animal_movement(data_groups,
+			animal_id, time_array, replacement_value_x,
+			replacement_value_y)
 
-    elif resample_systematic_fn == True:
-        return resample_systematic(data_groups, downsample_size)
+	elif resample_systematic_fn == True:
+		return resample_systematic(
+			data_groups, downsample_size)
+    
+	elif resample_random_fn == True:
+		return resample_random(
+			data_groups, downsample_size)
+		
 
-    elif resample_random_fn == True:
-        return resample_random(data_groups, downsample_size)
+	elif split_trajectories_fn == True:
+		split_trajectories(data_groups, segment=1)
+		return None
 
-    elif split_trajectories_fn == True:
-        split_trajectories(data_groups, segment=1)
-        return None
-
-    elif split_trajectories_fuzzy_segmentation_fn == True:
-        split_trajectories_fuzzy_segmentation(data_groups,
-                                              segment=1,
-                                              fuzzy_segment=2)
-        return None
+	elif split_trajectories_fuzzy_segmentation_fn == True:
+		split_trajectories_fuzzy_segmentation(
+			data_groups, segment=1, fuzzy_segment=2)
+		return None
