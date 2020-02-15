@@ -2,10 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
-from shapely.geometry import Polygon
-import matplotlib.pyplot as plt
 import tsfresh
-
 
 def grouping_data(processed_data):
     '''
@@ -40,12 +37,10 @@ def grouping_data(processed_data):
             average_speed=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             average_acceleration=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            positive_acceleration=data)
+        # data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+        #     positive_acceleration=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             direction=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            stopped=data)
 
     return data_animal_id_groups
 
@@ -74,8 +69,6 @@ def compute_distance_and_direction(data_animal_id_groups):
 
     # Compute 'distance' for 'animal_id' groups-
     for aid in data_animal_id_groups.keys():
-        # print("\nComputing 'distance' attribute for Animal ID = {0}\n".format(aid))
-
         p1 = data_animal_id_groups[aid].loc[:, ['x', 'y']]
         p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
         p2.iloc[0, :] = [0.0, 0.0]
@@ -105,7 +98,6 @@ def compute_average_speed(data_animal_id_groups, fps):
 	Returns- Python dict
 	'''
     for aid in data_animal_id_groups.keys():
-        # print("\nComputing 'average_speed' attribute for animal id = {0}\n".format(aid))
         data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid] \
         ['distance'].rolling(window = fps, win_type = None).sum() / fps
 
@@ -126,8 +118,6 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 	Returns- Pandas DataFrame containing computations
 	'''
     for aid in data_animal_id_groups.keys():
-        # print("\nComputing 'average_acceleration' attribute for animal ID = {0}\n".format(aid))
-
         a = data_animal_id_groups[aid]['average_speed']
         b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
 
@@ -143,7 +133,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     return result
 
 
-def compute_absolute_features(data_animal_id_groups,
+def compute_absolute_features(data,
                               fps=10,
                               stop_threshold=0.5):
     '''
@@ -164,6 +154,28 @@ def compute_absolute_features(data_animal_id_groups,
 
     return stop_data
 
+def extract_features(data, fps=10,
+                     stop_threshold=0.5):
+    """
+	Calculate absolute features for the input data animal group.
+
+	Input- Python 3 dictionary, fps (frames per second) and stopping threshold
+	Returns- Pandas Python 3 dictionary
+	"""
+    tmp_data = grouping_data(data)
+
+    tmp_data = compute_distance_and_direction(
+        tmp_data)
+
+    tmp_data = compute_average_speed(tmp_data, fps)
+
+    tmp_data = compute_average_acceleration(tmp_data, fps)
+
+    tmp_data = computing_stops(tmp_data, stop_threshold)
+
+    tmp_data.fillna(0, inplace=True)
+
+    return tmp_data
 
 def computing_stops(data_animal_id_groups, threshold_speed):
     '''
@@ -173,41 +185,10 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     Input- Python 3 dictionary and threshold speed
 	Returns- Python 3 dictionary
     '''
-    for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['stopped'] = np.where(
-            data_animal_id_groups[aid]['average_speed'] <= threshold_speed, 1,
-            0)
-
-        print(
-            "\nAnimal ID = {0}: Number of movers stopped according to threshold speed = {1} is {2}"
-            .format(aid, threshold_speed,
-                    data_animal_id_groups[aid]['stopped'].eq(1).sum()))
-
-        print(
-            "Animal ID = {0}: Number of movers moving according to threshold speed = {1} is {2}\n"
-            .format(aid, threshold_speed,
-                    data_animal_id_groups[aid]['stopped'].eq(0).sum()))
+    data_animal_id_groups['stopped'] = np.where(
+        data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
     return data_animal_id_groups
-
-
-def time_series_analyis(data):
-    '''
-	Function to perform time series analysis on provided
-	dataset.
-	Remove the columns stopped as it has nominal values
-	'''
-
-    rm_colm = ['stopped']
-    df = data[data.columns.difference(rm_colm)]
-
-    extracted_features = tsfresh.extract_features(df,
-                                                  column_id='animal_id',
-                                                  column_sort='time')
-
-    tsfresh.utilities.dataframe_functions.impute(extracted_features)
-
-    return (extracted_features)
 
 
 def medoid_computation(data):
@@ -301,78 +282,90 @@ def medoid_computation(data):
 
 def distance_euclidean_matrix(data):
     """
-	A function to create a distance matrix according to animal_id for each
-	time step
+    A function to create a distance matrix according to animal_id for each
+    time step
 
-	Input: Pandas Data Frame containing CSV file
-	Output: Pandas Data Frame having distance matrix created by function
-	"""
+    Input: Pandas Data Frame containing CSV file
+    Output: Pandas Data Frame having distance matrix created by function
 
-    # Group by 'time' attribute-
-    data_time = {}
-
-    groups = data.groupby('time')
-
-    for time in groups.groups.keys():
-        data_time[time] = groups.get_group(time)
-
-    # Reset index-
-    for time in data_time.keys():
-        data_time[time].reset_index(drop=True, inplace=True)
-
-    # distance_matrix(data_time[1].loc[:, ['x', 'y']].values, data_time[1].loc[:, ['x', 'y']])
-
-    final_matrix = {}
-
-    for time in data_time.keys():
-        final_matrix[time] = pd.DataFrame(
-            distance_matrix(data_time[time].loc[:, ['x', 'y']].values,
-                            data_time[time].loc[:, ['x', 'y']]),
-            index=data_time[time].loc[:, 'animal_id'].values,
-            columns=data_time[time].loc[:, 'animal_id'].values)
-
-    # Concatenate different groups into one Pandas DataFrame-
-    result = pd.concat(final_matrix[time] for time in final_matrix.keys())
-
-    # Save index in 'first_col' attribute-
-    first_col = result.index
-
-    # Add this as 'first_column' attribute-
-    result['animal_id'] = first_col
+    example usage
+    distance_matrix = distance_euclidean_matrix(data)
     """
-	time_step = np.repeat(np.arange(1, data['time'].max()), 5)
-	result['time_step'] = time_step
-	"""
-
-    cols = result.columns.tolist()
-
-    # Re-arrange columns-
-    cols = cols[-1:] + cols[:-1]
-
-    result = result[cols]
-
-    # Reset indices-
-    result.reset_index(drop=True, inplace=True)
-
-    return result
+    return data.groupby('time').apply(euclidean_dist).sort_values(
+        by=['time', 'animal_id'])
 
 
 def euclidean_dist(group):
     """
-	Compute the distance for one individual grouped time step using the
-	Scipy pdist and squareform methods
-	"""
-
-    # ids of each animal-
+    Compute the distance for one individual grouped time step using the
+    Scipy pdist and squareform methods
+    """
+    # ids of each animal
     ids = group['animal_id'].tolist()
-
     # compute and assign the distances for each time step
     group[ids] = pd.DataFrame(squareform(pdist(group[['x', 'y']],
                                                'euclidean')),
                               index=group.index,
                               columns=ids)
-
     return group
+
+
+def compute_similarity(data, weights, p=2):
+    """
+    A function to compute the similarity between animals in a distance matrix according to animal_id for each time step
+
+    Input: Pandas Data Frame containing CSV file
+    weights = dictonary giving the specifc variables weights in the weighted distance calculation
+    p : scalar The p-norm to apply for Minkowski, weighted and unweighted. Default: 2.
+    Output: Pandas Data Frame having distance matrix created by function
+    """
+    w = []  # weight vector
+    not_allowed_keys = ['time', 'animal_id']
+    df = pd.DataFrame()
+    for key in weights:
+        if key in data.columns:
+            df[key] = data[key]
+            w.append(weights[key])
+    # normalize the data frame
+    normalized_df = (df - df.min()) / (df.max() - df.min())
+    # add the columns time and animal id to the window needed for group by and the column generation
+    normalized_df[not_allowed_keys] = data[not_allowed_keys]
+    # compute the distance for each time moment
+    df2 = normalized_df.groupby('time').apply(similarity_computation, w=w, p=p)
+    # combine the distance matrix with the data and return
+    return pd.merge(data, df2, left_index=True,
+                    right_index=True).sort_values(by=['time', 'animal_id'])
+
+
+def similarity_computation(group, w, p):
+    """
+    Compute the minkowski similarity for one individual grouped time step using the Scipy pdist and squareform methods
+    """
+    # ids of each animal
+    ids = group['animal_id'].tolist()
+    # compute and assign the distances for each time step
+    return pd.DataFrame(squareform(pdist(group, 'wminkowski', p=p, w=w)),
+                        index=group.index,
+                        columns=ids)
+
+
+def time_series_analyis(data):
+    '''
+	Function to perform time series analysis on provided
+	dataset.
+	Remove the columns stopped as it has nominal values
+	'''
+
+    rm_colm = ['stopped']
+    df = data[data.columns.difference(rm_colm)]
+
+    time_series_features = tsfresh.extract_features(df,
+                                                    column_id='animal_id',
+                                                    column_sort='time')
+
+    tsfresh.utilities.dataframe_functions.impute(time_series_features)
+
+    return (time_series_features)
 
 
 def explore_features(data):
@@ -421,122 +414,44 @@ def explore_features(data):
     return None
 
 
-def explore_features_geospatial(data_groups):
-    """
-	Function to perform exploration of environment space
-	by each animal using 'shapely' package
+# def explore_features_geospatial(data_groups):
+#     """
+# 	Function to perform exploration of environment space
+# 	by each animal using 'shapely' package
 
-	Input:
-	data_groups-	Python 3 dictonary containing
-					grouping of data by 'animal_id'
-					attribute
+# 	Input:
+# 	data_groups-	Python 3 dictonary containing
+# 					grouping of data by 'animal_id'
+# 					attribute
 
-	Returns:	None
-	"""
+# 	Returns:	None
+# 	"""
 
-    # Python dict to hold X-Y coordinates for each animal-
-    xy_coord = {}
+#     # Python dict to hold X-Y coordinates for each animal-
+#     xy_coord = {}
 
-    for aid in data_groups.keys():
-        xy_coord[aid] = []
+#     for aid in data_groups.keys():
+#         xy_coord[aid] = []
 
-    for aid in data_groups.keys():
-        for x in range(data_groups[aid].shape[0]):
-            temp_tuple = (data_groups[aid].loc[x, 'x'],
-                          data_groups[aid].loc[x, 'y'])
-            xy_coord[aid].append(temp_tuple)
+#     for aid in data_groups.keys():
+#         for x in range(data_groups[aid].shape[0]):
+#             temp_tuple = (data_groups[aid].loc[x, 'x'],
+#                           data_groups[aid].loc[x, 'y'])
+#             xy_coord[aid].append(temp_tuple)
 
-    for aid in data_groups.keys():
-        # Creat a 'Polygon' object using all coordinates for animal ID-
-        poly = Polygon(xy_coord[aid])
+#     for aid in data_groups.keys():
+#         # Creat a 'Polygon' object using all coordinates for animal ID-
+#         poly = Polygon(xy_coord[aid])
 
-        # Compute area of polygon-
-        print(
-            "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
-            .format(aid, poly.area))
+#         # Compute area of polygon-
+#         print(
+#             "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
+#             .format(aid, poly.area))
 
-        # OPTIONAL:
-        # Plot shapely polygon and objects-
-        # plt.plot(*poly.exterior.xy)
-        # plt.show()
+#         # OPTIONAL:
+#         # Plot shapely polygon and objects-
+#         # plt.plot(*poly.exterior.xy)
+#         # plt.show()
 
-    return None
+#     return None
 
-
-def extract_features(grouping_data_fn=True,
-                     compute_distance_and_direction_fn=True,
-                     compute_average_speed_fn=True,
-                     compute_average_acceleration_fn=True,
-                     compute_absolute_features_fn=False,
-                     computing_stops_fn=True,
-                     processed_data=0,
-                     data_animal_id_groups=0,
-                     fps=0,
-                     threshold=0,
-                     threshold_speed=0,
-                     data=0):
-    """
-	Function containing all of feature extraction functions
-	as function arguments (which by default are False)
-	"""
-
-    if grouping_data_fn == False:
-        print(
-            "\nError! You need to group data first to use other functions.\n")
-        return None
-
-    if grouping_data_fn == True:
-        # return grouping_data(processed_data)
-        data_animal_id_groups = grouping_data(processed_data)
-
-    if compute_distance_and_direction_fn == True:
-        # return compute_distance_and_direction(data_animal_id_groups)
-        data_distance_direction = compute_distance_and_direction(
-            data_animal_id_groups)
-
-    if compute_average_speed_fn == True:
-        if fps == False:
-            print("\nError! You need to provide 'fps' parameter.\\n")
-        else:
-            # return compute_average_speed(data_animal_id_groups, fps)
-            data_avg_speed = compute_average_speed(data_animal_id_groups, fps)
-
-    if compute_average_acceleration_fn == True:
-        if compute_average_speed_fn == False:
-            print("\nError! You need to compute average speed first.\n")
-        elif fps == False:
-            print("\nError! You need to provide 'fps' parameter also.")
-        else:
-            data_avg_acc = compute_average_acceleration(
-                data_animal_id_groups, fps)
-            # return compute_average_acceleration(data_animal_id_groups, fps)
-
-    if compute_absolute_features_fn == True:
-        return compute_absolute_features(data_animal_id_groups,
-                                         fps,
-                                         stop_threshold=threshold)
-
-    if computing_stops_fn == True:
-        if threshold_speed == False:
-            print(
-                "\nError! You need to provide 'threshold_speed' parameter also."
-            )
-        else:
-            # return computing_stops(data_animal_id_groups, threshold_speed)
-            data_avg_speed = computing_stops(data_avg_speed, threshold_speed)
-
-    return data_avg_acc
-
-
-def extract_group_features(medoid_computation_fn=True, data=0):
-    '''
-
-	'''
-
-    if medoid_computation_fn == True:
-        if data == 0:
-            print("\nError! 'data' cannot be zero.\n")
-            return None
-        else:
-            medoids = medoid_computation(data)
-            return medoids

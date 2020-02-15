@@ -40,23 +40,13 @@ def parse_csv(path_to_file):
             if 'heading_angle' in data and np.issubdtype(
                     data['heading_angle'].dtype, np.number):
                 print(
-                    "\n'heading_angle' attribute is found (numeric type) and will be processed\n"
-                )
-                # do nothing, as 'heading_angle' attribute exists
-            else:
-                print(
-                    "\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n"
+                    "\n'heading_angle' attribute is found and will be processed\n"
                 )
 
             return data
     except FileNotFoundError:
-        print(
-            "Your file below could not be found.\nPath given: {0}\n\n".format(
-                path_to_file))
-    except EmptyDataError:
-        print(
-            'Your file is empty, has no header, or misses some required columns.'
-        )
+        print("The file could not be found.\nPath given: {0}\n\n".format(
+            path_to_file))
 
 
 def parse_excel(path_to_file):
@@ -90,27 +80,16 @@ def parse_excel(path_to_file):
             if 'heading_angle' in data and np.issubdtype(
                     data['heading_angle'].dtype, np.number):
                 print(
-                    "\n'heading_angle' attribute is found (numeric type) and will be processed\n"
+                    "\n'heading_angle' attribute is found and will be processed\n"
                 )
-                # do nothing, as 'heading_angle' attribute exists
-            else:
-                print(
-                    "\nWARNING: 'heading_angle' attribute is not found in the given CSV data file. Continuing without it!\n"
-                )
-
             return data
 
     except FileNotFoundError:
-        print(
-            "Your file below could not be found.\nPath given: {0}\n\n".format(
-                path_to_file))
-    except EmptyDataError:
-        print(
-            'Your file is empty, has no header, or misses some required columns.'
-        )
+        print("The file could not be found.\nPath given: {0}\n\n".format(
+            path_to_file))
 
 
-def read_data(parse_csv_fn=False, parse_excel_fn=False, path_to_file=""):
+def read_data(path):
     """
     Function containing all of Input Output (IO) functions
     as function arguments (which by default are False).
@@ -122,11 +101,9 @@ def read_data(parse_csv_fn=False, parse_excel_fn=False, path_to_file=""):
 
     # Call appropriate IO function based on file extencsion
     # Split string based on '.' (dot)-
-    file_split = path_to_file.split(".")
-
-    print(file_split)
+    file_split = path.split(".")
 
     if file_split[-1] == 'csv':
-        return parse_csv(path_to_file)
+        return parse_csv(path)
     elif file_split[-1] == 'xlsx':
-        return parse_excel(path_to_file)
+        return parse_excel(path)

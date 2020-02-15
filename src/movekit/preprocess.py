@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def linear_interpolation(data, threshold):
@@ -101,10 +100,6 @@ def plot_missing_values(data, animal_id):
     missing_x = data[data['x'].isnull()].index.tolist()
     missing_y = data[data['y'].isnull()].index.tolist()
 
-    # This visualizes the location(s) of missing values-
-    # sns.heatmap(df.isnull(), cbar=False)
-    # sns.heatmap(df.isnull())
-
     # Visualizing the count of missing values for all attributes-
     data.isnull().sum().plot(kind='bar')
     plt.xticks(rotation=20)
@@ -114,7 +109,7 @@ def plot_missing_values(data, animal_id):
     return None
 
 
-def clean(data):
+def preprocess(data):
     '''
     A function to perform data preprocessing
     Expects 'data' as input which is the Pandas DataFrame to be processed
@@ -128,8 +123,6 @@ def clean(data):
     data['animal_id'] = data['animal_id'].astype(np.int64)
     data['time'] = data['time'].astype(np.int64)
 
-    # Print duplicate rows
-    print_duplicate(data)
     # Remove the duplicated rows found above
     data.drop_duplicates(subset=['animal_id', 'time'], inplace=True)
 
@@ -367,7 +360,7 @@ def split_trajectories(data_groups, segment=1):
     for k in groups.keys():
         groups[k].to_csv(k + '.csv', index=False)
 
-    return None
+    return groups
 
 
 def split_trajectories_fuzzy_segmentation(data_groups,
@@ -394,8 +387,6 @@ def split_trajectories_fuzzy_segmentation(data_groups,
 
     # An example usage-
 
-    data = csv_to_pandas("/home/arjun/University_of_Konstanz/Hiwi/Work/Movement_Patterns/fish-5.csv")
-
     data_groups = group_animals(data)
 
     split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
@@ -420,83 +411,4 @@ def split_trajectories_fuzzy_segmentation(data_groups,
 
     for k in groups.keys():
         groups[k].to_csv(k + '.csv', index=False)
-    """
-	# Code to check indexing for fuzzy segmentation-
-	groups = {}
-
-	for aid in data_groups.keys():
-		beg, end = 0, segment_size + fuzzy_segment
-		for l in range(segment):
-			print("\nCurrent 'beg' and 'end' are:")
-			print("beg = {0} and end = {1}".format(beg, end))
-			beg, end = end - fuzzy_segment, end + segment_size + fuzzy_segment
-	"""
-
-    return None
-
-
-def preprocessing_methods(linear_interpolation_fn=False,
-                          plot_missing_values_fn=False,
-                          clean_fn=False,
-                          print_missing_fn=False,
-                          filter_dataframe_fn=False,
-                          replace_parts_animal_movement_fn=False,
-                          resample_systematic_fn=False,
-                          resample_random_fn=False,
-                          split_trajectories_fn=False,
-                          split_trajectories_fuzzy_segmentation_fn=False,
-                          frm=0,
-                          to=0,
-                          data=0,
-                          threshold=0,
-                          data_groups=0,
-                          animal_id=0,
-                          time_array=0,
-                          replacement_value_x=0,
-                          replacement_value_y=0,
-                          downsample_size=0,
-                          segment=0,
-                          fuzzy_segment=0):
-    """
-	Function containing all of preprocessing functions as function
-	arguments (which by default are False)
-	"""
-
-    if linear_interpolation_fn == True:
-        return linear_interpolation(data, 5)
-
-    elif plot_missing_values_fn == True:
-        plot_missing_values(data, animal_id)
-        return None
-
-    elif print_missing_fn == True:
-        print_missing(data)
-        return None
-
-    elif clean_fn == True:
-        clean(data)
-        return None
-
-    elif filter_dataframe_fn == True:
-        return filter_dataframe(data, frm, to)
-
-    elif replace_parts_animal_movement_fn == True:
-        return replace_parts_animal_movement(data_groups, animal_id,
-                                             time_array, replacement_value_x,
-                                             replacement_value_y)
-
-    elif resample_systematic_fn == True:
-        return resample_systematic(data_groups, downsample_size)
-
-    elif resample_random_fn == True:
-        return resample_random(data_groups, downsample_size)
-
-    elif split_trajectories_fn == True:
-        split_trajectories(data_groups, segment=1)
-        return None
-
-    elif split_trajectories_fuzzy_segmentation_fn == True:
-        split_trajectories_fuzzy_segmentation(data_groups,
-                                              segment=1,
-                                              fuzzy_segment=2)
-        return None
+    return groups
