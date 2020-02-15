@@ -10,7 +10,7 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from .io import *  # noqa: E402
-from .preprocess import preprocessing_methods  # noqa: E402
-from .feature_extraction import compute_absolute_features  # noqa: E402
+from .io import read_data  # noqa: E402
+from .preprocess import preprocess  # noqa: E402
+from .feature_extraction import extract_features  # noqa: E402
 from .feature_extraction import time_series_analyis  # noqa: E402
