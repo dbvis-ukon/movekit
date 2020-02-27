@@ -2,13 +2,6 @@ import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
-"""
-IMPORTANT NOTE:
-
-To process Microsoft Excel file, file extensions- '.xlsx', '.xls',
-pleas install Python 3.X package 'xlrd' using 'pip', 'anaconda',
-or any other relevant package manager!
-"""
 
 
 def parse_csv(path_to_file):

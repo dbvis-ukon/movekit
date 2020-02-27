@@ -12,5 +12,6 @@ finally:
 
 from .io import read_data  # noqa: E402
 from .preprocess import preprocess  # noqa: E402
-from .feature_extraction import extract_features  # noqa: E402
-from .feature_extraction import time_series_analyis  # noqa: E402
+from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
+from .feature_extraction import ts_feature, ts_all_features  # noqa: E402
+from .plot import *  # noqa: E402

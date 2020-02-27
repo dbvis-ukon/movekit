@@ -4,6 +4,7 @@ from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
 
+
 def grouping_data(processed_data):
     '''
 	A function to group all values for each 'animal_id'
@@ -47,8 +48,7 @@ def grouping_data(processed_data):
 
 def compute_distance_and_direction(data_animal_id_groups):
     '''
-	Function to calculate metric distance and direction attributes-
-
+	Function to calculate metric distance and direction attributes
 	Calculate the metric distance between two consecutive time frames/time stamps
 	for each moving entity (in this case, fish)
 
@@ -133,9 +133,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     return result
 
 
-def compute_absolute_features(data,
-                              fps=10,
-                              stop_threshold=0.5):
+def compute_absolute_features(data, fps=10, stop_threshold=0.5):
     '''
 	Calculate absolute features for the input data animal group.
 
@@ -154,8 +152,8 @@ def compute_absolute_features(data,
 
     return stop_data
 
-def extract_features(data, fps=10,
-                     stop_threshold=0.5):
+
+def extract_features(data, fps=10, stop_threshold=0.5):
     """
 	Calculate absolute features for the input data animal group.
 
@@ -164,8 +162,7 @@ def extract_features(data, fps=10,
 	"""
     tmp_data = grouping_data(data)
 
-    tmp_data = compute_distance_and_direction(
-        tmp_data)
+    tmp_data = compute_distance_and_direction(tmp_data)
 
     tmp_data = compute_average_speed(tmp_data, fps)
 
@@ -176,6 +173,7 @@ def extract_features(data, fps=10,
     tmp_data.fillna(0, inplace=True)
 
     return tmp_data
+
 
 def computing_stops(data_animal_id_groups, threshold_speed):
     '''
@@ -295,19 +293,13 @@ def distance_euclidean_matrix(data):
         by=['time', 'animal_id'])
 
 
-def euclidean_dist(group):
+def euclidean_dist(data):
     """
     Compute the distance for one individual grouped time step using the
     Scipy pdist and squareform methods
     """
-    # ids of each animal
-    ids = group['animal_id'].tolist()
-    # compute and assign the distances for each time step
-    group[ids] = pd.DataFrame(squareform(pdist(group[['x', 'y']],
-                                               'euclidean')),
-                              index=group.index,
-                              columns=ids)
-    return group
+    weights = {'x': 1, 'y': 1}
+    return compute_similarity(data, weights)
 
 
 def compute_similarity(data, weights, p=2):
@@ -349,7 +341,7 @@ def similarity_computation(group, w, p):
                         columns=ids)
 
 
-def time_series_analyis(data):
+def ts_all_features(data):
     '''
 	Function to perform time series analysis on provided
 	dataset.
@@ -366,6 +358,34 @@ def time_series_analyis(data):
     tsfresh.utilities.dataframe_functions.impute(time_series_features)
 
     return (time_series_features)
+
+
+def ts_feature(data, feature):
+    '''
+	Function to perform time series analysis on provided
+	dataset with the specific feature.
+	Remove the columns stopped as it has nominal values
+
+    Input:
+	data 	-	Pandas DataFrame (should be sorted by 'time' attribute)
+    feature     String feature which defines which feature should be extracted
+	'''
+    fc_parameters = tsfresh.feature_extraction.ComprehensiveFCParameters()
+    if feature in fc_parameters:
+        settings = {}
+        settings[feature] = fc_parameters[feature]
+
+        rm_colm = ['stopped']
+        df = data[data.columns.difference(rm_colm)]
+        time_series_features = tsfresh.extract_features(
+            df,
+            column_id='animal_id',
+            column_sort='time',
+            default_fc_parameters=settings)
+        return time_series_features
+    else:
+        print("Time series feature is not known.")
+        return
 
 
 def explore_features(data):
@@ -454,4 +474,3 @@ def explore_features(data):
 #         # plt.show()
 
 #     return None
-
