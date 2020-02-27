@@ -3,6 +3,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 
+
 def parse_csv(path_to_file):
     '''
     A function to read CSV file into a Pandas DataFrame-

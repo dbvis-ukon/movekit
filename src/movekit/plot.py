@@ -40,7 +40,7 @@ def plot_animal_timesteps(data_animal_id_groups):
 	Rerurns:
 	Nothing
 	"""
-    
+
     # Initialize Python 3.X dict to hold number of time steps
     # for each animals-
     animals_timesteps = {}
@@ -80,7 +80,7 @@ def plot_speed(avg_speed_data):
 	Nothing
 	"""
 
-        # A dictionary object to hold all groups obtained using group by-
+    # A dictionary object to hold all groups obtained using group by-
     # Apply grouping using 'animal_id' attribute-
     data_animal_id = avg_speed_data.groupby('animal_id')
 
@@ -100,8 +100,7 @@ def plot_speed(avg_speed_data):
     animals_speed = {}
 
     for aid in data_animal_id_groups.keys():
-        animals_speed[aid] = data_animal_id_groups[aid][
-            'average_speed']
+        animals_speed[aid] = data_animal_id_groups[aid]['average_speed']
         animals_speed[aid] = np.asarray(animals_speed[aid])
 
     # n = len(animals_avg_speed)
@@ -181,8 +180,7 @@ def plot_acceleration(avg_acc_data):
     animals_acc = {}
 
     for aid in data_animal_id_groups.keys():
-        animals_acc[aid] = data_animal_id_groups[aid][
-            'average_acceleration']
+        animals_acc[aid] = data_animal_id_groups[aid]['average_acceleration']
         animals_acc[aid] = np.asarray(animals_acc[aid])
 
     # n = len(animals_avg_speed)

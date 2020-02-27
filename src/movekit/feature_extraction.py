@@ -4,6 +4,7 @@ from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
 
+
 def grouping_data(processed_data):
     '''
 	A function to group all values for each 'animal_id'
@@ -132,9 +133,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     return result
 
 
-def compute_absolute_features(data,
-                              fps=10,
-                              stop_threshold=0.5):
+def compute_absolute_features(data, fps=10, stop_threshold=0.5):
     '''
 	Calculate absolute features for the input data animal group.
 
@@ -153,8 +152,8 @@ def compute_absolute_features(data,
 
     return stop_data
 
-def extract_features(data, fps=10,
-                     stop_threshold=0.5):
+
+def extract_features(data, fps=10, stop_threshold=0.5):
     """
 	Calculate absolute features for the input data animal group.
 
@@ -163,8 +162,7 @@ def extract_features(data, fps=10,
 	"""
     tmp_data = grouping_data(data)
 
-    tmp_data = compute_distance_and_direction(
-        tmp_data)
+    tmp_data = compute_distance_and_direction(tmp_data)
 
     tmp_data = compute_average_speed(tmp_data, fps)
 
@@ -175,6 +173,7 @@ def extract_features(data, fps=10,
     tmp_data.fillna(0, inplace=True)
 
     return tmp_data
+
 
 def computing_stops(data_animal_id_groups, threshold_speed):
     '''
@@ -299,8 +298,9 @@ def euclidean_dist(data):
     Compute the distance for one individual grouped time step using the
     Scipy pdist and squareform methods
     """
-    weights = {'x':1, 'y':1}
+    weights = {'x': 1, 'y': 1}
     return compute_similarity(data, weights)
+
 
 def compute_similarity(data, weights, p=2):
     """
@@ -359,6 +359,7 @@ def ts_all_features(data):
 
     return (time_series_features)
 
+
 def ts_feature(data, feature):
     '''
 	Function to perform time series analysis on provided
@@ -370,21 +371,21 @@ def ts_feature(data, feature):
     feature     String feature which defines which feature should be extracted
 	'''
     fc_parameters = tsfresh.feature_extraction.ComprehensiveFCParameters()
-    if feature in fc_parameters: 
+    if feature in fc_parameters:
         settings = {}
         settings[feature] = fc_parameters[feature]
 
         rm_colm = ['stopped']
         df = data[data.columns.difference(rm_colm)]
-        time_series_features = tsfresh.extract_features(df,
-                                                    column_id='animal_id',
-                                                    column_sort='time',
-                                                    default_fc_parameters=settings)
+        time_series_features = tsfresh.extract_features(
+            df,
+            column_id='animal_id',
+            column_sort='time',
+            default_fc_parameters=settings)
         return time_series_features
-    else: 
+    else:
         print("Time series feature is not known.")
         return
-
 
 
 def explore_features(data):
@@ -473,4 +474,3 @@ def explore_features(data):
 #         # plt.show()
 
 #     return None
-
