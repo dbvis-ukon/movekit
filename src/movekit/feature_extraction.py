@@ -3,6 +3,8 @@ import pandas as pd
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
+from shapely.geometry import Polygon
+import matplotlib.pyplot as plt
 
 
 def grouping_data(processed_data):
@@ -434,43 +436,58 @@ def explore_features(data):
     return None
 
 
-# def explore_features_geospatial(data_groups):
-#     """
-# 	Function to perform exploration of environment space
-# 	by each animal using 'shapely' package
+def explore_features_geospatial(preprocessed_data):
+    """
+    Function to perform exploration of environment space
+    by each animal using 'shapely' package
 
-# 	Input:
-# 	data_groups-	Python 3 dictonary containing
-# 					grouping of data by 'animal_id'
-# 					attribute
+    Input:
+    Preprocessed data of position at different points in time
 
-# 	Returns:	None
-# 	"""
+    Returns:	None
+    """
+    # Create dictionary, grouping records by animal ID as key
+    data_groups = grouping_data(preprocessed_data)
 
-#     # Python dict to hold X-Y coordinates for each animal-
-#     xy_coord = {}
+    # Python dict to hold X-Y coordinates for each animal-
+    xy_coord = {}
 
-#     for aid in data_groups.keys():
-#         xy_coord[aid] = []
+    # Polygon for singular animal ID
+    for aid in data_groups.keys():
+        xy_coord[aid] = []
 
-#     for aid in data_groups.keys():
-#         for x in range(data_groups[aid].shape[0]):
-#             temp_tuple = (data_groups[aid].loc[x, 'x'],
-#                           data_groups[aid].loc[x, 'y'])
-#             xy_coord[aid].append(temp_tuple)
+    # Extract position information per animal into list of xy-tuples
+    for aid in data_groups.keys():
+        for x in range(data_groups[aid].shape[0]):
+            temp_tuple = (data_groups[aid].loc[x, 'x'],
+                          data_groups[aid].loc[x, 'y'])
+            xy_coord[aid].append(temp_tuple)
 
-#     for aid in data_groups.keys():
-#         # Creat a 'Polygon' object using all coordinates for animal ID-
-#         poly = Polygon(xy_coord[aid])
+    # Polygons for individual animals
+    for aid in data_groups.keys():
+        poly = Polygon(xy_coord[aid]).convex_hull
 
-#         # Compute area of polygon-
-#         print(
-#             "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
-#             .format(aid, poly.area))
+        # Compute area of singular polygons and plot
+        print(
+            "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
+                .format(aid, poly.area))
+        plt.plot(*poly.exterior.xy)
 
-#         # OPTIONAL:
-#         # Plot shapely polygon and objects-
-#         # plt.plot(*poly.exterior.xy)
-#         # plt.show()
+    # Polygon for collective group
+    xy_coord_full = []
+    for aid in data_groups.keys():
+        for x in range(data_groups[aid].shape[0]):
+            temp_tuple = (data_groups[aid].loc[x, 'x'], data_groups[aid].loc[x, 'y'])
+            xy_coord_full.append(temp_tuple)
 
-#     return None
+    # Create 'Polygon' object using all coordinates for animal ID combined
+    full_poly = Polygon(xy_coord_full).convex_hull
+
+    # Compute area of collective polygon and plot
+    print("\nArea (polygon) covered by animals collectively is = ", full_poly.area, "sq. units")
+    plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
+    plt.show()
+    return None
+
+
+
