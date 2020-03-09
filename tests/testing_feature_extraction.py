@@ -20,10 +20,10 @@ import movekit as mkit
 import movekit
 
 
-from movekit.feature_extraction_combined import grouping_data
-from movekit.feature_extraction_combined import compute_distance_and_direction
-from movekit.feature_extraction_combined import compute_average_speed
-from movekit.feature_extraction_combined import compute_average_acceleration
+from movekit.feature_extraction import grouping_data
+from movekit.feature_extraction import compute_distance_and_direction
+from movekit.feature_extraction import compute_average_speed
+from movekit.feature_extraction import compute_average_acceleration
 
 # from movekit.io_combined import read_data
 # from movekit.io_combined import parse_csv
