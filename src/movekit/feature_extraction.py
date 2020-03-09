@@ -331,6 +331,7 @@ def compute_similarity(data, weights, p=2):
                     right_index=True).sort_values(by=['time', 'animal_id'])
 
 
+# Dead? Difference to function right above unclear; incomplete documentation
 def similarity_computation(group, w, p):
     """
     Compute the minkowski similarity for one individual grouped time step using the Scipy pdist and squareform methods
@@ -418,7 +419,7 @@ def explore_features(data):
     data_groups = grouping_data(data)
 
     # for each animal, how much of the area has the animal covered?
-    # % of space explored by each animal?
+    # % of space explored by each animal? #
     for aid in data_groups:
         aid_x_min = data_groups[aid]['x'].min()
         aid_x_max = data_groups[aid]['x'].max()

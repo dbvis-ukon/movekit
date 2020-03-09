@@ -6,14 +6,10 @@ import matplotlib.pyplot as plt
 
 def linear_interpolation(data, threshold):
     '''
-	Function to interpolate missing values for 'x' and 'y' attributes
-	in dataset.
-	'threshold' parameter decides the number of rows till which, data
-	should NOT be deleted.
-
-	Input- Accepts Pandas DataFrame
-	Returns- Processed Pandas DataFrame
-	'''
+    :param data:
+    :param threshold:
+    :return:
+    '''
 
     # Get indices of missing values for 'x' attribute in a list-
     missing_x_values = list(data[data['x'].isnull()].index)
@@ -110,6 +106,9 @@ def plot_missing_values(data, animal_id):
 
 
 def preprocess(data):
+    @param data:
+    @param threshold:
+    @return:
     '''
     A function to perform data preprocessing
     Expects 'data' as input which is the Pandas DataFrame to be processed

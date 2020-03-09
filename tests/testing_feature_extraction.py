@@ -32,6 +32,8 @@ from movekit.feature_extraction_combined import compute_average_acceleration
 # from movekit.feature_extraction_combined import feature_extraction_methods
 # from movekit.plot import plotting_methods
 
+# Miss grouping data
+# Miss distance and distraction
 
 class Test_Feature_Extraction(unittest.TestCase):
 	'''
@@ -437,7 +439,17 @@ class Test_Feature_Extraction(unittest.TestCase):
 		self.assertEqual(avg_acceleration, 0.01598, "Should be  0.01598")
 
 
-
+# Miss absolute features
+# Miss extract features
+# Miss computing stops
+# Miss medoid computation - but in other file
+# Miss distance_euklidean_matrix
+# Miss eucidean_dist
+# Miss compute_similarity
+# Miss ts_all_features
+# Miss ts_feature
+# Miss explore_features
+# Miss explore_features-geospatial
 
 	def test_direction(self):
 
