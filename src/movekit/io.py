@@ -5,10 +5,12 @@ from pandas.errors import EmptyDataError
 
 
 def parse_csv(path_to_file):
-    '''
-    A function to read CSV file into a Pandas DataFrame-
-    Expects complete path/relative path to CSV file along with file name
-    '''
+    """
+    Read CSV file into Pandas DataFrame.
+
+    :param path_to_file: Complete path/relative path to CSV file along with file name.
+    :return: Pandas DataFrame containing imported data.
+    """
     try:
 
         if path_to_file[-3:] == 'csv':
@@ -43,12 +45,12 @@ def parse_csv(path_to_file):
 
 
 def parse_excel(path_to_file):
-    '''
-    Function to read Excel file into a Pandas DataFrame-
-    Expects complete path/relative path to CSV file along with file name
+    """
+    Read Excel file into Pandas DataFrame
 
-    Expects package 'xlrd' to be installed for this to work!
-    '''
+    :param path_to_file: Complete path/relative path to Excel file along with file name
+    :return: Pandas DataFrame containing imported data.
+    """
     try:
 
         if path_to_file[-3:] == 'xls' or path_to_file[-4:] == 'xlsx':
@@ -84,15 +86,12 @@ def parse_excel(path_to_file):
 
 def read_data(path):
     """
-    Function containing all of Input Output (IO) functions
-    as function arguments (which by default are False).
+    Containing all of Input Output (IO) functions as function arguments (which by default are False).
 
-    NOTE:
-    Currently, only two file extensions are recognised and
-    processed, viz., 'csv' and '.xlsx'
+    :param path: Complete path/relative path to Excel file along with file name
+    :return: Pandas DataFrame containing imported data.
     """
-
-    # Call appropriate IO function based on file extencsion
+    # Call appropriate IO function based on file extension
     # Split string based on '.' (dot)-
     file_split = path.split(".")
 
