@@ -105,7 +105,7 @@ def preprocess(data):
     """
     A function to perform data preprocessing.
 
-    Print the number of missing values per column; Drop columns with  missing values for 'time'  and 'animal_id';
+    Print the number of missing values per column; Drop columns with  missing values for 'time' and 'animal_id';
     Remove the duplicated rows found.
 
     :param data: Pandas DataFrame to be processed.

@@ -194,23 +194,15 @@ def computing_stops(data_animal_id_groups, threshold_speed):
 
     return data_animal_id_groups
 
-# Is the function below Deadcode? If not, might change input to pandas DF.
 def medoid_computation(data):
     """
+    Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
 
-    :param data:
-    :return:
-    """
-
-    '''
-	Calculates the data point (animal_id) closest to
-	center/centroid/medoid for a time step
     Uses group by on 'time' attribute
 
-    Input-      Expects a Pandas CSV input parameter containing the dataset
-    Returns-    Pandas DataFrame containing computed medoids & centroids
-    '''
-
+    :param data: Pandas DataFrame containing movement records
+    :return: Pandas DataFrame containing computed medoids & centroids
+    """
     # Create Python dictionary to hold final medoid computation-
     data_d = {
         'time': [0 for x in range(data.shape[0])],
