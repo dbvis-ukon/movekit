@@ -26,6 +26,7 @@ def linear_interpolation(data, threshold):
     # counter for outer loop-
     i = 0
 
+# DEAD VARIABLES?
     # counter for inner loop-
     j = 0
 
@@ -79,7 +80,7 @@ def linear_interpolation(data, threshold):
 
     return data_del
 
-
+# DEAD PARAMETER?
 def plot_missing_values(data, animal_id):
     """
     Plot the missing values of an animal-ID against time.
@@ -88,6 +89,8 @@ def plot_missing_values(data, animal_id):
     :param animal_id: ID of the animal whose missing values will be plotted against time.
     :return: None.
     """
+
+# DEAD VARIABLES?
     missing_time = data[data['time'].isnull()].index.tolist()
     missing_x = data[data['x'].isnull()].index.tolist()
     missing_y = data[data['y'].isnull()].index.tolist()
@@ -245,6 +248,7 @@ def resample_systematic(data_groups, downsample_size):
 
     step_size = math.floor(size / downsample_size)
 
+# DEAD LIST?
     arr_index = []
 
     l = list(range(size))
