@@ -388,7 +388,7 @@ def ts_feature(data, feature):
     Perform time series analysis on specified feature of record data.
 
     :param data: pandas DataFrame, containing preprocessed movement records and features.
-    :param feature: variable to perform time series analysis on
+    :param feature: feature to perform time series analysis on
     :return: pandas DataFrame, containing autocorrelation for each id for defined feature.
     """
     fc_parameters = tsfresh.feature_extraction.ComprehensiveFCParameters()
