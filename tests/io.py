@@ -14,12 +14,13 @@ from pandas.errors import EmptyDataError
 os.chdir("../src/")
 
 
-import movekit as mkit
-import movekit
+#import movekit as mkit
+#import movekit
 
 # from movekit.io_combined import read_data
-from movekit.io_combined import parse_csv
-from movekit.io_combined import parse_excel
+import sys
+sys.path.append('..')
+from src.movekit.io import parse_csv, parse_excel
 # from movekit.preprocessing_combined import preprocessing_methods
 # from movekit.feature_extraction_combined import feature_extraction_methods
 # from movekit.plot import plotting_methods

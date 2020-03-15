@@ -6,24 +6,23 @@ import pandas as pd
 import numpy as np
 import math
 
+
 # from pandas.util.testing import assert_frame_equal
 from pandas.testing import assert_frame_equal
-
+import sys
+sys.path.append('..')
+from src.movekit.feature_extraction import medoid_computation
 # from pandas.io.common import EmptyDataError
 from pandas.errors import EmptyDataError
 
 
-os.chdir("../src/")
+#os.chdir("../src/")
 
 
-import movekit as mkit
-import movekit
-
-
-from movekit.feature_extraction_combined import grouping_data
-from movekit.feature_extraction_combined import compute_distance_and_direction
-from movekit.feature_extraction_combined import compute_average_speed
-from movekit.feature_extraction_combined import compute_average_acceleration
+from src.movekit.feature_extraction import grouping_data
+from src. movekit.feature_extraction import compute_distance_and_direction
+from src.movekit.feature_extraction import compute_average_speed
+from src.movekit.feature_extraction import compute_average_acceleration
 
 # from movekit.io_combined import read_data
 # from movekit.io_combined import parse_csv
@@ -32,6 +31,19 @@ from movekit.feature_extraction_combined import compute_average_acceleration
 # from movekit.feature_extraction_combined import feature_extraction_methods
 # from movekit.plot import plotting_methods
 
+# Miss grouping data
+# Miss distance and distraction
+# Miss absolute features
+# Miss extract features
+# Miss computing stops
+# Miss medoid computation - but in other file
+# Miss distance_euklidean_matrix
+# Miss eucidean_dist
+# Miss compute_similarity
+# Miss ts_all_features
+# Miss ts_feature
+# Miss explore_features
+# Miss explore_features-geospatial
 
 class Test_Feature_Extraction(unittest.TestCase):
 	'''
@@ -41,7 +53,6 @@ class Test_Feature_Extraction(unittest.TestCase):
 	def test_average_speed(self):
 		fps = 10
 		result = pd.read_csv("../tests/data/Completely_Processed_Data-fps_10_Part-2.csv")
-
 
 		# Animal_id = 312
 
@@ -248,7 +259,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		result = pd.read_csv("../tests/data/Completely_Processed_Data-fps_10_Part-2.csv")
 
 
-		# Animal ID = 312
+		# Animal ID = 312 'the label [1232] is not in the [index]'
 
 		index = 1234
 		i = index - 2
@@ -437,8 +448,6 @@ class Test_Feature_Extraction(unittest.TestCase):
 		self.assertEqual(avg_acceleration, 0.01598, "Should be  0.01598")
 
 
-
-
 	def test_direction(self):
 
 		result = pd.read_csv("../tests/data/Completely_Processed_Data-fps_10_Part-2.csv")
@@ -537,7 +546,43 @@ class Test_Feature_Extraction(unittest.TestCase):
 		# self.assertEqual(direction, -92.7263, "Should be -92.7263")
 		self.assertEqual(direction, round(result.loc[i + 1, 'direction'], 4), "Should be -63.4349")
 
+	def test_medoid_calculation(self):
+		# Read in CSV file-
+		data_d = {
+			'time': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+			'animal_id': [312, 511, 607, 811, 905, 312, 511, 607, 811, 905],
+			'x': [405.29, 369.99, 390.33, 445.15, 366.06, 405.31, 370.01,
+				  390.25, 445.48, 365.86],
+			'y': [417.76, 428.78, 405.89, 411.94, 451.76, 417.37, 428.82,
+				  405.89, 412.26, 451.76],
+			'distance_to_centroid': [11.331, 25.975, 18.052, 51.049, 40.901,
+									 11.523, 25.983, 18.074, 51.283, 41.062],
+			'medoid': [312, 312, 312, 312, 312, 312, 312, 312, 312, 312]
+		}
 
+		data = pd.DataFrame(data_d)
+
+		# Compute medoid using function in 'medoid_calculation.py' Python file-
+		data_medoid = medoid_computation(data)
+
+		df_calculated_data = data_medoid.iloc[:10, :]
+
+		computed_data = {
+			'time': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+			'animal_id': [312, 511, 607, 811, 905, 312, 511, 607, 811, 905],
+			'x': [405.29, 369.99, 390.33, 445.15, 366.06, 405.31, 370.01,
+				  390.25, 445.48, 365.86],
+			'y': [417.76, 428.78, 405.89, 411.94, 451.76, 417.37, 428.82,
+				  405.89, 412.26, 451.76],
+			'distance_to_centroid': [11.331, 25.975, 18.052, 51.049, 40.901,
+									 11.523, 25.983, 18.074, 51.283, 41.062],
+			'medoid': [312, 312, 312, 312, 312, 312, 312, 312, 312, 312]
+		}
+
+		df_computed_data = pd.DataFrame(computed_data)
+
+		assert_frame_equal(df_calculated_data, df_computed_data)
+	# self.assertEqual(df_calculated_data, df_computed_data)
 
 
 

@@ -5,17 +5,13 @@ import matplotlib.pyplot as plt
 
 def plot_movement(data, frm, to):
     """
-	Plot 'x' and 'y' attributes for given Pandas
-	DataFrame
+    Plot 'x' and 'y' attributes for given Pandas DataFrame in specified time frame.
 
-	Input:
-	data 	-	Pandas DataFrame (should be sorted by 'time' attribute)
-	frm 	-	Starting from time step
-	to 		-	Ending to time step
-
-	Returns:
-	Nothing
-	"""
+    :param data: Pandas DataFrame (should be sorted by 'time' attribute).
+    :param frm: Starting from time step.
+    :param to: Ending to time step.
+    :return: None.
+    """
 
     plt.scatter(x='x',
                 y='y',
@@ -31,16 +27,11 @@ def plot_movement(data, frm, to):
 
 def plot_animal_timesteps(data_animal_id_groups):
     """
-	Function to plot the number of time steps for each 'animal_id'
+    Plot the number of time steps for each 'animal_id'
 
-	Input:
-	data_animal_id_groups	-	Python 3.X dictionary containing grouping of
-								data by 'animal_id'
-
-	Rerurns:
-	Nothing
-	"""
-
+    :param data_animal_id_groups: Dictionary containing grouping of data by 'animal_id'.
+    :return: None
+    """
     # Initialize Python 3.X dict to hold number of time steps
     # for each animals-
     animals_timesteps = {}
@@ -69,17 +60,11 @@ def plot_animal_timesteps(data_animal_id_groups):
 
 def plot_speed(avg_speed_data):
     """
-	Function to plot average speed extracted feature for each animal
+    Plot average speed extracted feature for each animal.
 
-	Input:
-	avg_speed_data	- Python 3.X dictionary containing grouping of data
-						by 'animal_id' with average speed feature
-						computed
-
-	Returns:
-	Nothing
-	"""
-
+    :param avg_speed_data: dictionary containing grouping of data by 'animal_id' including average speed feature.
+    :return: None.
+    """
     # A dictionary object to hold all groups obtained using group by-
     # Apply grouping using 'animal_id' attribute-
     data_animal_id = avg_speed_data.groupby('animal_id')
@@ -150,16 +135,11 @@ def plot_speed(avg_speed_data):
 
 def plot_acceleration(avg_acc_data):
     """
-	Function to plot average acceleration extracted feature for each animal
+    Plot average acceleration extracted feature for each animal.
 
-	Input:
-	avg_acc_data	- Pandas DataFrame containing relevant computed
-						features
-
-	Returns:
-	Nothing
-	"""
-
+    :param avg_acc_data: Pandas DataFrame containing relevant computed features.
+    :return: None.
+    """
     # A dictionary object to hold all groups obtained using group by-
     # Apply grouping using 'animal_id' attribute-
     data_animal_id = avg_acc_data.groupby('animal_id')
@@ -230,20 +210,12 @@ def plot_acceleration(avg_acc_data):
 
 def plot_animal(data_animal_id_groups, animal_id):
     """
-	Function to plot individual animal's 'x' and 'y' coordinates
+    Plot individual animal's 'x' and 'y' coordinates.
 
-	Input:
-	data_animal_id_groups:		Python 3.X dictionary grouped by
-								'animal_id' containing 'x' & 'y'
-								attributes
-
-	animal_id:					ID of animal to be plotted
-
-
-	Returns:
-	Nothing
-	"""
-
+    :param data_animal_id_groups: dictionary grouped by 'animal_id' containing 'x' & 'y' attributes.
+    :param animal_id: ID of animal to be plotted.
+    :return: None.
+    """
     if animal_id not in data_animal_id_groups.keys():
         print(
             "\nError!! animal id: {0} does NOT exist in the provided data!\n".

@@ -5,16 +5,13 @@ import matplotlib.pyplot as plt
 
 
 def linear_interpolation(data, threshold):
-    '''
-	Function to interpolate missing values for 'x' and 'y' attributes
-	in dataset.
-	'threshold' parameter decides the number of rows till which, data
-	should NOT be deleted.
+    """
+    Interpolate missing values for 'x' and 'y' attributes in dataset.
 
-	Input- Accepts Pandas DataFrame
-	Returns- Processed Pandas DataFrame
-	'''
-
+    :param data: Pandas DataFrame with movement records.
+    :param threshold: Integer to define the number of rows till which data should NOT be deleted.
+    :return: Processed Pandas DataFrame.
+    """
     # Get indices of missing values for 'x' attribute in a list-
     missing_x_values = list(data[data['x'].isnull()].index)
 
@@ -29,6 +26,7 @@ def linear_interpolation(data, threshold):
     # counter for outer loop-
     i = 0
 
+# DEAD VARIABLES?
     # counter for inner loop-
     j = 0
 
@@ -82,20 +80,17 @@ def linear_interpolation(data, threshold):
 
     return data_del
 
-
+# DEAD PARAMETER?
 def plot_missing_values(data, animal_id):
     """
-    Plot the missing values of an animal id against the time
+    Plot the missing values of an animal-ID against time.
 
-    Input:
-    'data' is the Pandas Data Frame containing CSV file
-    'animal_id' is the ID of the animal who's missing values have to be plotted
-    against the time
-
-    Returns:
-    Nothing
+    :param data: Pandas DataFrame containing records of movement.
+    :param animal_id: ID of the animal whose missing values will be plotted against time.
+    :return: None.
     """
 
+# DEAD VARIABLES?
     missing_time = data[data['time'].isnull()].index.tolist()
     missing_x = data[data['x'].isnull()].index.tolist()
     missing_y = data[data['y'].isnull()].index.tolist()
@@ -110,10 +105,15 @@ def plot_missing_values(data, animal_id):
 
 
 def preprocess(data):
-    '''
-    A function to perform data preprocessing
-    Expects 'data' as input which is the Pandas DataFrame to be processed
-    '''
+    """
+    A function to perform data preprocessing.
+
+    Print the number of missing values per column; Drop columns with  missing values for 'time' and 'animal_id';
+    Remove the duplicated rows found.
+
+    :param data: Pandas DataFrame to be processed.
+    :return: DataFrame processed.
+    """
     # Print the number of missing values per column
     print_missing(data)
 
@@ -130,12 +130,12 @@ def preprocess(data):
 
 
 def print_missing(df):
-    '''
-    Print the missing values for each column
+    """
+    Print the missing values for each column.
 
-    Input- Accepts Pandas DataFrame
-    Return- No return
-    '''
+    :param df: Pandas DataFrame of movement records.
+    :return: None.
+    """
     print("\n Number of missing values = {0}\n". \
      format(df.isnull().sum().sort_values(ascending=False)))
 
@@ -143,9 +143,12 @@ def print_missing(df):
 
 
 def print_duplicate(df):
-    '''
-    Print the duplicate rows
-    '''
+    """
+    Print rows, which are duplicates.
+
+    :param df: Pandas DataFrame of movement records.
+    :return: None.
+    """
     dup = df[df.duplicated(['time', 'animal_id'])]
     print(
         "Removed duplicate rows based on the columns 'animal_id' and 'time' column are:",
@@ -154,11 +157,12 @@ def print_duplicate(df):
 
 
 def grouping_data(processed_data):
-    '''
-    A function to group all values for each 'animal_id'
-    Input is 'processed_data' which is processed Pandas DataFrame
-    Returns a dictionary where- key is animal_id, value in Pandas DataFrame for that 'animal_id'
-    '''
+    """
+    Group all values for each 'animal_id'.
+
+    :param processed_data: Pandas DataFrame, processed, containing movement record data.
+    :return: Dictionary with key as animal ID, value as all record data of the ID.
+    """
     # A dictionary object to hold all groups obtained using group by-
     data_animal_id_groups = {}
 
@@ -191,47 +195,33 @@ def grouping_data(processed_data):
 
 def filter_dataframe(data, frm, to):
     """
-    A function to filter the dataset, which is the first
-    argument to the function using 'frm' and 'to' as the
-    second and third arguments.
-    Please note that both 'frm' and 'to' are included in
-    the returned filtered Pandas Data frame.
+    Extract records of assigned time frame from preprocessed movement record data.
 
-    Returns a filtered Pandas Data frame according to 'frm'
-    and 'to' arguments
+    :param data: Pandas DataFrame, containing preprocessed movement record data.
+    :param frm: Int, defining starting point from where to extract records.
+    :param to: Int, defining end point up to where to extract records.
+    :return: Pandas DataFrame, filtered by records matching the defined frame in 'from'-'to'.
     """
-
     return data.loc[(data['time'] >= frm) & (data['time'] < to), :]
 
 
 def replace_parts_animal_movement(data_groups, animal_id, time_array,
                                   replacement_value_x, replacement_value_y):
     """
-    Replace subsets (segments) of animal movement based on some indices e.g. time
-    This function can be used to remove outliers
+    Replace subsets (segments) of animal movement based on some indices e.g. time.
+    This function can be used to remove outliers.
 
-    Input:
-    1.) First argument is a Python 3 dictionary whose key is 'animal_id'and value is
-    Pandas DataFrame for that 'animal_id'
-    2.) Second argument is 'animal_id' whose movements have to replaced
-    3.) Third argument is an array of time indices whose movements have to replaced
-    4.) Fourth argument is the value which will be replaced for all values contained
-    in 'time_array' for 'x' attribute
-    5.) Fifth argument is the value which will be replaced for all values contained
-    in 'time_array' for 'y' attribute
+    Example usage:
+        data_groups = group_animals(data)
+        arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
+        replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
 
-    Returns:
-    Modified Python 3 dictionary which was passed as first argument to it
-
-    An example usage-
-
-    data = csv_to_pandas(path)
-
-    data_groups = group_animals(data)
-
-    arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
-
-    replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
+    :param data_groups: Dictionary with key 'animal_id'and value with records for 'animal_id'.
+    :param animal_id: Int defining 'animal_id' whose movements have to replaced.
+    :param time_array: Array defining time indices whose movements have to replaced
+    :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
+    :param replacement_value_y: Int value that will replace all 'y' attribute values in 'time_array'.
+    :return: Dictionary with replaced subsets.
     """
     data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
     data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
@@ -241,20 +231,15 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
 
 def resample_systematic(data_groups, downsample_size):
     """
-    Resample the movement data of each animal - by downsampling at fixed time
-    intervals. This is done to reduce the resolution of dataset
-    This function does this by systematically choosing samples from each animal
+    Resample the movement data of each animal - by downsampling at fixed time intervals.
 
-    Input:
-    1.) data_groups is a Python 3 dictionary containing as key 'animal_id' and
-    it's value is Pandas DataFrame pertaining to that 'animal_id'
-    2.) downsample_size is the sample size to which each animal has to be
-    downsampled to
+    This is done to reduce the resolution of the dataset. This function does this by systematically choosing
+    samples from each animal.
 
-    Returns:
-    Modified 'data_groups' Python 3 dictionary to 'downsample_size'
+    :param data_groups: Dictionary with key: 'animal_id' and value with record data to that 'animal_id'.
+    :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
+    :return: Dictionary, modified from original size 'data_groups' to 'downsample_size'.
     """
-
     # Get first key-
     first = list(data_groups.keys())[0]
 
@@ -263,6 +248,7 @@ def resample_systematic(data_groups, downsample_size):
 
     step_size = math.floor(size / downsample_size)
 
+# DEAD LIST?
     arr_index = []
 
     l = list(range(size))
@@ -282,20 +268,15 @@ def resample_systematic(data_groups, downsample_size):
 
 def resample_random(data_groups, downsample_size):
     """
-    Resample the movement data of each animal - by downsampling at random time
-    intervals. This is done to reduce the resolution of dataset
-    This function does this by randomly choosing samples from each animal
+    Resample the movement data of each animal - by downsampling at random time intervals.
 
-    Input:
-    1.) data_groups is a Python 3 dictionary containing as key 'animal_id' and
-    it's value is Pandas DataFrame pertaining to that 'animal_id'
-    2.) downsample_size is the sample size to which each animal has to be
-    downsampled to
+    This is done to reduce resolution of the dataset. This function does this by randomly choosing
+    samples from each animal
 
-    Returns:
-    Modified 'data_groups' Python 3 dictionary to 'downsample_size'
+    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
+    :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
+    :return: Dictionary, modified from original size 'data_groups' to 'downsample_size'.
     """
-
     # Get first key-
     first = list(data_groups.keys())[0]
 
@@ -316,27 +297,19 @@ def resample_random(data_groups, downsample_size):
 
 def split_trajectories(data_groups, segment=1):
     """
-    Split the trajectory of a single animal into several intervals (segments)
-    according to some specific criterion.
+    Split the trajectory of a single animal into several segments based on specified criterion.
 
     Splitting may be interesting for example to detect different properties in
     time intervals. E.g. split into segments of 1 minute
 
-    Accepts: Python 3 dictionary containing 'animal_id' as key, and it's Pandas
-    Data Frame as value AND
-    segments: an interval according to which the animals will be split into several
-    Pandas Data Frames
+    Example usage:
+        data_groups = group_animals(data)
+        split_trajectories(data_groups, segment = 3)
 
-    Returns: Nothing. All segmented Pandas Data Frames are saved to HDD
-
-    # An example usage-
-
-    data_groups = group_animals(data)
-
-    split_trajectories(data_groups, segment = 3)
-
+    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
+    :param segment: Int, defining point where the animals are split into several Pandas Data Frames.
+    :return: None. All segmented Pandas Data Frames are saved to HDD
     """
-
     # Method-1:
     # df1, df2 = data_groups[312].iloc[:10, :], data_groups[312].iloc[10:20, :]
 
@@ -367,31 +340,17 @@ def split_trajectories_fuzzy_segmentation(data_groups,
                                           segment=1,
                                           fuzzy_segment=2):
     """
-    Split the trajectory of a single animal into several intervals (segments)
-    according to some specific criterion.
+    Split trajectory of a single animal into several segments based on specific criterion.
 
-    Splitting may be interesting for example to detect different properties in
-    time intervals. E.g. split into segments of 1 minute
+    Example usage:
+        data_groups = group_animals(data)
+        split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
 
-    Th fuzzy temporal segmentation is if the dataset is segmented into 10 min
-    intervals, add a window of 2 minutes that overlaps on either side of the
-    segments
-
-    Accepts: Python 3 dictionary containing 'animal_id' as key, and it's Pandas
-    Data Frame as value AND
-    segments: an interval according to which the animals will be split into several
-    Pandas Data Frames
-    fuzzy_segment: an interval which will overlap on either side of the segments
-
-    Returns: Nothing. All segmented Pandas Data Frames are saved to HDD
-
-    # An example usage-
-
-    data_groups = group_animals(data)
-
-    split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
+    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
+    :param segment: Int, defining point where the animals are split into several Pandas Data Frames.
+    :param fuzzy_segment: Int, defining interval which will overlap on either side of the segments.
+    :return: None. All segmented Pandas Data Frames are saved to HDD.
     """
-
     # Get first key-
     first = list(data_groups.keys())[0]
 
