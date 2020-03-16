@@ -5,13 +5,14 @@ import unittest
 import pandas as pd
 import numpy as np
 import math
+import pickle
 
 
 # from pandas.util.testing import assert_frame_equal
 from pandas.testing import assert_frame_equal
 import sys
-sys.path.append('..')
-from src.movekit.feature_extraction import medoid_computation
+os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+from src.movekit.feature_extraction import medoid_computation, grouping_data, compute_average_speed, euclidean_dist
 # from pandas.io.common import EmptyDataError
 from pandas.errors import EmptyDataError
 
@@ -19,9 +20,9 @@ from pandas.errors import EmptyDataError
 #os.chdir("../src/")
 
 
-from src.movekit.feature_extraction import grouping_data
+#from src.movekit.feature_extraction import grouping_data
 from src. movekit.feature_extraction import compute_distance_and_direction
-from src.movekit.feature_extraction import compute_average_speed
+#from src.movekit.feature_extraction import compute_average_speed, euclidean_dist
 from src.movekit.feature_extraction import compute_average_acceleration
 
 # from movekit.io_combined import read_data
@@ -30,7 +31,7 @@ from src.movekit.feature_extraction import compute_average_acceleration
 # from movekit.preprocessing_combined import preprocessing_methods
 # from movekit.feature_extraction_combined import feature_extraction_methods
 # from movekit.plot import plotting_methods
-
+os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
 # Miss grouping data
 # Miss distance and distraction
 # Miss absolute features
@@ -50,22 +51,67 @@ class Test_Feature_Extraction(unittest.TestCase):
 	Unit Tests for Feature Extraction
 	'''
 
+	def test_grouping_data(self):
+		"""
+		Testing grouping data function by animal ID for optimal tracking.
+		:return:
+		"""
+		inp = pd.read_csv("../tests/data/records.csv")
+		with open('data/dict_groups.pkl', 'rb') as handle:
+			ref = pickle.load(handle)
+			case = grouping_data(inp)
+		self.assertEqual((ref[312].all() == case[312].all()).all(), True, "Results don't match")
+		self.assertEqual((ref[511].all() == case[511].all()).all(), True, "Results don't match")
+		self.assertEqual((ref[607].all() == case[607].all()).all(), True, "Results don't match")
+		self.assertEqual((ref[811].all() == case[811].all()).all(), True, "Results don't match")
+		self.assertEqual((ref[905].all() == case[905].all()).all(), True, "Results don't match")
+
+	def test_grouping_data(self):
+		"""
+		Testing grouping data function iteratively. Not work yet.
+		:return:
+		"""
+		inp = pd.read_csv("../tests/data/records.csv")
+		with open('data/dict_groups.pkl', 'rb') as handle:
+			ref = pickle.load(handle)
+			case = grouping_data(inp)
+		for aid in inp.keys():
+			self.assertEqual((ref[aid].all() == case[aid].all()).all(), True, "Results don't match")
+
+
+	def test_eucledian_dist(self):
+		"""
+		Testing euclidean distance calculation. Result of function on records data set is compared with reference over
+		all columns.
+		Note: This test also includes the functions "compute_similarity()" and "similarity_computation()" since
+		"euclidean_dist()" builds upon them.
+		:return: Logical, if function returns expected result on given data frames.
+		"""
+		ref = pd.read_csv("../tests/data/euclidean_dist.csv")
+		inp = pd.read_csv("../tests/data/records.csv")
+		case = euclidean_dist(inp)
+		case = case.rename(columns = str)
+		self.assertEqual((ref.reset_index(drop=True).all() == case.reset_index(drop=True).all()).all(), True,
+						 "Results don't match")
+
+
+
+
 	def test_average_speed(self):
-		fps = 10
-		result = pd.read_csv("../tests/data/Completely_Processed_Data-fps_10_Part-2.csv")
+		#fps = 10
+		inp = pd.read_csv("../tests/data/Completely_Processed_Data-fps_10.csv")
+		result = grouping_data(inp)
 
 		# Animal_id = 312
 
-		# row number = 3
-		index = 3
-		i = index - 2
+		# row number = 13
+		index = 13
+		i = index - 9
 
-		avg_speed = round(
-			sum(result.loc[i:(i + fps - 1), "distance"]) / fps, 5)
-		self.assertEqual(avg_speed, 0.16829, "Shoud be 0.16829")
-		
+		avg_speed = compute_average_speed(result, fps = 10)
+		self.assertEqual(avg_speed, round(result[312]["avg_speed"][13]), "Results don't match")
 
-		index = 2541
+		index = 160
 		i = index - 2
 
 		# print("\nindex = {0} and i = {1}\n".format(index, i))
@@ -75,7 +121,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 
 
 
-		index = 35042
+		index = 500
 		i = index - 2
 
 		avg_speed = round(
@@ -83,7 +129,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		self.assertEqual(avg_speed, 1.06081, "Shoud be 1.06081")
 
 
-		index = 43165
+		index = 700
 		i = index - 2
 
 		avg_speed = round(
@@ -91,7 +137,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		self.assertEqual(avg_speed, 1.72602, "Shoud be 1.72602")
 
 
-		index = 43193
+		index = 1100
 		i = index - 2
 
 		avg_speed = round(
@@ -271,7 +317,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		avg_acceleration = round((result.loc[i, 'average_speed'] -
 			result.loc[i - 1, 'average_speed']), 5)
 		avg_acceleration = round((avg_acceleration / fps), 5)
-		self.assertEqual(avg_acceleration, 0.0033, "Should be 0.0033")		
+		self.assertEqual(avg_acceleration, 0.0033, "Should be 0.0033")
 
 
 		index = 26063
@@ -292,7 +338,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		self.assertEqual(avg_acceleration, 0.0174, "Should be 0.0174")
 
 
-		
+
 		# Animal ID = 511
 
 		index = 49867

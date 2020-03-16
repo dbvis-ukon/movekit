@@ -155,44 +155,6 @@ def print_duplicate(df):
         dup,
         sep='\n')
 
-
-def grouping_data(processed_data):
-    """
-    Group all values for each 'animal_id'.
-
-    :param processed_data: Pandas DataFrame, processed, containing movement record data.
-    :return: Dictionary with key as animal ID, value as all record data of the ID.
-    """
-    # A dictionary object to hold all groups obtained using group by-
-    data_animal_id_groups = {}
-
-    # Group by using 'animal_id' attribute-
-    data_animal_id = processed_data.groupby('animal_id')
-
-    # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
-
-    # To reset index for each group-
-    for animal_id in data_animal_id_groups.keys():
-        data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-
-    # Add additional attributes/columns to each groups-
-    for aid in data_animal_id_groups.keys():
-        data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
-
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            distance=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_speed=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_acceleration=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            direction=data)
-
-    return data_animal_id_groups
-
-
 def filter_dataframe(data, frm, to):
     """
     Extract records of assigned time frame from preprocessed movement record data.

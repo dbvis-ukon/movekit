@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 def grouping_data(processed_data):
     """
     Function to group data records by 'animal_id'.
-
     :param processed_data: pd.DataFrame with all preprocessed records.
     :return: dictionary with 'animal_id' as key and all records as value.
     """
@@ -33,7 +32,6 @@ def grouping_data(processed_data):
     # Add additional attributes/columns to each groups-
     for aid in data_animal_id_groups.keys():
         data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
-
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             distance=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
@@ -44,17 +42,13 @@ def grouping_data(processed_data):
         #     positive_acceleration=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             direction=data)
-
     return data_animal_id_groups
-
 
 def compute_distance_and_direction(data_animal_id_groups):
     """
     Function to calculate metric distance and direction attributes.
-
     Calculates the metric distance between two consecutive time frames/time stamps
     for each moving entity (in this case, fish).
-
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :return: dictionary containing computed 'distance' and 'direction' attributes.
     """
@@ -85,10 +79,8 @@ def compute_distance_and_direction(data_animal_id_groups):
 def compute_average_speed(data_animal_id_groups, fps):
     """
     Compute average speed of an animal based on fps (frames per second) parameter.
-
     Formula used Average Speed = Total Distance Travelled / Total Time taken;
     Use output of compute_distance_and_direction() function to this function.
-
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
     :param fps: integer to specify frames per second
     :return: dictionary, including measure for 'average_speed'
@@ -104,10 +96,8 @@ def compute_average_speed(data_animal_id_groups, fps):
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
     Compute average acceleration of an animal based on fps (frames per second) parameter.
-
     Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
     Use output of compute_average_speed() function to this function.
-
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
     :param fps: integer to specify frames per second
     :return: dictionary, including measure for 'average_acceleration'
@@ -131,10 +121,8 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
     """
     Calculate absolute features for the input data animal group.
-
     Combined usage of the functions on dictionary 'compute_average_speed(data,fps)', 'compute_average_acceleration(data,fps)' and
     'computing_stops(data, threshold)'.
-
     :param data_animal_id_groups: dictionary with 'animal_id' as keys.
     :param fps: integer to specify frames per second.
     :param stop_threshold: integer to specify threshold, at which we consider a "stop".
@@ -154,10 +142,8 @@ def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5)
 def extract_features(data, fps=10, stop_threshold=0.5):
     """
     Calculate and return all absolute features for input animal group.
-
     Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
     compute_average_acceleration(), computing_stops()
-
     :param data: pandas DataFrame with all records of movements.
     :param fps: integer to specify frames per second.
     :param stop_threshold: integer to specify threshold, at which we consider a "stop".
@@ -181,10 +167,8 @@ def extract_features(data, fps=10, stop_threshold=0.5):
 def computing_stops(data_animal_id_groups, threshold_speed):
     """
     Calculate absolute feature, describing a record as stop, based on threshold.
-
     Calculate absolute feature called 'Stopped' where the value is 1 if 'Average_Speed' <= threshold_speed
     and 0 otherwise.
-
     :param data_animal_id_groups: dictionary with 'animal_id' as keys.
     :param threshold_speed:  integer, defining maximum value for 'average_speed' to be considered as a stop.
     :return: dictionary, including variable 'stopped'.
@@ -197,9 +181,7 @@ def computing_stops(data_animal_id_groups, threshold_speed):
 def medoid_computation(data):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
-
     Uses group by on 'time' attribute
-
     :param data: Pandas DataFrame containing movement records
     :return: Pandas DataFrame containing computed medoids & centroids
     """
@@ -281,14 +263,12 @@ def medoid_computation(data):
     # return medoid_data, data_groups_time
     return medoid_data
 
-
+#DEAD below? - gives almost exact result as euclidean_dist() function.
 def distance_euclidean_matrix(data):
     """
     Calculates record's euclidean distances.
-
     Displays euclidean distances as a distance matrix of each animal at a given point in time to each other animal at
     the same point in time, sorted by 'time' and 'animal_id'.
-
     :param data: pandas DataFrame, containing preprocessed movement records.
     :return: pandas DataFrame with euclidean distances to each other 'animal_id' at a given time.
     """
@@ -298,10 +278,8 @@ def distance_euclidean_matrix(data):
 
 def euclidean_dist(data):
     """
-    Calculate distance for one record.
-
+    Calculate distances
     Compute the euklidean distance for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods
-
     :param data: pandas DataFrame with positional record data.
     :return: pandas DataFrame, including computed similarities.
     """
@@ -312,9 +290,7 @@ def euclidean_dist(data):
 def compute_similarity(data, weights, p=2):
     """
     Compute positional similarity between animals.
-
     Computing the positional similarity in a distance matrix according to animal_id for each time step.
-
     :param data: pandas DataFrame, containing preprocessed movement records.
     :param weights: dictionary, giving variable's weights in weighted distance calculation.
     :param p: integer, giving p-norm for Minkowski, weighted and unweighted. Default: 2.
@@ -346,9 +322,7 @@ def compute_similarity(data, weights, p=2):
 def similarity_computation(group, w, p):
     """
     Compute similarity between records.
-
     Compute the Minkowski similarity for one individual grouped time step using the Scipy pdist and squareform methods
-
     :param group: pandas DataFrame, containing preprocessed movement records.
     :param w: array, consisting of the weight vector.
     :param p: double, applies the respective p-norm for weighted Minkowski.
@@ -365,7 +339,6 @@ def similarity_computation(group, w, p):
 def ts_all_features(data):
     """
     Perform time series analysis on record data.
-
     Remove the column 'stopped' as it has nominal values
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :return: pandas DataFrame, containing autocorrelation for each id for each feature.
@@ -386,7 +359,6 @@ def ts_all_features(data):
 def ts_feature(data, feature):
     """
     Perform time series analysis on specified feature of record data.
-
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :param feature: feature to perform time series analysis on
     :return: pandas DataFrame, containing autocorrelation for each id for defined feature.
@@ -412,9 +384,7 @@ def ts_feature(data, feature):
 def explore_features(data):
     """
     Show percentage of environment space explored by singular animal.
-
     Using minumum and maximum of 2-D coordinates, given by 'x' and 'y' features in input DataFrame.
-
     :param data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
@@ -456,10 +426,8 @@ def explore_features(data):
 def explore_features_geospatial(preprocessed_data):
     """
     Show exploration of environment space by each animal using 'shapely' package.
-
     Gives singular descriptions of polygon area covered by each animal and combined.
     Additionally a plot of the respective areas is provided.
-
     :param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
