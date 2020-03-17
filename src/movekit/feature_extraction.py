@@ -44,6 +44,20 @@ def grouping_data(processed_data):
             direction=data)
     return data_animal_id_groups
 
+def regrouping_data(data_animal_id_groups):
+    """
+    Concatenate all Pandas DataFrames in grouped dictionary into one.
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :return: Pandas DataFrame containing all records of all andimal_ids.
+    """
+    # Concatenate all single records into one
+    result = pd.concat(data_animal_id_groups[aid]
+                       for aid in data_animal_id_groups.keys())
+
+    # Reset index-
+    result.reset_index(drop=True, inplace=True)
+    return result
+
 def compute_distance_and_direction(data_animal_id_groups):
     """
     Function to calculate metric distance and direction attributes.
@@ -107,15 +121,18 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
 
         data_animal_id_groups[aid]['average_acceleration'] = (a - b) / fps
+    return data_animal_id_groups
 
+    '''
     # Concatenate all Pandas DataFrame into one-
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
     # Reset index-
     result.reset_index(drop=True, inplace=True)
-
     return result
+    '''
+
 
 
 def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
@@ -150,18 +167,18 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
     tmp_data = grouping_data(data)
-
     tmp_data = compute_distance_and_direction(tmp_data)
-
     tmp_data = compute_average_speed(tmp_data, fps)
-
     tmp_data = compute_average_acceleration(tmp_data, fps)
-
     tmp_data = computing_stops(tmp_data, stop_threshold)
 
-    tmp_data.fillna(0, inplace=True)
+    # Regroup dictionary into pd DataFrame
+    regrouped_data = regrouping_data(tmp_data)
 
-    return tmp_data
+    # Replace NA
+    regrouped_data.fillna(0, inplace=True)
+
+    return regrouped_data
 
 
 def computing_stops(data_animal_id_groups, threshold_speed):
@@ -173,10 +190,18 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     :param threshold_speed:  integer, defining maximum value for 'average_speed' to be considered as a stop.
     :return: dictionary, including variable 'stopped'.
     """
+
+    for aid in data_animal_id_groups.keys():
+        data_animal_id_groups[aid]['stopped'] = np.where(data_animal_id_groups[aid]['average_speed'] <= threshold_speed, 1, 0)
+    return data_animal_id_groups
+
+    '''
     data_animal_id_groups['stopped'] = np.where(
         data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
     return data_animal_id_groups
+    '''
+
 
 def medoid_computation(data):
     """
