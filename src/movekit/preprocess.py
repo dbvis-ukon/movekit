@@ -3,7 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-
+# Function does not interpolate
 def linear_interpolation(data, threshold):
     """
     Interpolate missing values for 'x' and 'y' attributes in dataset.
@@ -80,7 +80,7 @@ def linear_interpolation(data, threshold):
 
     return data_del
 
-# DEAD PARAMETER?
+# Function only plots missings for all animals, therefore dead parameter
 def plot_missing_values(data, animal_id):
     """
     Plot the missing values of an animal-ID against time.
@@ -103,7 +103,7 @@ def plot_missing_values(data, animal_id):
 
     return None
 
-
+# Is this complete? If this is a combined function to preprocess, we might want to include interpolation
 def preprocess(data):
     """
     A function to perform data preprocessing.
@@ -136,8 +136,8 @@ def print_missing(df):
     :param df: Pandas DataFrame of movement records.
     :return: None.
     """
-    print("\n Number of missing values = {0}\n". \
-     format(df.isnull().sum().sort_values(ascending=False)))
+    print("Total number of missing values = ", df.isnull().sum().sum())
+    print(format(df.isnull().sum().sort_values(ascending=False)))
 
     return None
 
