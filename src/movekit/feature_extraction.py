@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 def grouping_data(processed_data):
     """
-    Function to group data records by 'animal_id'.
+    Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
     :return: dictionary with 'animal_id' as key and all records as value.
     """
@@ -29,19 +29,22 @@ def grouping_data(processed_data):
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
 
+    if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']):
     # Add additional attributes/columns to each groups-
-    for aid in data_animal_id_groups.keys():
-        data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            distance=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_speed=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_acceleration=data)
-        # data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-        #     positive_acceleration=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            direction=data)
+        for aid in data_animal_id_groups.keys():
+            data = [None for x in range(data_animal_id_groups[aid].shape[0])]
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+                distance=data)
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+                average_speed=data)
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+                average_acceleration=data)
+            # data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            #     positive_acceleration=data)
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+                direction=data)
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+                stopped=data)
     return data_animal_id_groups
 
 def regrouping_data(data_animal_id_groups):
@@ -210,17 +213,6 @@ def medoid_computation(data):
     :param data: Pandas DataFrame containing movement records
     :return: Pandas DataFrame containing computed medoids & centroids
     """
-    # Create Python dictionary to hold final medoid computation-
-    data_d = {
-        'time': [0 for x in range(data.shape[0])],
-        'x_coordinate_centroid': [0 for x in range(data.shape[0])],
-        'y_coordinate_centroid': [0 for x in range(data.shape[0])],
-        'medoid': [0 for x in range(data.shape[0])]
-    }
-
-    # Create Pandas Dataframe using dict from above-
-    medoid_data = pd.DataFrame(data_d)
-
     # Group by 'time'-
     data_time = data.groupby('time')
 
@@ -252,7 +244,6 @@ def medoid_computation(data):
         # Calculate centroid coordinates (x, y)-
         x_mean = np.around(np.mean(data_groups_time[tid]['x']), 3)
         y_mean = np.around(np.mean(data_groups_time[tid]['y']), 3)
-        centroid = np.asarray([x_mean, y_mean])
 
         data_groups_time[tid] = data_groups_time[tid].assign(x_centroid=x_mean)
         data_groups_time[tid] = data_groups_time[tid].assign(y_centroid=y_mean)
@@ -277,15 +268,7 @@ def medoid_computation(data):
         # Assign 'medoid' for this group-
         data_groups_time[tid] = data_groups_time[tid].assign(medoid=nearest)
 
-        medoid_data.loc[tid, 'time'] = tid
-        medoid_data.loc[tid, 'x_coordinate_centroid'] = x_mean
-        medoid_data.loc[tid, 'y_coordinate_centroid'] = y_mean
-        medoid_data.loc[tid, 'medoid'] = nearest
-
-        # Drop index 0-
-        medoid_data.drop(medoid_data.index[0], inplace=True)
-
-    # return medoid_data, data_groups_time
+    medoid_data = regrouping_data(data_groups_time)
     return medoid_data
 
 #DEAD below? - gives almost exact result as euclidean_dist() function.

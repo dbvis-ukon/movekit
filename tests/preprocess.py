@@ -31,11 +31,17 @@ idlist = [312, 511, 607, 811, 905]
 
 class TestPreprocess(unittest.TestCase):
 
+    def test_interpolate(self):
+        inp = pd.read_csv('../tests/data/missings.csv')
+        ref = pd.read_csv('../tests/data/interpolated.csv')
+        case = interpolate(inp)
+        self.assertTrue((ref.all()==case.all()).all(), "Results don't match")
+
     def test_filter_dataframe(self):
         inp = pd.read_csv('../tests/data/records.csv')
         ref = pd.read_csv('../tests/data/filtered.csv')
         case = filter_dataframe(inp, 1,3)
-        self.assertTrue((ref.all()==inp.all()).all(), "Results don't match")
+        self.assertTrue((ref.all()==case.all()).all(), "Results don't match")
 
     def test_replace_parts_movement(self):
         with open('../tests/data/dict_groups.pickle', 'rb') as handle:
@@ -68,7 +74,7 @@ class TestPreprocess(unittest.TestCase):
             inp = pickle.load(handle)
         with open('../tests/data/split_traj.pickle', 'rb') as handle:
             ref = pickle.load(handle)
-        case = split_trajectories_fuzzy_segmentation(inp, 3)
+        case = split_trajectories(inp, 3)
         for i in ref.keys():
             self.assertTrue((case[i].all() == ref[i].all()).all(), "Results don't match")
 

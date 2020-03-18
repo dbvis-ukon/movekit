@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # Function does not interpolate
 def linear_interpolation(data, threshold):
@@ -79,6 +80,26 @@ def linear_interpolation(data, threshold):
     data_del = data.drop(data.index[indices_to_delete], axis=0)
 
     return data_del
+
+def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear", order = 1):
+    """
+    Interpolate over missing values in pandas Dataframe of movement records.
+    Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
+    (see  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html)
+
+    :param data: Pandas DataFrame of movement records
+    :param limit: Maximum number of consecutive NANs to fill
+    :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+    :param method: Interpolation technique to use. Default is "linear".
+    :param order: To be used in case of polynomial interpolation.
+    :return: Interpolated DataFrame.
+    """
+    # Assuring that no missing animalID or timestamp is missing, printing NANs.
+    preprocess(data)
+
+    # Interpolating record data
+    interp = data.interpolate(limit=limit, limit_direction=limit_direction, method=method, order=order)
+    return interp
 
 # Function only plots missings for all animals, therefore dead parameter
 def plot_missing_values(data, animal_id):
