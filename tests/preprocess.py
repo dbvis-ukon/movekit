@@ -1,32 +1,14 @@
-# Missing:
-
-# linear_interpolation
-# plot_missing_values
-# preprocess
-# print_missing
-# print_duplicate
-# grouping_data
-# filter_dataframe
-# replace_parts_animal_movement
-# resample_systematic
-# resample_random
-# split_trajectories
-# split_trajectories_fuzzy segmentation
+import os
 import unittest
 import pandas as pd
 import numpy as np
 import math
 import pickle
 
+os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+from src.movekit.feature_extraction import *
+os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
 
-# from pandas.util.testing import assert_frame_equal
-from pandas.testing import assert_frame_equal
-import sys
-#os.chdir("C:/Users/lukas/Dropbox/Movekit/")
-
-from pandas.errors import EmptyDataError
-from src.movekit.preprocess import *
-idlist = [312, 511, 607, 811, 905]
 
 
 class TestPreprocess(unittest.TestCase):
