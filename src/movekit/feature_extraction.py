@@ -292,7 +292,8 @@ def euclidean_dist(data):
     :return: pandas DataFrame, including computed similarities.
     """
     weights = {'x': 1, 'y': 1}
-    return compute_similarity(data, weights)
+    out = compute_similarity(data, weights)
+    return out
 
 
 def compute_similarity(data, weights, p=2):

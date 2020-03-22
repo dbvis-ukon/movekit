@@ -14,10 +14,12 @@ def test_succeeds(self):
     return fig
 '''
 
-
+'''
 @pytest.mark.mpl_image_compare
 def test_plot_movement():
     return plot_movement(preprocess(read_data("/data/fish-5.csv")))
+'''
+
 
 
 
