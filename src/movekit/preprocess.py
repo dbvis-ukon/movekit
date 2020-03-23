@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
 
-
+# Function does not interpolate
 def linear_interpolation(data, threshold):
     """
     Interpolate missing values for 'x' and 'y' attributes in dataset.
@@ -80,7 +81,27 @@ def linear_interpolation(data, threshold):
 
     return data_del
 
-# DEAD PARAMETER?
+def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear", order = 1):
+    """
+    Interpolate over missing values in pandas Dataframe of movement records.
+    Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
+    (see  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html)
+
+    :param data: Pandas DataFrame of movement records
+    :param limit: Maximum number of consecutive NANs to fill
+    :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+    :param method: Interpolation technique to use. Default is "linear".
+    :param order: To be used in case of polynomial interpolation.
+    :return: Interpolated DataFrame.
+    """
+    # Assuring that no missing animalID or timestamp is missing, printing NANs.
+    preprocess(data)
+
+    # Interpolating record data
+    interp = data.interpolate(limit=limit, limit_direction=limit_direction, method=method, order=order)
+    return interp
+
+# Function only plots missings for all animals, therefore dead parameter
 def plot_missing_values(data, animal_id):
     """
     Plot the missing values of an animal-ID against time.
@@ -103,7 +124,7 @@ def plot_missing_values(data, animal_id):
 
     return None
 
-
+# Is this complete? If this is a combined function to preprocess, we might want to include interpolation
 def preprocess(data):
     """
     A function to perform data preprocessing.
@@ -136,8 +157,8 @@ def print_missing(df):
     :param df: Pandas DataFrame of movement records.
     :return: None.
     """
-    print("\n Number of missing values = {0}\n". \
-     format(df.isnull().sum().sort_values(ascending=False)))
+    print("Total number of missing values = ", df.isnull().sum().sum())
+    print(format(df.isnull().sum().sort_values(ascending=False)))
 
     return None
 
@@ -155,44 +176,6 @@ def print_duplicate(df):
         dup,
         sep='\n')
 
-
-def grouping_data(processed_data):
-    """
-    Group all values for each 'animal_id'.
-
-    :param processed_data: Pandas DataFrame, processed, containing movement record data.
-    :return: Dictionary with key as animal ID, value as all record data of the ID.
-    """
-    # A dictionary object to hold all groups obtained using group by-
-    data_animal_id_groups = {}
-
-    # Group by using 'animal_id' attribute-
-    data_animal_id = processed_data.groupby('animal_id')
-
-    # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
-
-    # To reset index for each group-
-    for animal_id in data_animal_id_groups.keys():
-        data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-
-    # Add additional attributes/columns to each groups-
-    for aid in data_animal_id_groups.keys():
-        data = [0 for x in range(data_animal_id_groups[aid].shape[0])]
-
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            distance=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_speed=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            average_acceleration=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            direction=data)
-
-    return data_animal_id_groups
-
-
 def filter_dataframe(data, frm, to):
     """
     Extract records of assigned time frame from preprocessed movement record data.
@@ -202,7 +185,7 @@ def filter_dataframe(data, frm, to):
     :param to: Int, defining end point up to where to extract records.
     :return: Pandas DataFrame, filtered by records matching the defined frame in 'from'-'to'.
     """
-    return data.loc[(data['time'] >= frm) & (data['time'] < to), :]
+    return data.loc[(data['time'] >= frm) & (data['time'] <= to), :]
 
 
 def replace_parts_animal_movement(data_groups, animal_id, time_array,
@@ -212,12 +195,12 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
     This function can be used to remove outliers.
 
     Example usage:
-        data_groups = group_animals(data)
+        data_groups = grouping_data(data)
         arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
         replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
 
     :param data_groups: Dictionary with key 'animal_id'and value with records for 'animal_id'.
-    :param animal_id: Int defining 'animal_id' whose movements have to replaced.
+    :param animal_id: Int defining 'animal_id' whose movements have to be replaced.
     :param time_array: Array defining time indices whose movements have to replaced
     :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
     :param replacement_value_y: Int value that will replace all 'y' attribute values in 'time_array'.
@@ -295,50 +278,7 @@ def resample_random(data_groups, downsample_size):
     return data_groups_downsampled
 
 
-def split_trajectories(data_groups, segment=1):
-    """
-    Split the trajectory of a single animal into several segments based on specified criterion.
-
-    Splitting may be interesting for example to detect different properties in
-    time intervals. E.g. split into segments of 1 minute
-
-    Example usage:
-        data_groups = group_animals(data)
-        split_trajectories(data_groups, segment = 3)
-
-    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
-    :param segment: Int, defining point where the animals are split into several Pandas Data Frames.
-    :return: None. All segmented Pandas Data Frames are saved to HDD
-    """
-    # Method-1:
-    # df1, df2 = data_groups[312].iloc[:10, :], data_groups[312].iloc[10:20, :]
-
-    # Get first key-
-    first = list(data_groups.keys())[0]
-
-    size = data_groups[first].shape[0]
-    segment_size = math.floor(size / segment)
-
-    groups = {}
-
-    for aid in data_groups.keys():
-        beg, end = 0, segment_size
-        # groups['group_' + str(aid)] = data_groups[aid]
-        for l in range(segment):
-            # groups['group_' + str(aid)]['df' + str(l + 1)] = data_groups[aid].iloc[beg: end, :]
-            groups['group_' + str(aid) + '_df' +
-                   str(l + 1)] = data_groups[aid].iloc[beg:end, :]
-            beg, end = end, end + segment_size
-
-    for k in groups.keys():
-        groups[k].to_csv(k + '.csv', index=False)
-
-    return groups
-
-
-def split_trajectories_fuzzy_segmentation(data_groups,
-                                          segment=1,
-                                          fuzzy_segment=2):
+def split_trajectories(data_groups, segment, fuzzy_segment = 0, csv = False):
     """
     Split trajectory of a single animal into several segments based on specific criterion.
 
@@ -349,6 +289,7 @@ def split_trajectories_fuzzy_segmentation(data_groups,
     :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
     :param segment: Int, defining point where the animals are split into several Pandas Data Frames.
     :param fuzzy_segment: Int, defining interval which will overlap on either side of the segments.
+    :param csv: Boolean, defining if each interval shall be exported locally as singular csv
     :return: None. All segmented Pandas Data Frames are saved to HDD.
     """
     # Get first key-
@@ -368,6 +309,13 @@ def split_trajectories_fuzzy_segmentation(data_groups,
                    str(l + 1)] = data_groups[aid].iloc[beg:end, :]
             beg, end = end - fuzzy_segment, end + segment_size + fuzzy_segment
 
-    for k in groups.keys():
-        groups[k].to_csv(k + '.csv', index=False)
+    if csv == True:
+        for k in groups.keys():
+            groups[k].to_csv(k + '.csv', index=False)
+
     return groups
+'''
+
+'''
+
+

@@ -85,6 +85,9 @@ def parse_excel(path_to_file):
     except FileNotFoundError:
         print("The file could not be found.\nPath given: {0}\n\n".format(
             path_to_file))
+    except EmptyDataError:
+        print("The provided dataset is empty}\n\n".format(
+            path_to_file))
 
 
 def read_data(path):
