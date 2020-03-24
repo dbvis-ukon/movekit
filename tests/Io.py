@@ -7,9 +7,9 @@ import numpy as np
 import math
 import pickle
 from pandas.errors import EmptyDataError
-os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+
 from src.movekit.feature_extraction import *
-os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
+
 
 
 from src.movekit.io import parse_csv, parse_excel

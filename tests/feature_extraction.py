@@ -6,9 +6,9 @@ import math
 import pickle
 from pandas.testing import assert_frame_equal
 
-os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+
 from src.movekit.feature_extraction import *
-os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
+
 
 
 # Required datasets for testing:

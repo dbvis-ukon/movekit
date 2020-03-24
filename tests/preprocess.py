@@ -5,9 +5,9 @@ import numpy as np
 import math
 import pickle
 
-os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+
 from src.movekit.preprocess import *
-os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
+
 
 
 
@@ -36,6 +36,25 @@ class TestPreprocess(unittest.TestCase):
         # Interpolated with default limit = 1
         case = interpolate(inp)
         pd.testing.assert_frame_equal(ref,case, check_dtype=False)
+
+    def test_preprocess(self):
+        up_missings = {
+            'time': {0: None, 1: 1, 2: 1, 3: 1, 4: 1, 9: 2, 7: 2, 8: 2, 5: 2, 6: 2},
+                    'animal_id': {0: 312, 1 : 511, 2: 607,3: 811,4: 905,9: 511,7: 811,8: 312,5: 905, 6: 607},
+                    'x': {0: 405.29, 1: 369.99, 2: None, 3: 445.15, 4: 366.06, 9: 370.01, 7: 445.48, 8: 405.31,
+                          5: 365.86, 6: 390.25},
+                    'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: None, 4: None, 9: 428.82, 7: 412.26, 8: 417.37,
+                          5: 451.76, 6: 405.89}}
+        preprocessed = {'time': {1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 2.0, 6: 2.0, 7: 2.0, 8: 2.0, 9: 2.0},
+                        'animal_id': {1: 511, 2: 607, 3: 811, 4: 905, 5: 905, 6: 607, 7: 811, 8: 312, 9: 511},
+                        'x': {1: 369.99, 2: 407.57, 3: 445.15, 4: 366.06, 5: 365.86, 6: 390.25, 7: 445.48, 8: 405.31,
+                              9: 370.01}, 'y': {1: 428.78, 2: 405.89, 3: 421.18, 4: None, 5: 451.76, 6: 405.89,
+                                                7: 412.26, 8: 417.37, 9: 428.82}}
+
+        inp = pd.DataFrame(up_missings)
+        ref = pd.DataFrame(preprocessed)
+        case = preprocess(inp)
+        pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
     def test_filter_dataframe(self):
         records = {
