@@ -63,7 +63,6 @@ def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direct
 
     data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method,
                 order = order)
-    print("lol")
 
 
     # Drop columns with  missing values for 'time'  and 'animal_id'

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from src.movekit.feature_extraction import *
+from .feature_extraction import *
 
 
 def plot_movement(data, frm, to):

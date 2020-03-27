@@ -30,7 +30,7 @@ def parse_csv(path_to_file):
             elif is_string_dtype(data['time']):
                 data['time'] = pd.to_datetime(data['time'])
                 data.sort_values('time', ascending=True, inplace=True)
-
+                data.drop(data.filter(regex="unname"), axis=1, inplace=True)
             # Check if 'heading_angle' attribute is given in CSV file-
             if 'heading_angle' in data and np.issubdtype(
                     data['heading_angle'].dtype, np.number):
