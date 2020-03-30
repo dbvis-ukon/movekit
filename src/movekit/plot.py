@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from .feature_extraction import *
 
 
 def plot_movement(data, frm, to):
@@ -58,150 +59,84 @@ def plot_animal_timesteps(data_animal_id_groups):
     return None
 
 
-def plot_speed(avg_speed_data):
+def plot_pace(avg_speed_data, feature = "speed"):
     """
     Plot average speed extracted feature for each animal.
 
     :param avg_speed_data: dictionary containing grouping of data by 'animal_id' including average speed feature.
     :return: None.
     """
-    # A dictionary object to hold all groups obtained using group by-
-    # Apply grouping using 'animal_id' attribute-
-    data_animal_id = avg_speed_data.groupby('animal_id')
 
-    # A dictionary object to hold all groups obtained using group by-
-    data_animal_id_groups = {}
+    # Group data into dictionary with animal_id as keys
+    data_animal_id_groups = grouping_data(avg_speed_data)
 
-    # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
-
-    # To reset index for each group-
-    for animal_id in data_animal_id_groups.keys():
-        data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-
-    # Initialize Python 3.X dict to hold average speed
-    # for each animals-
-    animals_speed = {}
-
-    for aid in data_animal_id_groups.keys():
-        animals_speed[aid] = data_animal_id_groups[aid]['average_speed']
-        animals_speed[aid] = np.asarray(animals_speed[aid])
-
-    # n = len(animals_avg_speed)
-    # n = n //2
-
-    # List containing animal ids to be used within loop-
-    animal_ids = list(animals_speed.keys())
-
-    # Indices for stacking and making subplots in grid-
-    c = 0
-    i = 0
-    j = 0
-
-    # fig, axs = plt.subplots(n + 1, n, sharex = True)
-    fig, axs = plt.subplots(len(animal_ids),
-                            sharex=True,
-                            sharey=True,
-                            figsize=(10, 10))
-
-    fig.suptitle("Plot: Average Speed for each animal")
-
-    while c < len(animal_ids):
-        axs[c].plot(animals_speed[animal_ids[c]])
-        axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
-        c += 1
-
-    # fig.text(0.5, 0.04, "Average Speed", va = 'center')
-    # fig.text(0.4, 0.5, "number of time steps", ha = 'center')
-
-    # Set common labels-
-    # ax.set_xlabel("number of time steps")
-    # ax.set_ylabel("Average Speed")
-
-    for ax in axs.flat:
-        ax.set(xlabel='number of time steps', ylabel='avg speed')
-
-    # Hide x labels and tick labels for top plots and y ticks for
-    # right plots-
-    # for ax in axs.flat:
-    for ax in axs:
-        ax.label_outer()
-
-    plt.show()
-
-    return None
+    # Init dictionary to hold requested parameter
+    animals_vals = {}
 
 
-def plot_acceleration(avg_acc_data):
-    """
-    Plot average acceleration extracted feature for each animal.
+    if feature == "speed":
 
-    :param avg_acc_data: Pandas DataFrame containing relevant computed features.
-    :return: None.
-    """
-    # A dictionary object to hold all groups obtained using group by-
-    # Apply grouping using 'animal_id' attribute-
-    data_animal_id = avg_acc_data.groupby('animal_id')
+        # Fill dictionary with average speed feature
+        for aid in data_animal_id_groups.keys():
+            animals_vals[aid] = data_animal_id_groups[aid]['average_speed']
+            animals_vals[aid] = np.asarray(animals_vals[aid])
 
-    # A dictionary object to hold all groups obtained using group by-
-    data_animal_id_groups = {}
+        # List containing animal ids to be used within loop-
+        animal_ids = list(animals_vals.keys())
 
-    # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
+        # Indices for stacking and making subplots in grid-
+        c = 0
 
-    # To reset index for each group-
-    for animal_id in data_animal_id_groups.keys():
-        data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
+        fig, axs = plt.subplots(len(animal_ids),
+                                sharex=True,
+                                sharey=True,
+                                figsize=(10, 10))
 
-    # Initialize Python 3.X dict to hold average speed
-    # for each animals-
-    animals_acc = {}
+        fig.suptitle("Plot: Average Acceleration for each animal")
 
-    for aid in data_animal_id_groups.keys():
-        animals_acc[aid] = data_animal_id_groups[aid]['average_acceleration']
-        animals_acc[aid] = np.asarray(animals_acc[aid])
+        while c < len(animal_ids):
+            axs[c].plot(animals_vals[animal_ids[c]])
+            axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
+            c += 1
 
-    # n = len(animals_avg_speed)
-    # n = n //2
+        for ax in axs.flat:
+            ax.set(xlabel='number of time steps', ylabel='avg speed')
 
-    # List containing animal ids to be used within loop-
-    animal_ids = list(animals_acc.keys())
+        # Hide x labels and tick labels for top plots and y ticks
+        for ax in axs:
+            ax.label_outer()
 
-    # Indices for stacking and making subplots in grid-
-    c = 0
-    i = 0
-    j = 0
+    if feature == "acceleration":
 
-    # fig, axs = plt.subplots(n + 1, n, sharex = True)
-    fig, axs = plt.subplots(len(animal_ids),
-                            sharex=True,
-                            sharey=True,
-                            figsize=(10, 10))
+        # Fill dictionary with average acceleration feature
+        for aid in data_animal_id_groups.keys():
+            animals_vals[aid] = data_animal_id_groups[aid]['average_acceleration']
+            animals_vals[aid] = np.asarray(animals_vals[aid])
 
-    fig.suptitle("Plot: Average Acceleration for each animal")
+        # List containing animal ids to be used within loop-
+        animal_ids = list(animals_vals.keys())
 
-    while c < len(animal_ids):
-        axs[c].plot(animals_acc[animal_ids[c]])
-        axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
-        c += 1
+        # Indices for stacking and making subplots in grid-
+        c = 0
 
-    # fig.text(0.5, 0.04, "Average Speed", va = 'center')
-    # fig.text(0.4, 0.5, "number of time steps", ha = 'center')
+        fig, axs = plt.subplots(len(animal_ids),
+                                sharex=True,
+                                sharey=True,
+                                figsize=(10, 10))
 
-    # Set common labels-
-    # ax.set_xlabel("number of time steps")
-    # ax.set_ylabel("Average Speed")
+        fig.suptitle("Plot: Average Acceleration for each animal")
 
-    for ax in axs.flat:
-        ax.set(xlabel='number of time steps', ylabel='avg acc')
+        while c < len(animal_ids):
+            axs[c].plot(animals_vals[animal_ids[c]])
+            axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
+            c += 1
 
-    # Hide x labels and tick labels for top plots and y ticks for
-    # right plots-
-    # for ax in axs.flat:
-    for ax in axs:
-        ax.label_outer()
+        for ax in axs.flat:
+            ax.set(xlabel='number of time steps', ylabel='avg acc')
+
+        # Hide x labels and tick labels for top plots and y ticks
+        for ax in axs:
+            ax.label_outer()
 
     plt.show()
 

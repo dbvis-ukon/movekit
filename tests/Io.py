@@ -7,9 +7,9 @@ import numpy as np
 import math
 import pickle
 from pandas.errors import EmptyDataError
-os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+
 from src.movekit.feature_extraction import *
-os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
+
 
 
 from src.movekit.io import parse_csv, parse_excel
@@ -21,6 +21,18 @@ class Test_IO(unittest.TestCase):
         path = '../tests/data/fish-5.csv'
         # create Pandas DataFrame-
         df = parse_csv(path)
+        self.assertEqual(df.shape[0], 50)
+
+    def test_read_csv_time(self):
+        path = '../tests/data/fish-5_time.csv'
+
+        df = parse_csv(path)
+        self.assertEqual(df.shape[0], 50)
+
+    def test_read_excel_time(self):
+        path = '../tests/data/fish-5_time.xlsx'
+
+        df = parse_excel(path)
         self.assertEqual(df.shape[0], 50)
 
     def test_read_csv_file_without_suffix(self):
@@ -82,13 +94,23 @@ class Test_IO(unittest.TestCase):
         Function to compare two files of file types-
         CSV and MS Excel
         '''
+
+        # Parsing with numeric time stamps
         csv_path = '../tests/data/fish-5.csv'
         excel_path = '../tests/data/fish-5.xlsx'
+
+        # Parsing with strings to datetime stamps
+        csv_time_path = '../tests/data/fish-5_time.csv'
+        excel_time_path = '../tests/data/fish-5_time.xlsx'
 
         df1 = parse_csv(csv_path)
         df2 = parse_excel(excel_path)
 
+        df3 = parse_csv(csv_time_path)
+        df4 = parse_excel(excel_time_path)
+
         pd.testing.assert_frame_equal(df1, df2)
+        pd.testing.assert_frame_equal(df3, df4)
         #self.assertEqual(df1.all(), df2.all())
 
 

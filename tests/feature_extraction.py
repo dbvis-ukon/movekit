@@ -1,14 +1,15 @@
 import os
 import unittest
+from pandas import Timestamp
 import pandas as pd
 import numpy as np
 import math
 import pickle
 from pandas.testing import assert_frame_equal
 
-os.chdir("C:/Users/lukas/Dropbox/Movekit/")
+
 from src.movekit.feature_extraction import *
-os.chdir("C:/Users/lukas/Dropbox/Movekit/tests")
+
 
 
 # Required datasets for testing:
@@ -91,6 +92,18 @@ records = {
 				  405.88,
 				  412.61, 451.76]
 			}
+
+
+records_timestring = {
+        "time": ["2020-03-27 11:57:07", "2020-03-27 11:57:07", "2020-03-27 11:57:07", "2020-03-27 11:57:07", "2020-03-27 11:57:07",
+                 "2020-03-27 11:57:09", "2020-03-27 11:57:09", "2020-03-27 11:57:09", "2020-03-27 11:57:09", "2020-03-27 11:57:09", "2020-03-27 11:57:11", "2020-03-27 11:57:11", "2020-03-27 11:57:11", "2020-03-27 11:57:11", "2020-03-27 11:57:11"],
+        "animal_id": [312, 511, 607, 811, 905, 511, 811, 312, 905, 607, 312, 511, 607, 811, 905],
+        "x": [405.29, 369.99, 390.33, 445.15, 366.06, 370.01, 445.48, 405.31, 365.86, 390.25, 405.31, 370.01,
+              390.17, 445.77, 365.7],
+        "y": [417.76, 428.78, 405.89, 411.94, 451.76, 428.82, 412.26, 417.37, 451.76, 405.89, 417.07, 428.85,
+              405.88,
+              412.61, 451.76]
+        }
 
 medoids = {
 			'time': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 3, 11: 3, 12: 3, 13: 3, 14: 3},
@@ -281,6 +294,37 @@ feats = {'time': {0: 1, 1: 2, 2: 3, 3: 1, 4: 2, 5: 3, 6: 1, 7: 2, 8: 3, 9: 1, 10
 		 'direction': {0: 0.0, 1: -87.0643, 2: -90.0, 3: 0.0, 4: 63.4349, 5: 90.0, 6: 0.0, 7: 180.0, 8: -172.875,
 					   9: 0.0, 10: 44.1186, 11: 50.3558, 12: 0.0, 13: 180.0, 14: 180.0},
 		 'stopped': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1}}
+
+timestamp_feats = {'time': {0: Timestamp('2020-03-27 11:57:07'), 1: Timestamp('2020-03-27 11:57:09'),
+							2: Timestamp('2020-03-27 11:57:11'), 3: Timestamp('2020-03-27 11:57:07'),
+							4: Timestamp('2020-03-27 11:57:09'), 5: Timestamp('2020-03-27 11:57:11'),
+							6: Timestamp('2020-03-27 11:57:07'), 7: Timestamp('2020-03-27 11:57:09'),
+							8: Timestamp('2020-03-27 11:57:11'), 9: Timestamp('2020-03-27 11:57:07'),
+							10: Timestamp('2020-03-27 11:57:09'), 11: Timestamp('2020-03-27 11:57:11'),
+							12: Timestamp('2020-03-27 11:57:07'), 13: Timestamp('2020-03-27 11:57:09'),
+							14: Timestamp('2020-03-27 11:57:11')},
+				   'animal_id': {0: 312, 1: 312, 2: 312, 3: 511, 4: 511, 5: 511, 6: 607, 7: 607,
+								 8: 607, 9: 811, 10: 811, 11: 811, 12: 905, 13: 905, 14: 905},
+				   'x': {0: 405.29, 1: 405.31, 2: 405.31, 3: 369.99, 4: 370.01, 5: 370.01, 6: 390.33,
+						 7: 390.25, 8: 390.17, 9: 445.15, 10: 445.48, 11: 445.77, 12: 366.06,
+						 13: 365.86, 14: 365.7}, 'y': {0: 417.76, 1: 417.37, 2: 417.07, 3: 428.78,
+													   4: 428.82, 5: 428.85, 6: 405.89, 7: 405.89,
+													   8: 405.88, 9: 411.94, 10: 412.26, 11: 412.61,
+													   12: 451.76, 13: 451.76, 14: 451.76},
+				   'distance': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0,
+								7: 0.08, 8: 0.0806, 9: 0.0, 10: 0.4597, 11: 0.4545, 12: 0.0,
+								13: 0.2, 14: 0.16},
+				   'average_speed': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0,
+									 7: 0.08, 8: 0.0806, 9: 0.0, 10: 0.4597, 11: 0.4545, 12: 0.0,
+									 13: 0.2, 14: 0.16},
+				   'average_acceleration': {0: 0.0, 1: 0.3905, 2: -0.0905, 3: 0.0, 4: 0.0447,
+											5: -0.0147, 6: 0.0, 7: 0.08, 8: 0.0006, 9: 0.0,
+											10: 0.4597, 11: -0.0051, 12: 0.0, 13: 0.2, 14: -0.04},
+				   'direction': {0: 0.0, 1: -87.0643, 2: -90.0, 3: 0.0, 4: 63.4349, 5: 90.0,
+								 6: 0.0, 7: 180.0, 8: -172.875, 9: 0.0, 10: 44.1186, 11: 50.3558,
+								 12: 0.0, 13: 180.0, 14: 180.0},
+				   'stopped': {0: 1, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1,
+							   10: 0, 11: 0, 12: 1, 13: 0, 14: 0}}
 
 ts_feat = {'average_acceleration__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
 		   'average_acceleration__autocorrelation__lag_1': {312: -0.9687, 511: -0.9436, 607: -1.0, 811: -0.9999,
@@ -806,11 +850,28 @@ class Test_Feature_Extraction(unittest.TestCase):
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
 	def test_extract_features(self):
+		"""
+		Testing feature extraction for both, numeric and string time indices
+		:return: Equality of records vs features dataset for both time-datatypes
+		"""
+
+		# Numeric datatype
 		ref = pd.DataFrame(feats)
 		inp = pd.DataFrame(records)
 		case = extract_features(inp, fps = 1, stop_threshold=0.5).round(4)
-		#ref = ref.astype({'stopped': 'int32'})
+
+		# String datatype
+		ref_time = pd.DataFrame(timestamp_feats)
+		inp_time = pd.DataFrame(records_timestring)
+		inp_time["time"] = pd.to_datetime(inp_time["time"])
+		case_time = extract_features(inp_time, fps=1, stop_threshold=0.1).round(4)
+
+		# Testing function on numeric "time" datatype
 		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
+
+		# Testing function on string "time" datatype
+		pd.testing.assert_frame_equal(ref_time, case_time, check_dtype=False)
+
 
 	def test_ts_feature(self):
 		ref = pd.DataFrame(ts_feat).round(4)
@@ -827,6 +888,8 @@ class Test_Feature_Extraction(unittest.TestCase):
 		ref = ref.rename_axis('variable', axis=1)
 		ref = ref.rename_axis("id", axis=0)
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,83 +4,6 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Function does not interpolate
-def linear_interpolation(data, threshold):
-    """
-    Interpolate missing values for 'x' and 'y' attributes in dataset.
-
-    :param data: Pandas DataFrame with movement records.
-    :param threshold: Integer to define the number of rows till which data should NOT be deleted.
-    :return: Processed Pandas DataFrame.
-    """
-    # Get indices of missing values for 'x' attribute in a list-
-    missing_x_values = list(data[data['x'].isnull()].index)
-
-    # Get indices of missing values for 'y' attribute in a list-
-    missing_y_values = list(data[data['y'].isnull()].index)
-
-    print("\nNumber of missing values in 'x' attribute = {0}". \
-     format(len(missing_x_values)))
-    print("Number of missing values in 'y' attribute = {0}\n". \
-     format(len(missing_y_values)))
-
-    # counter for outer loop-
-    i = 0
-
-# DEAD VARIABLES?
-    # counter for inner loop-
-    j = 0
-
-    # start & end counters-
-    start = end = 0
-
-    # count length of sequence found-
-    k = 1
-
-    # list containing indices to be deleted-
-    indices_to_delete = []
-
-    # threshold = 10
-
-    while i < (len(missing_x_values) - 1):
-        start = end = missing_x_values[i]
-        k = 1
-        # j = missing_x_values[i]
-        j = i
-
-        # print("\ni = {0} & j = {1}".format(i, j))
-
-        while j < (len(missing_x_values) - 1):
-            # print("j = ", j)
-            if missing_x_values[j] + 1 == missing_x_values[j + 1]:
-                k += 1
-                j += 1
-                # end = j
-                end = missing_x_values[j]
-            else:
-                # i = j + 1
-                break
-
-        i = j + 1
-
-        if k >= threshold:
-            # Delete rows-
-            print("\nDelete sequence from {0} to {1}\n".format(start, end))
-            # data = data.drop(data.index[start:end + 1])
-            # data.drop(data.index[start: end + 1], inplace = True, axis = 0)
-            for x in range(start, end + 1):
-                indices_to_delete.append(x)
-
-        elif k > 1:
-            # Perform Linear Interpolation-
-            print("\nSequence length = {0}. Start = {1} & End = {2}". \
-             format(k, start, end))
-
-    # Delete indices-
-    data_del = data.drop(data.index[indices_to_delete], axis=0)
-
-    return data_del
-
 def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear", order = 1):
     """
     Interpolate over missing values in pandas Dataframe of movement records.
@@ -94,15 +17,12 @@ def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, met
     :param order: To be used in case of polynomial interpolation.
     :return: Interpolated DataFrame.
     """
-    # Assuring that no missing animalID or timestamp is missing, printing NANs.
-    preprocess(data)
-
     # Interpolating record data
-    interp = data.interpolate(limit=limit, limit_direction=limit_direction, method=method, order=order)
+    interp = data.interpolate(limit=limit, limit_direction=limit_direction, inplace=inplace, method=method, order=order)
     return interp
 
 # Function only plots missings for all animals, therefore dead parameter
-def plot_missing_values(data, animal_id):
+def plot_missing_values(data):
     """
     Plot the missing values of an animal-ID against time.
 
@@ -110,12 +30,6 @@ def plot_missing_values(data, animal_id):
     :param animal_id: ID of the animal whose missing values will be plotted against time.
     :return: None.
     """
-
-# DEAD VARIABLES?
-    missing_time = data[data['time'].isnull()].index.tolist()
-    missing_x = data[data['x'].isnull()].index.tolist()
-    missing_y = data[data['y'].isnull()].index.tolist()
-
     # Visualizing the count of missing values for all attributes-
     data.isnull().sum().plot(kind='bar')
     plt.xticks(rotation=20)
@@ -124,25 +38,37 @@ def plot_missing_values(data, animal_id):
 
     return None
 
-# Is this complete? If this is a combined function to preprocess, we might want to include interpolation
-def preprocess(data):
+
+def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direction = "forward", inplace = False,
+               method = "linear",
+               order = 1):
     """
-    A function to perform data preprocessing.
+    Function to perform data preprocessing.
 
     Print the number of missing values per column; Drop columns with  missing values for 'time' and 'animal_id';
     Remove the duplicated rows found.
-
-    :param data: Pandas DataFrame to be processed.
-    :return: DataFrame processed.
+    :param data: DataFrame to perform preprocessing on
+    :param dropna: Optional parameter to drop columns with  missing values for 'time' and 'animal_id'
+    :param interpolation: Optional parameter to perform linear interpolation
+    :param limit: Maximum number of consecutive NANs to fill
+    :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+    :param method: Interpolation technique to use. Default is "linear".
+    :param order: To be used in case of polynomial interpolation.
+    :return: Preprocessed DataFrame.
     """
     # Print the number of missing values per column
     print_missing(data)
 
+    # Interpolate data with missings
+
+    data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method,
+                order = order)
+
+
     # Drop columns with  missing values for 'time'  and 'animal_id'
+
+
     data.dropna(subset=['animal_id', 'time'], inplace=True)
-    # Change column type of animal_id and time
-    data['animal_id'] = data['animal_id'].astype(np.int64)
-    data['time'] = data['time'].astype(np.int64)
 
     # Remove the duplicated rows found above
     data.drop_duplicates(subset=['animal_id', 'time'], inplace=True)
