@@ -5,7 +5,8 @@ from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
-
+from fastdtw import fastdtw
+from scipy.spatial.distance import euclidean
 
 def grouping_data(processed_data):
     """
@@ -482,3 +483,24 @@ def explore_features_geospatial(preprocessed_data):
     plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
     plt.show()
     return None
+
+def get_trajectories(data_groups):
+    """
+    Obtain trajectories out of a grouped dictionary with multiple ids.
+    :param data_groups: Grouped dictionary by animal_id.
+    :return: Grouped dictionary by animal id, containing tuples of positions in 2d coordinate system.
+    """
+    trajectories = {}
+    for aid in data_groups.keys():
+        trajectories["trajectory_" + str(aid)] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
+    return trajectories
+
+def dtw_matrix(data_groups):
+    trajectories = get_trajectories(data_groups)
+    distance_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])))
+    for aid in range(len([*trajectories.keys()])):
+        for aid2 in range(len([*trajectories.keys()])):
+            distance_matr[aid][aid2], path = fastdtw(trajectories[[*trajectories.keys()][aid]],
+                                                trajectories[[*trajectories.keys()][aid2]], dist = euclidean)
+
+    return distance_matr
