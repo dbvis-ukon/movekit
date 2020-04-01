@@ -490,17 +490,40 @@ def get_trajectories(data_groups):
     :param data_groups: Grouped dictionary by animal_id.
     :return: Grouped dictionary by animal id, containing tuples of positions in 2d coordinate system.
     """
+
+    # create new dictionary
     trajectories = {}
     for aid in data_groups.keys():
+        # add dict item, holding x-y tuples for the trajectories of each animal id
         trajectories["trajectory_" + str(aid)] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
     return trajectories
 
-def dtw_matrix(data_groups):
+def dtw_matrix(data_groups, path = False, distance = euclidean):
+    """
+    Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
+    :param data_groups: Grouped dictionary by animal_id.
+    :param path: Boolean to specify if matrix of dtw-path gets returned as well
+    :param distance: Specify with distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
+    :return: pandas Dataframe with distances between trajectories.
+    """
+    # get trajectory-dictionary with local function
     trajectories = get_trajectories(data_groups)
+
+    # create empty np array with size, depending on number of tracked animals
     distance_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])))
+
+    # create empty np list-array for paths with size, depending on number of tracked animals
+    path_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
+
+    # double-iterate over obtained trajectory dict
     for aid in range(len([*trajectories.keys()])):
         for aid2 in range(len([*trajectories.keys()])):
-            distance_matr[aid][aid2], path = fastdtw(trajectories[[*trajectories.keys()][aid]],
-                                                trajectories[[*trajectories.keys()][aid2]], dist = euclidean)
 
-    return distance_matr
+            # fill np array field with euclidean distance of respective trajectories, same for path field
+            distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(trajectories[[*trajectories.keys()][aid]],
+                                                trajectories[[*trajectories.keys()][aid2]], dist = distance)
+            # generate pandas df from distance array
+            distance_df = pd.DataFrame(data=distance_matr, index=[*trajectories.keys()], columns=[*trajectories.keys()])
+
+
+    return distance_df, path_matr if path else distance_df

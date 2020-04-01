@@ -25,11 +25,11 @@ def parse_csv(path_to_file):
         if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
             # Check if 'time' attribute is integer-
             if is_numeric_dtype(data['time']):
-                data.sort_values('time', ascending=True, inplace=True)
+                data.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
                 # Check if 'time' attribute is string-
             elif is_string_dtype(data['time']):
                 data['time'] = pd.to_datetime(data['time'])
-                data.sort_values('time', ascending=True, inplace=True)
+                data.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
                 data.drop(data.filter(regex="unname"), axis=1, inplace=True)
             # Check if 'heading_angle' attribute is given in CSV file-
             if 'heading_angle' in data and np.issubdtype(
@@ -68,11 +68,11 @@ def parse_excel(path_to_file):
         if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
             # Check if 'time' attribute is integer-
             if is_numeric_dtype(data['time']):
-                data.sort_values('time', ascending=True, inplace=True)
+                data.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
                 # Check if 'time' attribute is string-
             elif is_string_dtype(data['time']):
                 data['time'] = pd.to_datetime(data['time'])
-                data.sort_values('time', ascending=True, inplace=True)
+                data.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
 
             # Check if 'heading_angle' attribute is given in CSV file-
             if 'heading_angle' in data and np.issubdtype(
@@ -102,6 +102,8 @@ def read_data(path):
     file_split = path.split(".")
 
     if file_split[-1] == 'csv':
+
         return parse_csv(path)
     elif file_split[-1] == 'xlsx':
         return parse_excel(path)
+
