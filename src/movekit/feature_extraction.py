@@ -7,8 +7,9 @@ from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
+from tslearn.clustering import TimeSeriesKMeans
 
-def grouping_data(processed_data):
+def grouping_data(processed_data, pick_vars = None):
     """
     Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
@@ -29,7 +30,6 @@ def grouping_data(processed_data):
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-
     if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']):
     # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
@@ -46,6 +46,9 @@ def grouping_data(processed_data):
                 direction=data)
             data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
                 stopped=data)
+    if pick_vars != None:
+        for aid in data_animal_id_groups.keys():
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].loc[:,pick_vars]
     return data_animal_id_groups
 
 def regrouping_data(data_animal_id_groups):
@@ -495,7 +498,7 @@ def get_trajectories(data_groups):
     trajectories = {}
     for aid in data_groups.keys():
         # add dict item, holding x-y tuples for the trajectories of each animal id
-        trajectories["trajectory_" + str(aid)] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
+        trajectories[aid] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
     return trajectories
 
 def dtw_matrix(data_groups, path = False, distance = euclidean):
@@ -525,5 +528,57 @@ def dtw_matrix(data_groups, path = False, distance = euclidean):
             # generate pandas df from distance array
             distance_df = pd.DataFrame(data=distance_matr, index=[*trajectories.keys()], columns=[*trajectories.keys()])
 
+    if path:
+        return distance_df, path_matr
+    else:
+        return distance_df
 
-    return distance_df, path_matr if path else distance_df
+
+def ts_cluster(feats, n_clust, varlst=["x", "y"], metric="euclidean", max_iter=5, random_state=0, inertia=False):
+    """
+    Incorporate time series clustering for absolute features.
+    :param feats: DataFrame, containing computed features of animal record data.
+    :param n_clust: Number of clusters to distinguish.
+    :param varlst: List of variables to use for clustering. Default: Only 2d positions x and y.
+    :param metric: Distance metric. Default: Euclidean. Alternatives: “dtw”, “softdtw”.
+    :param max_iter: Max number of iterations. Default: 5.
+    :param random_state: Default: 0.
+    :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
+    :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
+    """
+    # Group data into animal-id dictionary
+    data_groups = grouping_data(feats)
+
+    # Group variables of interest for clustering into animal-id dictionary
+    traj = grouping_data(feats, pick_vars=varlst)
+
+    # Convert variables of interest to nested list
+    tracks = []
+    for i in [*traj.keys()]:
+        tracks.append(traj[i].values.tolist())
+
+    # Calculate timeseries k-Means based on specified parameters
+    km = TimeSeriesKMeans(n_clusters=n_clust, metric=metric, max_iter=max_iter, random_state=random_state)
+    km = km.fit(tracks)
+    clustcens = km.cluster_centers_.tolist()
+
+    # Iterate over animal ids
+    for aid in range(len(traj)):
+
+        # append cluster label to animal id groups
+        clust = [*km.labels_][aid]
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(cluster=clust)
+
+        # append centroid of cluster to animal id groups
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(ClustCenter=clustcens[
+            clust])
+
+    # convert animal-id groups to dataframe
+    clustered_df = regrouping_data(data_groups)
+
+    # if true, return inertia along with dataframe, else (default) just dataframe.
+    if inertia:
+        return clustered_df, km.inertia_
+
+    else:
+        return clustered_df

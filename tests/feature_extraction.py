@@ -889,6 +889,49 @@ class Test_Feature_Extraction(unittest.TestCase):
 		ref = ref.rename_axis("id", axis=0)
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
+	def test_dtw_matrix(self):
+		ref = pd.DataFrame({'trajectory_312': {'trajectory_312': 0.0, 'trajectory_511': 74.09067953165595,
+								  'trajectory_607': 38.03365928918165, 'trajectory_811': 80.77636691446091,
+								  'trajectory_905': 104.2485347931366},
+			   'trajectory_511': {'trajectory_312': 74.09067953165595, 'trajectory_511': 0.0,
+								  'trajectory_607': 61.20636468753354, 'trajectory_811': 154.28892643064987,
+								  'trajectory_905': 46.62598844408468},
+			   'trajectory_607': {'trajectory_312': 38.03365928918165, 'trajectory_511': 61.20636468753354,
+								  'trajectory_607': 0.0, 'trajectory_811': 110.74896336324917,
+								  'trajectory_905': 103.84620569989656},
+			   'trajectory_811': {'trajectory_312': 80.77636691446091, 'trajectory_511': 154.28892643064987,
+								  'trajectory_607': 110.74896336324917, 'trajectory_811': 0.0,
+								  'trajectory_905': 177.42829599543492},
+			   'trajectory_905': {'trajectory_312': 104.2485347931366, 'trajectory_511': 46.62598844408468,
+								  'trajectory_607': 103.84620569989656, 'trajectory_811': 177.42829599543492,
+								  'trajectory_905': 0.0}})
+
+
+		inp = {312 : pd.DataFrame( {'time': {0: 1, 1: 2}, 'animal_id': {0: 312, 1: 312}, 'x': {0: 405.29, 1: 405.31},
+									'y': {0: 417.76, 1: 417.37}, 'distance': {0: 0, 1: 0},
+									'average_speed': {0: 0, 1: 0}, 'average_acceleration': {0: 0, 1: 0},
+									'direction': {0: 0, 1: 0}} ),
+				511 : pd.DataFrame( {'time': {0: 1, 1: 2}, 'animal_id': {0: 511, 1: 511}, 'x': {0: 369.99, 1: 370.01},
+					 				'y': {0: 428.78, 1: 428.82}, 'distance': {0: 0, 1: 0}, 'average_speed': {0: 0, 1: 0},
+					 				'average_acceleration': {0: 0, 1: 0}, 'direction': {0: 0, 1: 0}} ),
+				607 : pd.DataFrame( {'time': {0: 1, 1: 2}, 'animal_id': {0: 607, 1: 607}, 'x': {0: 390.33, 1: 390.25},
+									 'y': {0: 405.89, 1: 405.89}, 'distance': {0: 0, 1: 0},
+									 'average_speed': {0: 0, 1: 0}, 'average_acceleration': {0: 0, 1: 0},
+									 'direction': {0: 0, 1: 0}} ),
+				811 : pd.DataFrame( {'time': {0: 1, 1: 2}, 'animal_id': {0: 811, 1: 811}, 'x': {0: 445.15, 1: 445.48},
+									 'y': {0: 411.94, 1: 412.26}, 'distance': {0: 0, 1: 0},
+									 'average_speed': {0: 0, 1: 0}, 'average_acceleration': {0: 0, 1: 0},
+									 'direction': {0: 0, 1: 0}} ),
+				905 : pd.DataFrame( {'time': {0: 1, 1: 2}, 'animal_id': {0: 905, 1: 905}, 'x': {0: 366.06, 1: 365.86},
+									 'y': {0: 451.76, 1: 451.76}, 'distance': {0: 0, 1: 0},
+									 'average_speed': {0: 0, 1: 0}, 'average_acceleration': {0: 0, 1: 0},
+									 'direction': {0: 0, 1: 0}} )}
+
+		case = dtw_matrix(inp)
+		print(case)
+		print(ref)
+		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
+
 
 
 if __name__ == '__main__':
