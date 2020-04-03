@@ -61,6 +61,7 @@ def regrouping_data(data_animal_id_groups):
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
+    result.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
     # Reset index-
     result.reset_index(drop=True, inplace=True)
     return result
@@ -186,6 +187,7 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     regrouped_data.fillna(0, inplace=True)
 
     return regrouped_data
+
 
 
 def computing_stops(data_animal_id_groups, threshold_speed):
@@ -564,17 +566,25 @@ def ts_cluster(feats, n_clust, varlst=["x", "y"], metric="euclidean", max_iter=5
 
     # Iterate over animal ids
     for aid in range(len(traj)):
-
         # append cluster label to animal id groups
         clust = [*km.labels_][aid]
         data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(cluster=clust)
 
         # append centroid of cluster to animal id groups
-        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(ClustCenter=clustcens[
-            clust])
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(
+            ClustCenter=clustcens[clust])
 
     # convert animal-id groups to dataframe
     clustered_df = regrouping_data(data_groups)
+
+    clst = list(clustered_df.loc[:, "ClustCenter"])
+    vars = list(zip(*clst))
+
+    # append DataFrame with new centroid variables
+    newvars = {}
+    for i in range(len(varlst)):
+        newvars['centroid_' + str(varlst[i])] = vars[i]
+    clustered_df = clustered_df.join(pd.DataFrame(newvars))
 
     # if true, return inertia along with dataframe, else (default) just dataframe.
     if inertia:
