@@ -172,17 +172,6 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         data_animal_id_groups[aid]['average_acceleration'] = (a - b) / fps
     return data_animal_id_groups
 
-    '''
-    # Concatenate all Pandas DataFrame into one-
-    result = pd.concat(data_animal_id_groups[aid]
-                       for aid in data_animal_id_groups.keys())
-
-    # Reset index-
-    result.reset_index(drop=True, inplace=True)
-    return result
-    '''
-
-
 
 def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
     """
@@ -276,7 +265,6 @@ def medoid_computation(data, only_centroid = False):
     # Each group has dimension- (5, 4)
 
     # Add 3 additional columns to each group-
-    for aid in data_groups_time.keys():
         data_l = [0 for x in range(data_groups_time[aid].shape[0])]
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=data_l)
@@ -287,34 +275,33 @@ def medoid_computation(data, only_centroid = False):
             data_groups_time[aid] = data_groups_time[aid].assign(
                 distance_to_centroid=data_l)
 
-    for tid in data_groups_time.keys():
         # Calculate centroid coordinates (x, y)-
-        x_mean = np.around(np.mean(data_groups_time[tid]['x']), 3)
-        y_mean = np.around(np.mean(data_groups_time[tid]['y']), 3)
+        x_mean = np.around(np.mean(data_groups_time[aid]['x']), 3)
+        y_mean = np.around(np.mean(data_groups_time[aid]['y']), 3)
 
-        data_groups_time[tid] = data_groups_time[tid].assign(x_centroid=x_mean)
-        data_groups_time[tid] = data_groups_time[tid].assign(y_centroid=y_mean)
+        data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=x_mean)
+        data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=y_mean)
 
         if only_centroid == False:
             # Squared distance of each 'x' coordinate to 'centroid'-
-            x_temp = (data_groups_time[tid].loc[:, 'x'] - x_mean) ** 2
+            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean) ** 2
 
             # Squared distance of each 'y' coordinate to 'centroid'-
-            y_temp = (data_groups_time[tid].loc[:, 'y'] - y_mean) ** 2
+            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean) ** 2
 
             # Distance of each point from centroid-
             dist = np.sqrt(x_temp + y_temp)
 
             # Assign computed distances to 'distance_to_centroid' attribute-
-            data_groups_time[tid] = data_groups_time[tid].assign(
+            data_groups_time[aid] = data_groups_time[aid].assign(
                 distance_to_centroid=np.around(dist, decimals=3))
 
             # Find 'animal_id' nearest to centroid for this group-
-            pos = np.argmin(data_groups_time[tid]['distance_to_centroid'].values)
-            nearest = data_groups_time[tid].loc[pos, 'animal_id']
+            pos = np.argmin(data_groups_time[aid]['distance_to_centroid'].values)
+            nearest = data_groups_time[aid].loc[pos, 'animal_id']
 
             # Assign 'medoid' for this group-
-            data_groups_time[tid] = data_groups_time[tid].assign(medoid=nearest)
+            data_groups_time[aid] = data_groups_time[aid].assign(medoid=nearest)
 
     medoid_data = regrouping_data(data_groups_time)
     return medoid_data
@@ -591,6 +578,13 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
     :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
     :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
     """
+
+    # check for each feature if it's contained in feats dataset - if not, calculate
+    for feat in varlst:
+        if feat not in feats.columns:
+            feats = extract_features(feats)
+            break
+
     # Group data into animal-id dictionary
     data_groups = grouping_data(feats)
 
@@ -671,6 +665,7 @@ def compute_polarization(preprocessed_data):
     :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
     :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
     """
+    # Extract features if not done yet
     if "direction" not in preprocessed_data.columns:
         preprocessed_data = extract_features(preprocessed_data)
 
@@ -680,13 +675,17 @@ def compute_polarization(preprocessed_data):
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
+    # Obtain polarization for each point in time
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
         data = (1 / len(data_groups_time[aid]["direction"])) * np.sqrt(
             (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2 + (
                 sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2)
+
+        # Assign polarization to new variable
         data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
 
+    # Regroup data into DataFrame
     polarization_data = regrouping_data(data_groups_time)
     return polarization_data
