@@ -60,15 +60,15 @@ def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direct
     print_missing(data)
 
     # Interpolate data with missings
-
-    data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method,
+    if interpolate:
+        data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method,
                 order = order)
 
 
     # Drop columns with  missing values for 'time'  and 'animal_id'
 
-
-    data.dropna(subset=['animal_id', 'time'], inplace=True)
+    if dropna:
+        data.dropna(subset=['animal_id', 'time'], inplace=True)
 
     # Remove the duplicated rows found above
     data.drop_duplicates(subset=['animal_id', 'time'], inplace=True)

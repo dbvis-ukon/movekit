@@ -5,9 +5,11 @@ from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
+from fastdtw import fastdtw
+from scipy.spatial.distance import euclidean
+from tslearn.clustering import TimeSeriesKMeans
 
-
-def grouping_data(processed_data):
+def grouping_data(processed_data, pick_vars = None):
     """
     Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
@@ -28,7 +30,6 @@ def grouping_data(processed_data):
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-
     if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']):
     # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
@@ -45,6 +46,9 @@ def grouping_data(processed_data):
                 direction=data)
             data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
                 stopped=data)
+    if pick_vars != None:
+        for aid in data_animal_id_groups.keys():
+            data_animal_id_groups[aid] = data_animal_id_groups[aid].loc[:,pick_vars]
     return data_animal_id_groups
 
 def regrouping_data(data_animal_id_groups):
@@ -57,9 +61,51 @@ def regrouping_data(data_animal_id_groups):
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
+    result.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
     # Reset index-
     result.reset_index(drop=True, inplace=True)
     return result
+
+def compute_direction(data_animal_id_groups, param_x="x", param_y = "y", colname = "direction"):
+    """
+    Calculate angle of degrees, an animal is heading in between two timesteps.
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :param param_x: Column name to be recognized as x. Default "x".
+    :param param_y: Column name to be recognized as y. Default "y".
+    :return: dictionary containing computed 'distance' attribute.
+    """
+    # Compute 'direction' for 'animal_id' groups-
+    for aid in data_animal_id_groups.keys():
+        data = np.rad2deg(
+            np.arctan2((data_animal_id_groups[aid][param_y] -
+                        data_animal_id_groups[aid][param_y].shift(periods=1)),
+                       (data_animal_id_groups[aid][param_x] -
+                        data_animal_id_groups[aid][param_x].shift(periods=1))))
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(inp=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(columns={'inp': colname})
+    return data_animal_id_groups
+
+def compute_distance(data_animal_id_groups, param_x = "x", param_y= "y"):
+    """
+    Calculate metric distance of animals in between two timesteps.
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :param param_x: Column name to be recognized as x. Default "x".
+    :param param_y: Column name to be recognized as y. Default "y".
+    :return: dictionary containing computed 'distance' attribute.
+    """
+    for aid in data_animal_id_groups.keys():
+        p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
+        p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(periods=1)
+        p2.iloc[0, :] = [0.0, 0.0]
+
+        data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                   p2) ** 2).sum(axis=1) ** 0.5
+
+    # Reset first entry for each 'animal_id' to zero-
+    for aid in data_animal_id_groups.keys():
+        data_animal_id_groups[aid].loc[0, 'distance'] = 0.0
+
+    return data_animal_id_groups
 
 def compute_distance_and_direction(data_animal_id_groups):
     """
@@ -126,17 +172,6 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         data_animal_id_groups[aid]['average_acceleration'] = (a - b) / fps
     return data_animal_id_groups
 
-    '''
-    # Concatenate all Pandas DataFrame into one-
-    result = pd.concat(data_animal_id_groups[aid]
-                       for aid in data_animal_id_groups.keys())
-
-    # Reset index-
-    result.reset_index(drop=True, inplace=True)
-    return result
-    '''
-
-
 
 def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
     """
@@ -184,6 +219,7 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     return regrouped_data
 
 
+
 def computing_stops(data_animal_id_groups, threshold_speed):
     """
     Calculate absolute feature, describing a record as stop, based on threshold.
@@ -206,11 +242,12 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     '''
 
 
-def medoid_computation(data):
+def medoid_computation(data, only_centroid = False):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute
     :param data: Pandas DataFrame containing movement records
+    :param data: Boolean in case we just want to compute the centroids. Default: False.
     :return: Pandas DataFrame containing computed medoids & centroids
     """
     # Group by 'time'-
@@ -221,9 +258,6 @@ def medoid_computation(data):
 
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
-
-    # Reset index-
-    for aid in data_time.groups.keys():
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
     # NOTE:
@@ -231,42 +265,43 @@ def medoid_computation(data):
     # Each group has dimension- (5, 4)
 
     # Add 3 additional columns to each group-
-    for aid in data_groups_time.keys():
         data_l = [0 for x in range(data_groups_time[aid].shape[0])]
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=data_l)
         data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=data_l)
-        data_groups_time[aid] = data_groups_time[aid].assign(medoid=data_l)
-        data_groups_time[aid] = data_groups_time[aid].assign(
-            distance_to_centroid=data_l)
 
-    for tid in data_groups_time.keys():
+        if only_centroid == False:
+            data_groups_time[aid] = data_groups_time[aid].assign(medoid=data_l)
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                distance_to_centroid=data_l)
+
         # Calculate centroid coordinates (x, y)-
-        x_mean = np.around(np.mean(data_groups_time[tid]['x']), 3)
-        y_mean = np.around(np.mean(data_groups_time[tid]['y']), 3)
+        x_mean = np.around(np.mean(data_groups_time[aid]['x']), 3)
+        y_mean = np.around(np.mean(data_groups_time[aid]['y']), 3)
 
-        data_groups_time[tid] = data_groups_time[tid].assign(x_centroid=x_mean)
-        data_groups_time[tid] = data_groups_time[tid].assign(y_centroid=y_mean)
+        data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=x_mean)
+        data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=y_mean)
 
-        # Squared distance of each 'x' coordinate to 'centroid'-
-        x_temp = (data_groups_time[tid].loc[:, 'x'] - x_mean) ** 2
+        if only_centroid == False:
+            # Squared distance of each 'x' coordinate to 'centroid'-
+            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean) ** 2
 
-        # Squared distance of each 'y' coordinate to 'centroid'-
-        y_temp = (data_groups_time[tid].loc[:, 'y'] - y_mean) ** 2
+            # Squared distance of each 'y' coordinate to 'centroid'-
+            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean) ** 2
 
-        # Distance of each point from centroid-
-        dist = np.sqrt(x_temp + y_temp)
+            # Distance of each point from centroid-
+            dist = np.sqrt(x_temp + y_temp)
 
-        # Assign computed distances to 'distance_to_centroid' attribute-
-        data_groups_time[tid] = data_groups_time[tid].assign(
-            distance_to_centroid=np.around(dist, decimals=3))
+            # Assign computed distances to 'distance_to_centroid' attribute-
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                distance_to_centroid=np.around(dist, decimals=3))
 
-        # Find 'animal_id' nearest to centroid for this group-
-        pos = np.argmin(data_groups_time[tid]['distance_to_centroid'].values)
-        nearest = data_groups_time[tid].loc[pos, 'animal_id']
+            # Find 'animal_id' nearest to centroid for this group-
+            pos = np.argmin(data_groups_time[aid]['distance_to_centroid'].values)
+            nearest = data_groups_time[aid].loc[pos, 'animal_id']
 
-        # Assign 'medoid' for this group-
-        data_groups_time[tid] = data_groups_time[tid].assign(medoid=nearest)
+            # Assign 'medoid' for this group-
+            data_groups_time[aid] = data_groups_time[aid].assign(medoid=nearest)
 
     medoid_data = regrouping_data(data_groups_time)
     return medoid_data
@@ -482,3 +517,175 @@ def explore_features_geospatial(preprocessed_data):
     plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
     plt.show()
     return None
+
+def get_trajectories(data_groups):
+    """
+    Obtain trajectories out of a grouped dictionary with multiple ids.
+    :param data_groups: Grouped dictionary by animal_id.
+    :return: Grouped dictionary by animal id, containing tuples of positions in 2d coordinate system.
+    """
+
+    # create new dictionary
+    trajectories = {}
+    for aid in data_groups.keys():
+        # add dict item, holding x-y tuples for the trajectories of each animal id
+        trajectories[aid] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
+    return trajectories
+
+def dtw_matrix(data_groups, path = False, distance = euclidean):
+    """
+    Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
+    :param data_groups: Grouped dictionary by animal_id.
+    :param path: Boolean to specify if matrix of dtw-path gets returned as well
+    :param distance: Specify with distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
+    :return: pandas Dataframe with distances between trajectories.
+    """
+    # get trajectory-dictionary with local function
+    trajectories = get_trajectories(data_groups)
+
+    # create empty np array with size, depending on number of tracked animals
+    distance_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])))
+
+    # create empty np list-array for paths with size, depending on number of tracked animals
+    path_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
+
+    # double-iterate over obtained trajectory dict
+    for aid in range(len([*trajectories.keys()])):
+        for aid2 in range(len([*trajectories.keys()])):
+
+            # fill np array field with euclidean distance of respective trajectories, same for path field
+            distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(trajectories[[*trajectories.keys()][aid]],
+                                                trajectories[[*trajectories.keys()][aid2]], dist = distance)
+            # generate pandas df from distance array
+            distance_df = pd.DataFrame(data=distance_matr, index=[*trajectories.keys()], columns=[*trajectories.keys()])
+
+    if path:
+        return distance_df, path_matr
+    else:
+        return distance_df
+
+
+def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acceleration", "direction", "stopped"],
+               metric="euclidean",  max_iter=5, random_state=0, inertia=False):
+    """
+    Incorporate time series clustering for absolute features.
+    :param feats: DataFrame, containing computed features of animal record data.
+    :param n_clust: Number of clusters to distinguish.
+    :param varlst: List of variables to use for clustering. Default: Only 2d positions x and y.
+    :param metric: Distance metric. Default: Euclidean. Alternatives: “dtw”, “softdtw”.
+    :param max_iter: Max number of iterations. Default: 5.
+    :param random_state: Default: 0.
+    :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
+    :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
+    """
+
+    # check for each feature if it's contained in feats dataset - if not, calculate
+    for feat in varlst:
+        if feat not in feats.columns:
+            feats = extract_features(feats)
+            break
+
+    # Group data into animal-id dictionary
+    data_groups = grouping_data(feats)
+
+    # Group variables of interest for clustering into animal-id dictionary
+    traj = grouping_data(feats, pick_vars=varlst)
+
+    # Convert variables of interest to nested list
+    tracks = []
+    for i in [*traj.keys()]:
+        tracks.append(traj[i].values.tolist())
+
+    # Calculate timeseries k-Means based on specified parameters
+    km = TimeSeriesKMeans(n_clusters=n_clust, metric=metric, max_iter=max_iter, random_state=random_state)
+    km = km.fit(tracks)
+    clustcens = km.cluster_centers_.tolist()
+
+    # Iterate over animal ids
+    for aid in range(len(traj)):
+        # append cluster label to animal id groups
+        clust = [*km.labels_][aid]
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(cluster=clust)
+
+        # append centroid of cluster to animal id groups
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(
+            ClustCenter=clustcens[clust])
+
+    # convert animal-id groups to dataframe
+    clustered_df = regrouping_data(data_groups)
+
+    clst = list(clustered_df.loc[:, "ClustCenter"])
+    vars = list(zip(*clst))
+
+    # append DataFrame with new centroid variables
+    newvars = {}
+    for i in range(len(varlst)):
+        newvars['centroid_' + str(varlst[i])] = vars[i]
+    clustered_df = clustered_df.join(pd.DataFrame(newvars))
+
+    # if true, return inertia along with dataframe, else (default) just dataframe.
+    if inertia:
+        return clustered_df, km.inertia_
+
+    else:
+        return clustered_df
+
+def get_heading_difference(preprocessed_data):
+    """
+    Calculate the difference in degrees between the animal's direction and the centroid's direction for each timestep.
+    :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
+    :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
+    """
+    if "direction" not in preprocessed_data.columns:
+        preprocessed_data = extract_features(preprocessed_data)
+
+    if "x_centroid" not in preprocessed_data.columns or "y_centroid" not in preprocessed_data.columns:
+        preprocessed_data = medoid_computation(preprocessed_data)
+    # Obtain the centroid positions for each timestep, group into dictionary
+
+    animal_dir = grouping_data(preprocessed_data)
+
+    # Get the directions  for each centroid for each timestep
+    cen_dir = compute_direction(animal_dir, param_x = "x_centroid", param_y = "y_centroid", colname = "centroid_direction")
+
+    # Subtract animal's direction from centroid's direction
+    directions = regrouping_data(cen_dir)
+    raw_diff = directions.loc[:,"direction"] - directions.loc[:,"centroid_direction"]
+
+    # Calculate signed angle, store in new variable
+    directions = directions.assign(heading_difference = (raw_diff + 180) % 360 - 180)
+    return directions
+
+
+def compute_polarization(preprocessed_data):
+    """
+    Compute the polarization of a group at all record timepoints.
+
+    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv.
+    :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
+    :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
+    """
+    # Extract features if not done yet
+    if "direction" not in preprocessed_data.columns:
+        preprocessed_data = extract_features(preprocessed_data)
+
+    # Group by 'time'-
+    data_time = preprocessed_data.groupby('time')
+
+    # Dictionary to hold grouped data by 'time' attribute-
+    data_groups_time = {}
+
+    # Obtain polarization for each point in time
+    for aid in data_time.groups.keys():
+        data_groups_time[aid] = data_time.get_group(aid)
+        data_groups_time[aid].reset_index(drop=True, inplace=True)
+        data = (1 / len(data_groups_time[aid]["direction"])) * np.sqrt(
+            (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2 + (
+                sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2)
+
+        # Assign polarization to new variable
+        data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
+
+    # Regroup data into DataFrame
+    polarization_data = regrouping_data(data_groups_time)
+    return polarization_data
