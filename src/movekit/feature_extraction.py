@@ -5,6 +5,7 @@ from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
+from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from tslearn.clustering import TimeSeriesKMeans
@@ -517,4 +518,32 @@ def explore_features_geospatial(preprocessed_data):
     plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
     plt.show()
     return None
+
+
+def outlier_detection(inp_data, contamination = 0.01, n_neighbors = 5, method = "mean", metric = "minkowski"):
+    """
+    Detect outliers based on pyod KNN.
+
+    Note: User may decide upon contamination threshold, number of neighbors, method and metric.
+    For method three kNN detectors are supported:
+        -largest: use the distance to the kth neighbor as the outlier score
+        -mean(default): use the average of all k neighbors as the outlier score
+        -median: use the median of the distance to k neighbors as the outlier score
+
+    :param inp_data: list of features to detect outliers upon.
+    :param contamination: float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,
+    i.e. the proportion of outliers in the data set.
+    :param n_neighbors: int, (default = 5) Number of neighbors to use by default for k neighbors queries.
+    :param method: str, (default='largest') {'largest', 'mean', 'median'}
+    :param metric: string or callable, default 'minkowski' metric to use for distance computation. Any metric from
+    scikit-learn or scipy.spatial.distance can be used.
+    :return:
+    """
+    clf = KNN(contamination = contamination, n_neighbors = n_neighbors, method = method, metric = metric)
+    clf.fit(inp_data)
+    scores_pred = clf.predict(inp_data)
+
+    # Inserting column, with 1 if outlier, else 0
+    inp_data.insert(2, "outlier", scores_pred)
+    return inp_data
 

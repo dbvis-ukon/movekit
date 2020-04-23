@@ -66,6 +66,10 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
                metric="euclidean",  max_iter=5, random_state=0, inertia=False):
     """
     Incorporate time series clustering for absolute features.
+
+    Note: Function can be used with extracted features beforehand. If features are not extracted, function performs
+    standard feature extraction first.
+
     :param feats: DataFrame, containing computed features of animal record data.
     :param n_clust: Number of clusters to distinguish.
     :param varlst: List of variables to use for clustering. Default: Only 2d positions x and y.
@@ -130,6 +134,11 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
 def get_heading_difference(preprocessed_data):
     """
     Calculate the difference in degrees between the animal's direction and the centroid's direction for each timestep.
+
+    Note: Calculate the difference in degrees between the animal's direction and the centroid's direction for each
+    timestep. Stronger gain in y gives positive difference, weaker gain in y gives negative difference, since constant
+    y is defined to be 0 degrees.
+
     :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
     :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
     """
