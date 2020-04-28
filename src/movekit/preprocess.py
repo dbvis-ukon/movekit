@@ -240,8 +240,26 @@ def split_trajectories(data_groups, segment, fuzzy_segment = 0, csv = False):
             groups[k].to_csv(k + '.csv', index=False)
 
     return groups
-'''
 
-'''
+def convert_measueres(preprocessed_data, x_min = 0, x_max = 1, y_min = 0, y_max = 1):
+    """
+    Create a linear scale with input parameters for x,y for transformation of position data.
+    :param preprocessed_data: Pandas DataFrame only with x and y position data
+    :param x_min: int minimum for x - default: 0.
+    :param x_max: int maximum for x - default: 1.
+    :param y_min: int minimum for y - default: 0.
+    :param y_max: int maximum for y - default: 1.
+    :return: Pandas DataFrame with linearly transformed position data.
+    """
+    # Preventing features input along position data
+    if [*preprocessed_data.columns] != ['time', 'animal_id', 'x', 'y']:
+        print("\nError! Conversion only allowed for dataframes with colnames ['time', 'animal_id', 'x', "
+              "'y']. \n")
+        return None
+
+    # Linear Transformation of position dimensions
+    preprocessed_data.loc[:,"x"] = np.interp(preprocessed_data.loc[:,"x"], (preprocessed_data.loc[:,"x"].min(), preprocessed_data.loc[:,"x"].max()), (x_min, x_max))
+    preprocessed_data.loc[:,"y"] = np.interp(preprocessed_data.loc[:,"y"], (preprocessed_data.loc[:,"y"].min(), preprocessed_data.loc[:,"y"].max()), (y_min, y_max))
+    return preprocessed_data
 
 

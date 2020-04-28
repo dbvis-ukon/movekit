@@ -197,6 +197,11 @@ def compute_polarization(preprocessed_data):
     return polarization_data
 
 def voronoi_volumes(points):
+    """
+    Function to calculate area in a voronoi-diagram. Used in function below.
+    :param points: Nested list, indicating points with coordinates.
+    :return: Volume for each point, infinite if area is not closed to each direction (usually outmost points).
+    """
     v = Voronoi(points)
     vol = np.zeros(v.npoints)
     for i, reg_num in enumerate(v.point_region):
@@ -210,6 +215,21 @@ def voronoi_volumes(points):
 def voronoi_diagram(preprocessed_data):
     """
     Compute the voronoi diagram for each time step as well as the area for each cell over time
+
+    Each timestep gets a voronoi object as well as the area of the voronoi - shape.
+    Infinity, if respective animal is outmost in swarm.
+
+    Note: Voronoi object contains the following attributes:
+        `.points` - Coordinates of input points.
+        `.vertices` - Coordinates of the Voronoi vertices.
+        `ridge_points` - Indices of the points between which each Voronoi ridge lies.
+        `ridge_vertices` - Indices of the Voronoi vertices forming each Voronoi ridge.
+        `regions` - Indices of the Voronoi vertices forming each Voronoi region. -1 indicates vertex outside the Voronoi
+        diagram.
+        `point_region` - Index of the Voronoi region for each input point. If qhull option “Qc” was not specified,
+        the list will contain -1 for points that are not associated with a Voronoi region.
+        `furthest_site` - True if this was a furthest site triangulation and False if not.
+
     :param preprocessed_data: Animal movement records
     :return: movement records with voronoi area, and list of voronoi-diagram objects for each timestep
     """
@@ -218,16 +238,20 @@ def voronoi_diagram(preprocessed_data):
 
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
+
+    # List for diagram objects at each timepoint
     diagrams = []
 
-    # Obtain polarization for each point in time
+    # Obtain diagram objects, store in list for each timestep
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
-        vor_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
         diagrams.append(Voronoi(data_groups_time[aid].loc[:, ["x", "y"]]))
 
-        # Assign polarization to new variable
+        # Calculate area based on voronoi-volumes function right above
+        vor_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
+
+        # Store area values in new variable for each timestep
         data_groups_time[aid] = data_groups_time[aid].assign(area_voronoi=vor_vol)
 
     # Regroup data into DataFrame

@@ -520,7 +520,9 @@ def explore_features_geospatial(preprocessed_data):
     return None
 
 
-def outlier_detection(inp_data, contamination = 0.01, n_neighbors = 5, method = "mean", metric = "minkowski"):
+def outlier_detection(dataset, features = ["distance","average_speed", "average_acceleration","direction",
+                                            "stopped"], contamination = 0.01, n_neighbors = 5, method = "mean", \
+                                                                                           metric = "minkowski"):
     """
     Detect outliers based on pyod KNN.
 
@@ -530,7 +532,7 @@ def outlier_detection(inp_data, contamination = 0.01, n_neighbors = 5, method = 
         -mean(default): use the average of all k neighbors as the outlier score
         -median: use the median of the distance to k neighbors as the outlier score
 
-    :param inp_data: list of features to detect outliers upon.
+    :param dataset: list of features to detect outliers upon.
     :param contamination: float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,
     i.e. the proportion of outliers in the data set.
     :param n_neighbors: int, (default = 5) Number of neighbors to use by default for k neighbors queries.
@@ -540,10 +542,17 @@ def outlier_detection(inp_data, contamination = 0.01, n_neighbors = 5, method = 
     :return:
     """
     clf = KNN(contamination = contamination, n_neighbors = n_neighbors, method = method, metric = metric)
+    inp_data = dataset.loc[:, features]
+
     clf.fit(inp_data)
     scores_pred = clf.predict(inp_data)
 
+    # avoid overwriting input
+
     # Inserting column, with 1 if outlier, else 0
-    inp_data.insert(2, "outlier", scores_pred)
-    return inp_data
+    if "outlier" in dataset:
+        dataset["outlier"] = scores_pred
+    else:
+        dataset.insert(2, "outlier", scores_pred)
+    return dataset
 
