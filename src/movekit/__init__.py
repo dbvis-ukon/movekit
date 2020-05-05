@@ -11,9 +11,9 @@ finally:
     del get_distribution, DistributionNotFound
 
 from .io import read_data  # noqa: E402
-from .preprocess import preprocess  # noqa: E402
+from .preprocess import *  # noqa: E402
 from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
-from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, dtw_matrix, ts_cluster, \
-    get_heading_difference, compute_polarization, medoid_computation
+from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, medoid_computation
+from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization
 # noqa: E402
 from .plot import *  # noqa: E402
