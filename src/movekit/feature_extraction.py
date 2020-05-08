@@ -433,11 +433,6 @@ def explore_features(data):
     :param data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
-    x_min = 0
-    y_min = 0
-    x_max = 0
-    y_max = 0
-
     # Compute global minimum and maximum if user
     # has NOT specified the values-
     x_min = data['x'].min()
