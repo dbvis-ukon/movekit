@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear", order = 1):
+def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear"):
     """
     Interpolate over missing values in pandas Dataframe of movement records.
     Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
@@ -18,7 +18,7 @@ def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, met
     :return: Interpolated DataFrame.
     """
     # Interpolating record data
-    interp = data.interpolate(limit=limit, limit_direction=limit_direction, inplace=inplace, method=method, order=order)
+    interp = data.interpolate(limit=limit, limit_direction=limit_direction, inplace=inplace, method=method)
     return interp
 
 # Function only plots missings for all animals, therefore dead parameter
@@ -39,9 +39,8 @@ def plot_missing_values(data):
     return None
 
 
-def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direction = "forward", inplace = False,
-               method = "linear",
-               order = 1):
+def preprocess(data, dropna = True, interpolation= False, limit = 1, limit_direction = "forward", inplace = False,
+               method = "linear"):
     """
     Function to perform data preprocessing.
 
@@ -49,7 +48,7 @@ def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direct
     Remove the duplicated rows found.
     :param data: DataFrame to perform preprocessing on
     :param dropna: Optional parameter to drop columns with  missing values for 'time' and 'animal_id'
-    :param interpolation: Optional parameter to perform linear interpolation
+    :param interpolate: Optional parameter to perform linear interpolation
     :param limit: Maximum number of consecutive NANs to fill
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
     :param method: Interpolation technique to use. Default is "linear".
@@ -60,9 +59,8 @@ def preprocess(data, dropna = True, interpolation= True, limit = 1, limit_direct
     print_missing(data)
 
     # Interpolate data with missings
-    if interpolate:
-        data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method,
-                order = order)
+    if interpolation:
+        data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method)
 
 
     # Drop columns with  missing values for 'time'  and 'animal_id'

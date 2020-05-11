@@ -143,14 +143,15 @@ def plot_pace(avg_speed_data, feature = "speed"):
     return None
 
 
-def plot_animal(data_animal_id_groups, animal_id):
+def plot_animal(inp_data, animal_id):
     """
     Plot individual animal's 'x' and 'y' coordinates.
 
-    :param data_animal_id_groups: dictionary grouped by 'animal_id' containing 'x' & 'y' attributes.
+    :param data_animal_id_groups: DataFrame containing 'x' & 'y' attributes.
     :param animal_id: ID of animal to be plotted.
     :return: None.
     """
+    data_animal_id_groups = grouping_data(inp_data)
     if animal_id not in data_animal_id_groups.keys():
         print(
             "\nError!! animal id: {0} does NOT exist in the provided data!\n".

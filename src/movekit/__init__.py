@@ -11,9 +11,12 @@ finally:
     del get_distribution, DistributionNotFound
 
 from .io import read_data  # noqa: E402
-from .preprocess import *  # noqa: E402
+from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
+    resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values  # noqa:
+# E402
 from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
-from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, medoid_computation
-from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization
+from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, medoid_computation, \
+    outlier_detection
+from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization, voronoi_diagram
 # noqa: E402
-from .plot import *  # noqa: E402
+from .plot import plot_animal, plot_pace, plot_movement  # noqa: E402
