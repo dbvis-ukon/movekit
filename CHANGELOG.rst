@@ -2,10 +2,12 @@
 Changelog
 =========
 
-Uncommitted changes
-    * Improved setup file
-    * Simplification of nesting and coding style throughout
-    * Cleaned up all code files and made style more consistent using pep8 style
+Version 0.1.9
+=============
+    * Time series feature extraction and clustering
+    * Basic plot functionality 
+    * Dynamic graph extraction already added 
+    * Voronoi diagram 
 
 Version 0.1
 ===========

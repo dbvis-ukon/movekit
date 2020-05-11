@@ -4,7 +4,12 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, method = "linear"):
+
+def interpolate(data,
+                limit=1,
+                limit_direction="forward",
+                inplace=False,
+                method="linear"):
     """
     Interpolate over missing values in pandas Dataframe of movement records.
     Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
@@ -18,8 +23,12 @@ def interpolate(data, limit = 1, limit_direction = "forward", inplace=False, met
     :return: Interpolated DataFrame.
     """
     # Interpolating record data
-    interp = data.interpolate(limit=limit, limit_direction=limit_direction, inplace=inplace, method=method)
+    interp = data.interpolate(limit=limit,
+                              limit_direction=limit_direction,
+                              inplace=inplace,
+                              method=method)
     return interp
+
 
 # Function only plots missings for all animals, therefore dead parameter
 def plot_missing_values(data):
@@ -39,8 +48,13 @@ def plot_missing_values(data):
     return None
 
 
-def preprocess(data, dropna = True, interpolation= False, limit = 1, limit_direction = "forward", inplace = False,
-               method = "linear"):
+def preprocess(data,
+               dropna=True,
+               interpolation=False,
+               limit=1,
+               limit_direction="forward",
+               inplace=False,
+               method="linear"):
     """
     Function to perform data preprocessing.
 
@@ -60,8 +74,11 @@ def preprocess(data, dropna = True, interpolation= False, limit = 1, limit_direc
 
     # Interpolate data with missings
     if interpolation:
-        data = interpolate(data, limit = limit, limit_direction = limit_direction, inplace = inplace, method = method)
-
+        data = interpolate(data,
+                           limit=limit,
+                           limit_direction=limit_direction,
+                           inplace=inplace,
+                           method=method)
 
     # Drop columns with  missing values for 'time'  and 'animal_id'
 
@@ -99,6 +116,7 @@ def print_duplicate(df):
         "Removed duplicate rows based on the columns 'animal_id' and 'time' column are:",
         dup,
         sep='\n')
+
 
 def filter_dataframe(data, frm, to):
     """
@@ -155,7 +173,7 @@ def resample_systematic(data_groups, downsample_size):
 
     step_size = math.floor(size / downsample_size)
 
-# DEAD LIST?
+    # DEAD LIST?
     arr_index = []
 
     l = list(range(size))
@@ -202,7 +220,7 @@ def resample_random(data_groups, downsample_size):
     return data_groups_downsampled
 
 
-def split_trajectories(data_groups, segment, fuzzy_segment = 0, csv = False):
+def split_trajectories(data_groups, segment, fuzzy_segment=0, csv=False):
     """
     Split trajectory of a single animal into several segments based on specific criterion.
 
@@ -239,7 +257,8 @@ def split_trajectories(data_groups, segment, fuzzy_segment = 0, csv = False):
 
     return groups
 
-def convert_measueres(preprocessed_data, x_min = 0, x_max = 1, y_min = 0, y_max = 1):
+
+def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1):
     """
     Create a linear scale with input parameters for x,y for transformation of position data.
     :param preprocessed_data: Pandas DataFrame only with x and y position data
@@ -251,13 +270,18 @@ def convert_measueres(preprocessed_data, x_min = 0, x_max = 1, y_min = 0, y_max 
     """
     # Preventing features input along position data
     if [*preprocessed_data.columns] != ['time', 'animal_id', 'x', 'y']:
-        print("\nError! Conversion only allowed for dataframes with colnames ['time', 'animal_id', 'x', "
-              "'y']. \n")
+        print(
+            "\nError! Conversion only allowed for dataframes with colnames ['time', 'animal_id', 'x', "
+            "'y']. \n")
         return None
 
     # Linear Transformation of position dimensions
-    preprocessed_data.loc[:,"x"] = np.interp(preprocessed_data.loc[:,"x"], (preprocessed_data.loc[:,"x"].min(), preprocessed_data.loc[:,"x"].max()), (x_min, x_max))
-    preprocessed_data.loc[:,"y"] = np.interp(preprocessed_data.loc[:,"y"], (preprocessed_data.loc[:,"y"].min(), preprocessed_data.loc[:,"y"].max()), (y_min, y_max))
+    preprocessed_data.loc[:, "x"] = np.interp(
+        preprocessed_data.loc[:, "x"], (preprocessed_data.loc[:, "x"].min(),
+                                        preprocessed_data.loc[:, "x"].max()),
+        (x_min, x_max))
+    preprocessed_data.loc[:, "y"] = np.interp(
+        preprocessed_data.loc[:, "y"], (preprocessed_data.loc[:, "y"].min(),
+                                        preprocessed_data.loc[:, "y"].max()),
+        (y_min, y_max))
     return preprocessed_data
-
-
