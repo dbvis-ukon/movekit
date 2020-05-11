@@ -10,7 +10,8 @@ from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from tslearn.clustering import TimeSeriesKMeans
 
-def grouping_data(processed_data, pick_vars = None):
+
+def grouping_data(processed_data, pick_vars=None):
     """
     Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
@@ -31,8 +32,9 @@ def grouping_data(processed_data, pick_vars = None):
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-    if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']):
-    # Add additional attributes/columns to each groups-
+    if list(processed_data.columns.values) == list(
+        ['time', 'animal_id', 'x', 'y']):
+        # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
             data = [None for x in range(data_animal_id_groups[aid].shape[0])]
             data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
@@ -49,8 +51,10 @@ def grouping_data(processed_data, pick_vars = None):
                 stopped=data)
     if pick_vars != None:
         for aid in data_animal_id_groups.keys():
-            data_animal_id_groups[aid] = data_animal_id_groups[aid].loc[:,pick_vars]
+            data_animal_id_groups[aid] = data_animal_id_groups[
+                aid].loc[:, pick_vars]
     return data_animal_id_groups
+
 
 def regrouping_data(data_animal_id_groups):
     """
@@ -67,7 +71,11 @@ def regrouping_data(data_animal_id_groups):
     result.reset_index(drop=True, inplace=True)
     return result
 
-def compute_direction(data_animal_id_groups, param_x="x", param_y = "y", colname = "direction"):
+
+def compute_direction(data_animal_id_groups,
+                      param_x="x",
+                      param_y="y",
+                      colname="direction"):
     """
     Calculate angle of degrees, an animal is heading in between two timesteps.
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
@@ -82,11 +90,14 @@ def compute_direction(data_animal_id_groups, param_x="x", param_y = "y", colname
                         data_animal_id_groups[aid][param_y].shift(periods=1)),
                        (data_animal_id_groups[aid][param_x] -
                         data_animal_id_groups[aid][param_x].shift(periods=1))))
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(inp=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(columns={'inp': colname})
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            inp=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
+            columns={'inp': colname})
     return data_animal_id_groups
 
-def compute_distance(data_animal_id_groups, param_x = "x", param_y= "y"):
+
+def compute_distance(data_animal_id_groups, param_x="x", param_y="y"):
     """
     Calculate metric distance of animals in between two timesteps.
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
@@ -96,17 +107,19 @@ def compute_distance(data_animal_id_groups, param_x = "x", param_y= "y"):
     """
     for aid in data_animal_id_groups.keys():
         p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
-        p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(periods=1)
+        p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(
+            periods=1)
         p2.iloc[0, :] = [0.0, 0.0]
 
         data_animal_id_groups[aid]['distance'] = ((p1 -
-                                                   p2) ** 2).sum(axis=1) ** 0.5
+                                                   p2)**2).sum(axis=1)**0.5
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
         data_animal_id_groups[aid].loc[0, 'distance'] = 0.0
 
     return data_animal_id_groups
+
 
 def compute_distance_and_direction(data_animal_id_groups):
     """
@@ -131,7 +144,7 @@ def compute_distance_and_direction(data_animal_id_groups):
         p2.iloc[0, :] = [0.0, 0.0]
 
         data_animal_id_groups[aid]['distance'] = ((p1 -
-                                                   p2) ** 2).sum(axis=1) ** 0.5
+                                                   p2)**2).sum(axis=1)**0.5
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
@@ -156,7 +169,6 @@ def compute_average_speed(data_animal_id_groups, fps):
     return data_animal_id_groups
 
 
-
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
     Compute average acceleration of an animal based on fps (frames per second) parameter.
@@ -174,7 +186,9 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     return data_animal_id_groups
 
 
-def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5):
+def compute_absolute_features(data_animal_id_groups,
+                              fps=10,
+                              stop_threshold=0.5):
     """
     Calculate absolute features for the input data animal group.
     Combined usage of the functions on dictionary 'compute_average_speed(data,fps)', 'compute_average_acceleration(data,fps)' and
@@ -184,7 +198,8 @@ def compute_absolute_features(data_animal_id_groups, fps=10, stop_threshold=0.5)
     :param stop_threshold: integer to specify threshold, at which we consider a "stop".
     :return: dictionary with additional variables 'avg_speed_data', 'avg_acceleration_data' and 'stop data'.
     """
-    direction_distance_data = compute_distance_and_direction(data_animal_id_groups)
+    direction_distance_data = compute_distance_and_direction(
+        data_animal_id_groups)
 
     avg_speed_data = compute_average_speed(direction_distance_data, fps)
 
@@ -220,7 +235,6 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     return regrouped_data
 
 
-
 def computing_stops(data_animal_id_groups, threshold_speed):
     """
     Calculate absolute feature, describing a record as stop, based on threshold.
@@ -232,9 +246,10 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     """
 
     for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['stopped'] = np.where(data_animal_id_groups[aid]['average_speed'] <= threshold_speed, 1, 0)
+        data_animal_id_groups[aid]['stopped'] = np.where(
+            data_animal_id_groups[aid]['average_speed'] <= threshold_speed, 1,
+            0)
     return data_animal_id_groups
-
     '''
     data_animal_id_groups['stopped'] = np.where(
         data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
@@ -243,7 +258,7 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     '''
 
 
-def medoid_computation(data, only_centroid = False):
+def medoid_computation(data, only_centroid=False):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute
@@ -261,11 +276,11 @@ def medoid_computation(data, only_centroid = False):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
-    # NOTE:
-    # Each group has only five entries
-    # Each group has dimension- (5, 4)
+        # NOTE:
+        # Each group has only five entries
+        # Each group has dimension- (5, 4)
 
-    # Add 3 additional columns to each group-
+        # Add 3 additional columns to each group-
         data_l = [0 for x in range(data_groups_time[aid].shape[0])]
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=data_l)
@@ -285,10 +300,10 @@ def medoid_computation(data, only_centroid = False):
 
         if only_centroid == False:
             # Squared distance of each 'x' coordinate to 'centroid'-
-            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean) ** 2
+            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean)**2
 
             # Squared distance of each 'y' coordinate to 'centroid'-
-            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean) ** 2
+            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean)**2
 
             # Distance of each point from centroid-
             dist = np.sqrt(x_temp + y_temp)
@@ -298,14 +313,17 @@ def medoid_computation(data, only_centroid = False):
                 distance_to_centroid=np.around(dist, decimals=3))
 
             # Find 'animal_id' nearest to centroid for this group-
-            pos = np.argmin(data_groups_time[aid]['distance_to_centroid'].values)
+            pos = np.argmin(
+                data_groups_time[aid]['distance_to_centroid'].values)
             nearest = data_groups_time[aid].loc[pos, 'animal_id']
 
             # Assign 'medoid' for this group-
-            data_groups_time[aid] = data_groups_time[aid].assign(medoid=nearest)
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                medoid=nearest)
 
     medoid_data = regrouping_data(data_groups_time)
     return medoid_data
+
 
 #DEAD below? - gives almost exact result as euclidean_dist() function.
 def distance_euclidean_matrix(data):
@@ -361,7 +379,6 @@ def compute_similarity(data, weights, p=2):
     # combine the distance matrix with the data and return
     return pd.merge(data, df2, left_index=True,
                     right_index=True).sort_values(by=['time', 'animal_id'])
-
 
 
 def similarity_computation(group, w, p):
@@ -484,8 +501,9 @@ def explore_features_geospatial(preprocessed_data):
     # Extract position information per animal into list of xy-tuples
     for aid in data_groups.keys():
         for x in range(data_groups[aid].shape[0]):
-            temp_tuple = (data_groups[aid].loc[x, 'x'],
-                          data_groups[aid].loc[x, 'y'])
+            temp_tuple = (data_groups[aid].loc[x,
+                                               'x'], data_groups[aid].loc[x,
+                                                                          'y'])
             xy_coord[aid].append(temp_tuple)
 
     # Polygons for individual animals
@@ -495,21 +513,24 @@ def explore_features_geospatial(preprocessed_data):
         # Compute area of singular polygons and plot
         print(
             "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
-                .format(aid, poly.area))
+            .format(aid, poly.area))
         plt.plot(*poly.exterior.xy)
 
     # Polygon for collective group
     xy_coord_full = []
     for aid in data_groups.keys():
         for x in range(data_groups[aid].shape[0]):
-            temp_tuple = (data_groups[aid].loc[x, 'x'], data_groups[aid].loc[x, 'y'])
+            temp_tuple = (data_groups[aid].loc[x,
+                                               'x'], data_groups[aid].loc[x,
+                                                                          'y'])
             xy_coord_full.append(temp_tuple)
 
     # Create 'Polygon' object using all coordinates for animal ID combined
     full_poly = Polygon(xy_coord_full).convex_hull
 
     # Compute area of collective polygon and plot
-    print("\nArea (polygon) covered by animals collectively is = ", full_poly.area, "sq. units")
+    print("\nArea (polygon) covered by animals collectively is = ",
+          full_poly.area, "sq. units")
     plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
     plt.show()
     return None
@@ -536,7 +557,10 @@ def outlier_detection(dataset, features = ["distance","average_speed", "average_
     scikit-learn or scipy.spatial.distance can be used.
     :return:
     """
-    clf = KNN(contamination = contamination, n_neighbors = n_neighbors, method = method, metric = metric)
+    clf = KNN(contamination=contamination,
+              n_neighbors=n_neighbors,
+              method=method,
+              metric=metric)
     inp_data = dataset.loc[:, features]
 
     clf.fit(inp_data)
@@ -550,4 +574,3 @@ def outlier_detection(dataset, features = ["distance","average_speed", "average_
     else:
         dataset.insert(2, "outlier", scores_pred)
     return dataset
-

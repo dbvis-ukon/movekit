@@ -24,10 +24,12 @@ def get_trajectories(data_groups):
     trajectories = {}
     for aid in data_groups.keys():
         # add dict item, holding x-y tuples for the trajectories of each animal id
-        trajectories[aid] = list(zip(data_groups[aid]["x"], data_groups[aid]["y"]))
+        trajectories[aid] = list(
+            zip(data_groups[aid]["x"], data_groups[aid]["y"]))
     return trajectories
 
-def dtw_matrix(preprocessed_data, path = False, distance = euclidean):
+
+def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
     """
     Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
     :param data_groups: Grouped dictionary by animal_id.
@@ -41,20 +43,26 @@ def dtw_matrix(preprocessed_data, path = False, distance = euclidean):
     trajectories = get_trajectories(data_groups)
 
     # create empty np array with size, depending on number of tracked animals
-    distance_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])))
+    distance_matr = np.empty(
+        (len([*trajectories.keys()]), len([*trajectories.keys()])))
 
     # create empty np list-array for paths with size, depending on number of tracked animals
-    path_matr = np.empty((len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
+    path_matr = np.empty(
+        (len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
 
     # double-iterate over obtained trajectory dict
     for aid in range(len([*trajectories.keys()])):
         for aid2 in range(len([*trajectories.keys()])):
 
             # fill np array field with euclidean distance of respective trajectories, same for path field
-            distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(trajectories[[*trajectories.keys()][aid]],
-                                                trajectories[[*trajectories.keys()][aid2]], dist = distance)
+            distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(
+                trajectories[[*trajectories.keys()][aid]],
+                trajectories[[*trajectories.keys()][aid2]],
+                dist=distance)
             # generate pandas df from distance array
-            distance_df = pd.DataFrame(data=distance_matr, index=[*trajectories.keys()], columns=[*trajectories.keys()])
+            distance_df = pd.DataFrame(data=distance_matr,
+                                       index=[*trajectories.keys()],
+                                       columns=[*trajectories.keys()])
 
     if path:
         return distance_df, path_matr
@@ -62,8 +70,16 @@ def dtw_matrix(preprocessed_data, path = False, distance = euclidean):
         return distance_df
 
 
-def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acceleration", "direction", "stopped"],
-               metric="euclidean",  max_iter=5, random_state=0, inertia=False):
+def ts_cluster(feats,
+               n_clust,
+               varlst=[
+                   "distance", "average_speed", "average_acceleration",
+                   "direction", "stopped"
+               ],
+               metric="euclidean",
+               max_iter=5,
+               random_state=0,
+               inertia=False):
     """
     Incorporate time series clustering for absolute features.
 
@@ -98,7 +114,10 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
         tracks.append(traj[i].values.tolist())
 
     # Calculate timeseries k-Means based on specified parameters
-    km = TimeSeriesKMeans(n_clusters=n_clust, metric=metric, max_iter=max_iter, random_state=random_state)
+    km = TimeSeriesKMeans(n_clusters=n_clust,
+                          metric=metric,
+                          max_iter=max_iter,
+                          random_state=random_state)
     km = km.fit(tracks)
     clustcens = km.cluster_centers_.tolist()
 
@@ -106,11 +125,14 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
     for aid in range(len(traj)):
         # append cluster label to animal id groups
         clust = [*km.labels_][aid]
-        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(cluster=clust)
+        data_groups[[*data_groups.keys()
+                     ][aid]] = data_groups[[*data_groups.keys()
+                                            ][aid]].assign(cluster=clust)
 
         # append centroid of cluster to animal id groups
-        data_groups[[*data_groups.keys()][aid]] = data_groups[[*data_groups.keys()][aid]].assign(
-            ClustCenter=clustcens[clust])
+        data_groups[[*data_groups.keys()][aid]] = data_groups[[
+            *data_groups.keys()
+        ][aid]].assign(ClustCenter=clustcens[clust])
 
     # convert animal-id groups to dataframe
     clustered_df = regrouping_data(data_groups)
@@ -130,6 +152,7 @@ def ts_cluster(feats, n_clust, varlst=["distance", "average_speed", "average_acc
 
     else:
         return clustered_df
+
 
 def get_heading_difference(preprocessed_data):
     """
@@ -152,14 +175,20 @@ def get_heading_difference(preprocessed_data):
     animal_dir = grouping_data(preprocessed_data)
 
     # Get the directions  for each centroid for each timestep
-    cen_dir = compute_direction(animal_dir, param_x = "x_centroid", param_y = "y_centroid", colname = "centroid_direction")
+    cen_dir = compute_direction(animal_dir,
+                                param_x="x_centroid",
+                                param_y="y_centroid",
+                                colname="centroid_direction")
 
     # Subtract animal's direction from centroid's direction
     directions = regrouping_data(cen_dir)
-    raw_diff = directions.loc[:,"direction"] - directions.loc[:,"centroid_direction"]
+    raw_diff = directions.loc[:,
+                              "direction"] - directions.loc[:,
+                                                            "centroid_direction"]
 
     # Calculate signed angle, store in new variable
-    directions = directions.assign(heading_difference = (raw_diff + 180) % 360 - 180)
+    directions = directions.assign(heading_difference=(raw_diff + 180) % 360 -
+                                   180)
     return directions
 
 
@@ -186,8 +215,10 @@ def compute_polarization(preprocessed_data):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
         data = (1 / len(data_groups_time[aid]["direction"])) * np.sqrt(
-            (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2 + (
-                sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))) ** 2)
+            (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))
+             )**2 +
+            (sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))
+             )**2)
 
         # Assign polarization to new variable
         data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
@@ -195,6 +226,7 @@ def compute_polarization(preprocessed_data):
     # Regroup data into DataFrame
     polarization_data = regrouping_data(data_groups_time)
     return polarization_data
+
 
 def voronoi_volumes(points):
     """
@@ -211,6 +243,7 @@ def voronoi_volumes(points):
         else:
             vol[i] = ConvexHull(v.vertices[indices]).volume
     return vol
+
 
 def voronoi_diagram(preprocessed_data):
     """
@@ -252,7 +285,8 @@ def voronoi_diagram(preprocessed_data):
         vor_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
 
         # Store area values in new variable for each timestep
-        data_groups_time[aid] = data_groups_time[aid].assign(area_voronoi=vor_vol)
+        data_groups_time[aid] = data_groups_time[aid].assign(
+            area_voronoi=vor_vol)
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
