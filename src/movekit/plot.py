@@ -59,7 +59,7 @@ def plot_animal_timesteps(data_animal_id_groups):
     return None
 
 
-def plot_pace(avg_speed_data, feature = "speed"):
+def plot_pace(avg_speed_data, feature="speed"):
     """
     Plot average speed extracted feature for each animal.
 
@@ -72,7 +72,6 @@ def plot_pace(avg_speed_data, feature = "speed"):
 
     # Init dictionary to hold requested parameter
     animals_vals = {}
-
 
     if feature == "speed":
 
@@ -110,7 +109,8 @@ def plot_pace(avg_speed_data, feature = "speed"):
 
         # Fill dictionary with average acceleration feature
         for aid in data_animal_id_groups.keys():
-            animals_vals[aid] = data_animal_id_groups[aid]['average_acceleration']
+            animals_vals[aid] = data_animal_id_groups[aid][
+                'average_acceleration']
             animals_vals[aid] = np.asarray(animals_vals[aid])
 
         # List containing animal ids to be used within loop-
