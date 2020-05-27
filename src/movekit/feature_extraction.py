@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
-from tslearn.clustering import TimeSeriesKMeans
 
 
 def grouping_data(processed_data, pick_vars=None):
@@ -179,10 +178,11 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     :return: dictionary, including measure for 'average_acceleration'
     """
     for aid in data_animal_id_groups.keys():
-        a = data_animal_id_groups[aid]['average_speed']
-        b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
+        speed = data_animal_id_groups[aid]['average_speed']
+        #b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
 
-        data_animal_id_groups[aid]['average_acceleration'] = (a - b) / fps
+        data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(window=fps, win_type=None).apply(lambda x: x[1] - x[0],
+                                                                                               raw=True)
     return data_animal_id_groups
 
 
