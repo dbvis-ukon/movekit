@@ -65,7 +65,7 @@ def regrouping_data(data_animal_id_groups):
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
-    result.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
+    result.sort_values(['animal_id', 'time'], ascending=True, inplace=True)
     # Reset index-
     result.reset_index(drop=True, inplace=True)
     return result
@@ -162,9 +162,7 @@ def compute_average_speed(data_animal_id_groups, fps):
     :return: dictionary, including measure for 'average_speed'
     """
     for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid] \
-                                                          ['distance'].rolling(window=fps, win_type=None).sum() / fps
-
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['distance'].rolling(min_periods=1, window=fps, center=True).mean().fillna(0)
     return data_animal_id_groups
 
 
@@ -178,36 +176,14 @@ def compute_average_acceleration(data_animal_id_groups, fps):
     :return: dictionary, including measure for 'average_acceleration'
     """
     for aid in data_animal_id_groups.keys():
+
+        # rename into shortcut
         speed = data_animal_id_groups[aid]['average_speed']
         #b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
 
-        data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(window=fps, win_type=None).apply(lambda x: x[1] - x[0],
-                                                                                               raw=True)
+        data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(min_periods=1, window=fps, center=True).apply(lambda x: x[1] - x[0],
+                                                                                               raw=True).fillna(0)
     return data_animal_id_groups
-
-
-def compute_absolute_features(data_animal_id_groups,
-                              fps=10,
-                              stop_threshold=0.5):
-    """
-    Calculate absolute features for the input data animal group.
-    Combined usage of the functions on dictionary 'compute_average_speed(data,fps)', 'compute_average_acceleration(data,fps)' and
-    'computing_stops(data, threshold)'.
-    :param data_animal_id_groups: dictionary with 'animal_id' as keys.
-    :param fps: integer to specify frames per second.
-    :param stop_threshold: integer to specify threshold, at which we consider a "stop".
-    :return: dictionary with additional variables 'avg_speed_data', 'avg_acceleration_data' and 'stop data'.
-    """
-    direction_distance_data = compute_distance_and_direction(
-        data_animal_id_groups)
-
-    avg_speed_data = compute_average_speed(direction_distance_data, fps)
-
-    avg_acceleration_data = compute_average_acceleration(avg_speed_data, fps)
-
-    stop_data = computing_stops(avg_acceleration_data, stop_threshold)
-
-    return stop_data
 
 
 def extract_features(data, fps=10, stop_threshold=0.5):
