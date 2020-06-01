@@ -183,6 +183,8 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 
         data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(min_periods=1, window=fps, center=True).apply(lambda x: x[1] - x[0],
                                                                                                raw=True).fillna(0)
+
+
     return data_animal_id_groups
 
 

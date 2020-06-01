@@ -192,7 +192,7 @@ def get_heading_difference(preprocessed_data):
     return directions
 
 
-def compute_polarization(preprocessed_data):
+def compute_polarization(preprocessed_data, group_output = False):
     """
     Compute the polarization of a group at all record timepoints.
 
@@ -220,12 +220,23 @@ def compute_polarization(preprocessed_data):
             (sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))
              )**2)
 
+
+
+
         # Assign polarization to new variable
         data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
 
     # Regroup data into DataFrame
     polarization_data = regrouping_data(data_groups_time)
-    return polarization_data
+
+    # If interested in fullstack output for each animal
+    if group_output == False:
+        return polarization_data
+
+    # If only interested in group level output, return one line per timeslot
+    else:
+        pol = polarization_data
+        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0], ['time', 'polarization']].reset_index(drop=True)
 
 
 def voronoi_volumes(points):
