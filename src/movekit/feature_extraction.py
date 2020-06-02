@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import warnings
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
@@ -236,7 +237,38 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     '''
 
 
-def medoid_computation(data, only_centroid=False):
+def group_movement(feats):
+    """
+    Returns aggregated movement data, such as distance, mean speed, mean acceleration and mean distance to centroid for the entire group at each time capture.
+
+    :param feats: pd DataFrame with animal-specific data - if no features contained, they will be extracted.
+    :return: pd DataFrame with group-specific values for each time-capture
+
+    """
+
+    # Handling no features in input
+    if 'distance' not in feats.columns or 'average_speed' not in feats.columns or 'average_acceleration' not in feats.columns:
+        warnings.warn('Recalculating features, since distance, speed or acceleration not found in input.')
+        feats = extract_features(feats)
+
+    # Handling no centroid in input
+    if 'distance_to_centroid' not in feats.columns:
+        warnings.warn('Recalculating centroid-distances, since not found in input dataset!')
+        feats = centroid_medoid_computation(feats)
+    # Group by time, return new dataframe
+    data_dist = feats.groupby('time')
+
+
+    group = pd.DataFrame({"total_dist": data_dist.sum()['distance'],
+                      "mean_speed": data_dist.mean()['average_speed'],
+                      "mean_acceleration": data_dist.mean()['average_acceleration'],
+                        "mean_distance_centroid": data_dist.mean()['distance_to_centroid']})
+
+    return group
+
+
+
+def centroid_medoid_computation(data, only_centroid=False):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute

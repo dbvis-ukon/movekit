@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import warnings
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
@@ -154,6 +155,39 @@ def ts_cluster(feats,
         return clustered_df
 
 
+def compute_centroid_direction(data, colname = "centroid_direction", group_output = False):
+    """Calculate the direction of the centroid. Calculates centroid, if not in input data.
+
+    Parameters
+    ----------
+    :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
+    :param colname: Name of the column. Default: centroid_direction.
+    :param group_output: Boolean, defines form of output. Default: Animal-Level
+    :return: pandas DF with centroid direction included
+
+    """
+    # Handle centroid not in data
+    if "x_centroid" not in data.columns or "y_centroid" not in data.columns:
+        warnings.warn('x_centroid or y_centroid not found in data. Calculating centroid...')
+        data = centroid_medoid_computation(data, only_centroid = True)
+
+    # Group into animals
+    dat = grouping_data(data)
+
+    dat = compute_direction(dat, param_x = "x_centroid", param_y = "y_centroid", colname = colname)
+
+    cen_direction = regrouping_data(dat)
+
+    if group_output == False:
+        return cen_direction
+
+    else:
+        pol = cen_direction
+        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0], ['time', colname]].reset_index(drop=True)
+
+
+
+
 def get_heading_difference(preprocessed_data):
     """
     Calculate the difference in degrees between the animal's direction and the centroid's direction for each timestep.
@@ -169,7 +203,7 @@ def get_heading_difference(preprocessed_data):
         preprocessed_data = extract_features(preprocessed_data)
 
     if "x_centroid" not in preprocessed_data.columns or "y_centroid" not in preprocessed_data.columns:
-        preprocessed_data = medoid_computation(preprocessed_data)
+        preprocessed_data = centroid_medoid_computation(preprocessed_data)
     # Obtain the centroid positions for each timestep, group into dictionary
 
     animal_dir = grouping_data(preprocessed_data)
@@ -202,6 +236,7 @@ def compute_polarization(preprocessed_data, group_output = False):
     """
     # Extract features if not done yet
     if "direction" not in preprocessed_data.columns:
+        warnings.warn('calculating direction, since not found in input!')
         preprocessed_data = extract_features(preprocessed_data)
 
     # Group by 'time'-
