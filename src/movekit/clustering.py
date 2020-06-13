@@ -11,7 +11,7 @@ from scipy.spatial.distance import euclidean
 from tslearn.clustering import TimeSeriesKMeans
 
 from .feature_extraction import *
-from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
+from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d
 
 
 def get_trajectories(data_groups):
@@ -291,7 +291,7 @@ def voronoi_volumes(points):
     return vol
 
 
-def voronoi_diagram(preprocessed_data):
+def voronoi_diagram(preprocessed_data, group_output=False):
     """
     Compute the voronoi diagram for each time step as well as the area for each cell over time
 
@@ -319,22 +319,73 @@ def voronoi_diagram(preprocessed_data):
     data_groups_time = {}
 
     # List for diagram objects at each timepoint
-    diagrams = []
+
 
     # Obtain diagram objects, store in list for each timestep
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
-        diagrams.append(Voronoi(data_groups_time[aid].loc[:, ["x", "y"]]))
+        diagrams = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
 
         # Calculate area based on voronoi-volumes function right above
         vor_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
 
+        # Store diagram objects in df variable
+        data_groups_time[aid] = data_groups_time[aid].assign(voronoi_object = diagrams)
         # Store area values in new variable for each timestep
         data_groups_time[aid] = data_groups_time[aid].assign(
             area_voronoi=vor_vol)
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
+    if group_output == False:
+        return out_data
 
-    return out_data, diagrams
+    else:
+        pol = out_data
+        pol = pol.loc[pol.animal_id == list(set(pol.animal_id))[0],:].reset_index(drop=True)
+        return pol.drop(columns = ['animal_id'])
+
+
+def get_convex_hulls_areas(preprocessed_data, group_output = False):
+
+    """
+    Function to calculate area in a convex hull.
+    :param preprocessed_data: Pandas Df, containing x and y coordinates.
+    :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.
+    :return: DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.
+    """
+
+    data_time = preprocessed_data.groupby('time')
+
+    # Dictionary to hold grouped data by 'time' attribute-
+    data_groups_time = {}
+
+
+    for aid in data_time.groups.keys():
+        data_groups_time[aid] = data_time.get_group(aid)
+        data_groups_time[aid].reset_index(drop=True, inplace=True)
+
+        # Obtain convex hull object
+        conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
+
+        # Calculate area based on convex hull object right above
+        conv_hull_vol= conv_hull_obj.volume
+
+        # Store area values in new variable for each timestep
+        data_groups_time[aid] = data_groups_time[aid].assign(
+        convex_hull_object=conv_hull_obj)
+
+        data_groups_time[aid] = data_groups_time[aid].assign(
+            convex_hull_volume=conv_hull_vol)
+
+    # Regroup data into DataFrame
+    out_data = regrouping_data(data_groups_time)
+
+    if group_output == False:
+        return out_data
+
+    else:
+        pol = out_data
+        pol = pol.loc[pol.animal_id == list(set(pol.animal_id))[0],:].reset_index(drop=True)
+        return pol.drop(columns = ['animal_id'])
