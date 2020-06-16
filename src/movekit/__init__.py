@@ -17,6 +17,6 @@ from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movem
 from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
 from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, centroid_medoid_computation, \
     outlier_detection, group_movement
-from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization, voronoi_diagram, compute_centroid_direction, get_convex_hulls_areas
+from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization, get_spatial_objects, compute_centroid_direction
 # noqa: E402
 from .plot import plot_animal, plot_pace, plot_movement  # noqa: E402
