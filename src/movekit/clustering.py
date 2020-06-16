@@ -345,4 +345,4 @@ def get_spatial_objects(preprocessed_data, group_output = False):
     else:
         pol = out_data
         pol = pol.loc[pol.animal_id == list(set(pol.animal_id))[0],:].reset_index(drop=True)
-        return pol.drop(columns = ['animal_id', 'x', 'y', 'convex_hull_volume', 'voronoi_volume'])
+        return pol.drop(columns = ['animal_id', 'x', 'y'])
