@@ -11,7 +11,7 @@ from scipy.spatial.distance import euclidean
 from tslearn.clustering import TimeSeriesKMeans
 
 from .feature_extraction import *
-from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
+from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
 
 
 def get_trajectories(data_groups):
@@ -158,8 +158,6 @@ def ts_cluster(feats,
 def compute_centroid_direction(data, colname = "centroid_direction", group_output = False):
     """Calculate the direction of the centroid. Calculates centroid, if not in input data.
 
-    Parameters
-    ----------
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
     :param colname: Name of the column. Default: centroid_direction.
     :param group_output: Boolean, defines form of output. Default: Animal-Level
@@ -291,26 +289,17 @@ def voronoi_volumes(points):
     return vol
 
 
-def voronoi_diagram(preprocessed_data):
+
+
+def get_spatial_objects(preprocessed_data, group_output = False):
+
     """
-    Compute the voronoi diagram for each time step as well as the area for each cell over time
+    Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.
+    Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.
 
-    Each timestep gets a voronoi object as well as the area of the voronoi - shape.
-    Infinity, if respective animal is outmost in swarm.
-
-    Note: Voronoi object contains the following attributes:
-        `.points` - Coordinates of input points.
-        `.vertices` - Coordinates of the Voronoi vertices.
-        `ridge_points` - Indices of the points between which each Voronoi ridge lies.
-        `ridge_vertices` - Indices of the Voronoi vertices forming each Voronoi ridge.
-        `regions` - Indices of the Voronoi vertices forming each Voronoi region. -1 indicates vertex outside the Voronoi
-        diagram.
-        `point_region` - Index of the Voronoi region for each input point. If qhull option “Qc” was not specified,
-        the list will contain -1 for points that are not associated with a Voronoi region.
-        `furthest_site` - True if this was a furthest site triangulation and False if not.
-
-    :param preprocessed_data: Animal movement records
-    :return: movement records with voronoi area, and list of voronoi-diagram objects for each timestep
+    :param preprocessed_data: Pandas Df, containing x and y coordinates.
+    :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.
+    :return: DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.
     """
 
     data_time = preprocessed_data.groupby('time')
@@ -318,23 +307,42 @@ def voronoi_diagram(preprocessed_data):
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-    # List for diagram objects at each timepoint
-    diagrams = []
 
-    # Obtain diagram objects, store in list for each timestep
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
-        diagrams.append(Voronoi(data_groups_time[aid].loc[:, ["x", "y"]]))
 
-        # Calculate area based on voronoi-volumes function right above
-        vor_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
+        # Obtain shape objects
+        conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
+        voronoi_obj = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
+        delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
 
-        # Store area values in new variable for each timestep
+        # Calculate area based on objects right above
+        conv_hull_vol= conv_hull_obj.volume
+        voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
+
+
+        # Assign shapes to dataframe
         data_groups_time[aid] = data_groups_time[aid].assign(
-            area_voronoi=vor_vol)
+        convex_hull_object=conv_hull_obj,
+        voronoi_object=voronoi_obj,
+        delaunay_object = delaunay_obj
+        )
+
+
+        data_groups_time[aid] = data_groups_time[aid].assign(
+            convex_hull_volume=conv_hull_vol,
+            voronoi_volume = voronoi_vol,
+            )
+
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
 
-    return out_data, diagrams
+    if group_output == False:
+        return out_data
+
+    else:
+        pol = out_data
+        pol = pol.loc[pol.animal_id == list(set(pol.animal_id))[0],:].reset_index(drop=True)
+        return pol.drop(columns = ['animal_id', 'x', 'y'])

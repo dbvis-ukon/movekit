@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
+from geoalchemy2 import functions, elements
 
 
 def grouping_data(processed_data, pick_vars=None):
@@ -268,7 +269,7 @@ def group_movement(feats):
 
 
 
-def centroid_medoid_computation(data, only_centroid=False):
+def centroid_medoid_computation(data, only_centroid=False, object_output=False):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute
@@ -307,6 +308,10 @@ def centroid_medoid_computation(data, only_centroid=False):
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=x_mean)
         data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=y_mean)
+
+        # add additional variable for point object
+        if object_output == True:
+            data_groups_time[aid] = data_groups_time[aid].assign(centroid = functions.ST_MakePoint(x_mean, y_mean))
 
         if only_centroid == False:
             # Squared distance of each 'x' coordinate to 'centroid'-
