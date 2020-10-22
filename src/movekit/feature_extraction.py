@@ -132,20 +132,27 @@ def compute_distance_and_direction(data_animal_id_groups):
     """
     # Compute 'direction' for 'animal_id' groups-
     for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['direction'] = np.rad2deg(
-            np.arctan2((data_animal_id_groups[aid]['y'] -
-                        data_animal_id_groups[aid]['y'].shift(periods=1)),
-                       (data_animal_id_groups[aid]['x'] -
-                        data_animal_id_groups[aid]['x'].shift(periods=1))))
+        try:
+            data_animal_id_groups[aid]['direction'] = np.rad2deg(
+                np.arctan2((data_animal_id_groups[aid]['y'] -
+                            data_animal_id_groups[aid]['y'].shift(periods=1)),
+                           (data_animal_id_groups[aid]['x'] -
+                            data_animal_id_groups[aid]['x'].shift(periods=1))))
+        except TypeError:
+            data_animal_id_groups[aid]['direction'] = 0
 
     # Compute 'distance' for 'animal_id' groups-
     for aid in data_animal_id_groups.keys():
-        p1 = data_animal_id_groups[aid].loc[:, ['x', 'y']]
-        p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
-        p2.iloc[0, :] = [0.0, 0.0]
+        try:
+            p1 = data_animal_id_groups[aid].loc[:, ['x', 'y']]
+            p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
+            p2.iloc[0, :] = [0.0, 0.0]
 
-        data_animal_id_groups[aid]['distance'] = ((p1 -
-                                                   p2)**2).sum(axis=1)**0.5
+            data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                       p2)**2).sum(axis=1)**0.5
+
+        except TypeError:
+            data_animal_id_groups[aid]['distance'] = 0
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
@@ -182,10 +189,11 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         # rename into shortcut
         speed = data_animal_id_groups[aid]['average_speed']
         #b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
-
-        data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(min_periods=1, window=fps, center=True).apply(lambda x: x[1] - x[0],
+        try:
+            data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(min_periods=1, window=fps, center=True).apply(lambda x: x[1] - x[0],
                                                                                                raw=True).fillna(0)
-
+        except:
+            data_animal_id_groups[aid]['average_acceleration'] = 0
 
     return data_animal_id_groups
 
