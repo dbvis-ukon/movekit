@@ -171,7 +171,9 @@ def compute_average_speed(data_animal_id_groups, fps):
     :return: dictionary, including measure for 'average_speed'
     """
     for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['distance'].rolling(min_periods=1, window=fps, center=True).mean().fillna(0)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[
+            aid]['distance'].rolling(min_periods=1, window=fps,
+                                     center=True).mean().fillna(0)
     return data_animal_id_groups
 
 
@@ -190,8 +192,9 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         speed = data_animal_id_groups[aid]['average_speed']
         #b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
         try:
-            data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(min_periods=1, window=fps, center=True).apply(lambda x: x[1] - x[0],
-                                                                                               raw=True).fillna(0)
+            data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
+                min_periods=1, window=fps,
+                center=True).apply(lambda x: x[1] - x[0], raw=True).fillna(0)
         except:
             data_animal_id_groups[aid]['average_acceleration'] = 0
 
@@ -257,27 +260,37 @@ def group_movement(feats):
 
     # Handling no features in input
     if 'distance' not in feats.columns or 'average_speed' not in feats.columns or 'average_acceleration' not in feats.columns:
-        warnings.warn('Recalculating features, since distance, speed or acceleration not found in input.')
+        warnings.warn(
+            'Recalculating features, since distance, speed or acceleration not found in input.'
+        )
         feats = extract_features(feats)
 
     # Handling no centroid in input
     if 'distance_to_centroid' not in feats.columns:
-        warnings.warn('Recalculating centroid-distances, since not found in input dataset!')
+        warnings.warn(
+            'Recalculating centroid-distances, since not found in input dataset!'
+        )
         feats = centroid_medoid_computation(feats)
     # Group by time, return new dataframe
     data_dist = feats.groupby('time')
 
-
-    group = pd.DataFrame({"total_dist": data_dist.sum()['distance'],
-                      "mean_speed": data_dist.mean()['average_speed'],
-                      "mean_acceleration": data_dist.mean()['average_acceleration'],
-                        "mean_distance_centroid": data_dist.mean()['distance_to_centroid']})
+    group = pd.DataFrame({
+        "total_dist":
+        data_dist.sum()['distance'],
+        "mean_speed":
+        data_dist.mean()['average_speed'],
+        "mean_acceleration":
+        data_dist.mean()['average_acceleration'],
+        "mean_distance_centroid":
+        data_dist.mean()['distance_to_centroid']
+    })
 
     return group
 
 
-
-def centroid_medoid_computation(data, only_centroid=False, object_output=False):
+def centroid_medoid_computation(data,
+                                only_centroid=False,
+                                object_output=False):
     """
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute
@@ -319,7 +332,8 @@ def centroid_medoid_computation(data, only_centroid=False, object_output=False):
 
         # add additional variable for point object
         if object_output == True:
-            data_groups_time[aid] = data_groups_time[aid].assign(centroid = functions.ST_MakePoint(x_mean, y_mean))
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                centroid=functions.ST_MakePoint(x_mean, y_mean))
 
         if only_centroid == False:
             # Squared distance of each 'x' coordinate to 'centroid'-
