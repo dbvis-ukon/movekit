@@ -1,0 +1,3 @@
+[console_scripts]
+pip-review = pip_review.__main__:main
+
