@@ -155,7 +155,7 @@ def ts_cluster(feats,
         return clustered_df
 
 
-def compute_centroid_direction(data, colname = "centroid_direction", group_output = False):
+def compute_centroid_direction(data, colname = "centroid_direction", group_output = False, only_centroid=True):
     """Calculate the direction of the centroid. Calculates centroid, if not in input data.
 
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
@@ -167,7 +167,7 @@ def compute_centroid_direction(data, colname = "centroid_direction", group_outpu
     # Handle centroid not in data
     if "x_centroid" not in data.columns or "y_centroid" not in data.columns:
         warnings.warn('x_centroid or y_centroid not found in data. Calculating centroid...')
-        data = centroid_medoid_computation(data, only_centroid = True)
+        data = centroid_medoid_computation(data, only_centroid = only_centroid)
 
     # Group into animals
     dat = grouping_data(data)
