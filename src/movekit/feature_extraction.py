@@ -56,6 +56,24 @@ def grouping_data(processed_data, pick_vars=None):
                 aid].loc[:, pick_vars]
     return data_animal_id_groups
 
+def timewise_dict(data):
+    """
+    Group records by timestep.
+    :param data: pd.DataFrame with all preprocessed records.
+    :return: dictionary with 'time' as key and all animal records as value.
+    """
+    # Input grouped into time
+    data_time = data.groupby('time')
+
+    # Pour into dictionary to hold data by time
+    dict_time = {}
+
+    for time in data_time.groups.keys():
+        dict_time[time] = data_time.get_group(time)
+        dict_time[time].reset_index(drop=True, inplace=True)
+
+    return dict_time
+
 
 def regrouping_data(data_animal_id_groups):
     """
@@ -130,6 +148,7 @@ def compute_distance_and_direction(data_animal_id_groups):
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :return: dictionary containing computed 'distance' and 'direction' attributes.
     """
+
     # Compute 'direction' for 'animal_id' groups-
     for aid in data_animal_id_groups.keys():
         try:
