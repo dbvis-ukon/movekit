@@ -12,7 +12,7 @@ class Test_network(unittest.TestCase):
         'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 411.94, 4: 451.76, 5: 417.37, 6: 428.82, 7: 405.89, 8: 412.26, 9: 451.76, 10: 417.07, 11: 428.85, 12: 405.88, 13: 412.61, 14: 451.76, 15: 416.86, 16: 428.86, 17: 405.88, 18: 413.0, 19: 451.76}}
         )
 
-        group = {'time': 4,
+        graph = {'time': 4,
          'x_centroid': 395.396,
          'y_centroid': 423.272,
          'medoid': 312,
@@ -43,6 +43,8 @@ class Test_network(unittest.TestCase):
         outnode = lst[3].nodes[312]
         outedge = lst[3].edges[312, 811]
 
-        self.assertDictEqual(outgraph, group)
+        self.assertDictEqual(outgraph, graph)
+        self.assertDictEqual(outnode, node)
+        self.assertDictEqual(outedge, edge)
 if __name__ == '__main__':
     unittest.main()

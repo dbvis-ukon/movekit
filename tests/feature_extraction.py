@@ -820,19 +820,15 @@ class Test_Feature_Extraction(unittest.TestCase):
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
-	def test_medoid_computation(self):
+	def test_centoid_medoid_computation(self):
 		inp = pd.DataFrame(records)
 		ref = pd.DataFrame(medoids)
-		case = medoid_computation(inp)
-		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
-	def test_compute_absolute_features(self):
-		ref = stops
-		inp = dict_groups
-		case = compute_absolute_features(inp, fps = 1, stop_threshold = 0.5)
-		for i in ref.keys():
-			#ref[i] = ref[i].astype({'stopped':'int32'})
-			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
+		case = centroid_medoid_computation(inp)
+		case = case.sort_values(by=['time', 'animal_id']).reset_index(drop=True)
+		pd.testing.assert_frame_equal(ref, case, check_dtype = False)
+
+
 
 	def test_extract_features(self):
 		"""
