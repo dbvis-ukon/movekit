@@ -923,6 +923,3 @@ class Test_Feature_Extraction(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
