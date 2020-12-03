@@ -20,3 +20,5 @@ from .feature_extraction import ts_feature, ts_all_features, explore_features_ge
 from .clustering import dtw_matrix, ts_cluster, get_heading_difference, compute_polarization, get_spatial_objects, compute_centroid_direction
 # noqa: E402
 from .plot import plot_animal, plot_pace, plot_movement  # noqa: E402
+
+from .network import network_time_graphlist

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from tslearn.clustering import TimeSeriesKMeans
+from functools import reduce
 
 from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
@@ -155,9 +156,7 @@ def ts_cluster(feats,
         return clustered_df
 
 
-def compute_centroid_direction(data,
-                               colname="centroid_direction",
-                               group_output=False):
+def compute_centroid_direction(data, colname = "centroid_direction", group_output = False, only_centroid=True):
     """Calculate the direction of the centroid. Calculates centroid, if not in input data.
 
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
@@ -168,10 +167,8 @@ def compute_centroid_direction(data,
     """
     # Handle centroid not in data
     if "x_centroid" not in data.columns or "y_centroid" not in data.columns:
-        warnings.warn(
-            'x_centroid or y_centroid not found in data. Calculating centroid...'
-        )
-        data = centroid_medoid_computation(data, only_centroid=True)
+        warnings.warn('x_centroid or y_centroid not found in data. Calculating centroid...')
+        data = centroid_medoid_computation(data, only_centroid = only_centroid)
 
     # Group into animals
     dat = grouping_data(data)
@@ -340,6 +337,36 @@ def get_spatial_objects(preprocessed_data, group_output=False):
 
     else:
         pol = out_data
-        pol = pol.loc[pol.animal_id ==
-                      list(set(pol.animal_id))[0], :].reset_index(drop=True)
-        return pol.drop(columns=['animal_id', 'x', 'y'])
+        pol = pol.loc[pol.animal_id == list(set(pol.animal_id))[0],:].reset_index(drop=True)
+        return pol.drop(columns = ['animal_id', 'x', 'y'])
+
+
+def get_group_data(preprocessed_data):
+    """
+    Helper function to get all group data at one place.
+    :param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
+    :return: pd DataFrame containing all relevant group variables
+    """
+    movement = centroid_medoid_computation(preprocessed_data)
+    # prepare for merge
+    movement = movement.rename(columns = {'distance_to_centroid':'distance_centroid'})
+
+
+    # Take subset from dataset above, focusing only on group-level
+    group = movement.loc[movement.animal_id == list(set(movement.animal_id))[0], ['time', 'x_centroid', 'y_centroid', 'medoid']].reset_index(drop=True)
+
+    # compute polarization
+    pol = compute_polarization(preprocessed_data, group_output = True).fillna(0)
+
+    # compute mean speed, acceleration and mean distance to centroid
+    mov = group_movement(movement).fillna(0)
+
+    # compute centroid direction
+    cen_dir = compute_centroid_direction(movement, group_output = True).fillna(0)
+
+
+    # merge computed values into group-dataframe
+    data_frames = [group, pol, mov, cen_dir]
+    group = reduce(lambda  left,right: pd.merge(left,right,on=['time'],
+                                                how='left'), data_frames)
+    return group

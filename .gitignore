@@ -47,6 +47,7 @@ docs/_build/*
 cover/*
 MANIFEST
 envs/*
+env/*
 
 # Per-project virtualenvs
 .venv*/

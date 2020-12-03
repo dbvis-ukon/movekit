@@ -161,15 +161,9 @@ class Test_clustering(unittest.TestCase):
 		case = compute_polarization(inp)
 		pd.testing.assert_frame_equal(ref, case)
 
+	# Might be transformed to a general spatial object test covering all 3 types of spatial objs
 	def test_voronoi(self):
-		ref_area = pd.DataFrame({'time': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2},
-								 'animal_id': {0: 312, 1: 511, 2: 607, 3: 811, 4: 905, 5: 312, 6: 511, 7: 607, 8: 811,
-											   9: 905},
-								 'x': {0: 405.29, 1: 369.99, 2: 390.33, 3: 445.15, 4: 366.06, 5: 405.31, 6: 370.01,
-									   7: 390.25, 8: 445.48, 9: 365.86},
-								 'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 411.94, 4: 451.76, 5: 417.37, 6: 428.82,
-									   7: 405.89, 8: 412.26, 9: 451.76},
-								 'area_voronoi': {0: 2414.225693024696, 1: float("inf"), 2: float("inf"),
+		ref_area = pd.DataFrame({'voronoi_volume': {0: 2414.225693024696, 1: float("inf"), 2: float("inf"),
 												  3: float("inf"), 4: float("inf"), 5: 2389.8757249973805,
 												  6: float("inf"), 7: float("inf"), 8: float("inf"), 9: float("inf")}})
 		ref_points = [[[405.29, 417.76],
@@ -191,12 +185,23 @@ class Test_clustering(unittest.TestCase):
 							'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 411.94, 4: 451.76, 5: 417.37, 6: 428.82,
 								  7: 405.89, 8: 412.26, 9: 451.76}})
 
-		area, diagrams = voronoi_diagram(inp)
+		#area, diagrams = voronoi_diagram(inp)
+
+		#objs = get_spatial_objects(inp)
+
+
+		# Obtaining all spatial object types
+		objs = get_spatial_objects(inp, group_output=False).sort_values(by=['time', 'animal_id'])
+
 
 		# Generating list of points from diagrams of the two tested time points
+		v_objs = objs['voronoi_object']
 		pointlst = []
-		for i in diagrams:
-			pointlst.append(i.points.tolist())
+		for i in v_objs:
+		    pointlst.append(i.points.tolist())
+
+		# Extracting the voronoi volume
+		area = pd.DataFrame(objs['voronoi_volume'])
 
 		# testing area dataframe
 		pd.testing.assert_frame_equal(ref_area, area)
