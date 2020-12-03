@@ -173,7 +173,10 @@ def compute_centroid_direction(data, colname = "centroid_direction", group_outpu
     # Group into animals
     dat = grouping_data(data)
 
-    dat = compute_direction(dat, param_x = "x_centroid", param_y = "y_centroid", colname = colname)
+    dat = compute_direction(dat,
+                            param_x="x_centroid",
+                            param_y="y_centroid",
+                            colname=colname)
 
     cen_direction = regrouping_data(dat)
 
@@ -182,9 +185,8 @@ def compute_centroid_direction(data, colname = "centroid_direction", group_outpu
 
     else:
         pol = cen_direction
-        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0], ['time', colname]].reset_index(drop=True)
-
-
+        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0],
+                       ['time', colname]].reset_index(drop=True)
 
 
 def get_heading_difference(preprocessed_data):
@@ -225,7 +227,7 @@ def get_heading_difference(preprocessed_data):
     return directions
 
 
-def compute_polarization(preprocessed_data, group_output = False):
+def compute_polarization(preprocessed_data, group_output=False):
     """
     Compute the polarization of a group at all record timepoints.
 
@@ -254,9 +256,6 @@ def compute_polarization(preprocessed_data, group_output = False):
             (sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))
              )**2)
 
-
-
-
         # Assign polarization to new variable
         data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
 
@@ -270,7 +269,8 @@ def compute_polarization(preprocessed_data, group_output = False):
     # If only interested in group level output, return one line per timeslot
     else:
         pol = polarization_data
-        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0], ['time', 'polarization']].reset_index(drop=True)
+        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0],
+                       ['time', 'polarization']].reset_index(drop=True)
 
 
 def voronoi_volumes(points):
@@ -290,10 +290,7 @@ def voronoi_volumes(points):
     return vol
 
 
-
-
-def get_spatial_objects(preprocessed_data, group_output = False):
-
+def get_spatial_objects(preprocessed_data, group_output=False):
     """
     Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.
     Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.
@@ -308,7 +305,6 @@ def get_spatial_objects(preprocessed_data, group_output = False):
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
@@ -319,23 +315,19 @@ def get_spatial_objects(preprocessed_data, group_output = False):
         delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
 
         # Calculate area based on objects right above
-        conv_hull_vol= conv_hull_obj.volume
+        conv_hull_vol = conv_hull_obj.volume
         voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
-
 
         # Assign shapes to dataframe
         data_groups_time[aid] = data_groups_time[aid].assign(
-        convex_hull_object=conv_hull_obj,
-        voronoi_object=voronoi_obj,
-        delaunay_object = delaunay_obj
-        )
-
+            convex_hull_object=conv_hull_obj,
+            voronoi_object=voronoi_obj,
+            delaunay_object=delaunay_obj)
 
         data_groups_time[aid] = data_groups_time[aid].assign(
             convex_hull_volume=conv_hull_vol,
-            voronoi_volume = voronoi_vol,
-            )
-
+            voronoi_volume=voronoi_vol,
+        )
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
