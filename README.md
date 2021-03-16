@@ -1,13 +1,13 @@
 MOVEKIT
 ======
 
-__movekit__ is an open-source software package for the processing and analysis of movement data.
-
 <p align="center">
     <img src="media/movement.png" height=150px>
     <img src="media/voronoi.png" height=150px>
     <img src="media/network.png" height=150px> 
 </p>
+
+`movekit` is an open-source software package for the processing and analysis of movement data.
 
 __Features:__
 
@@ -30,13 +30,13 @@ The easiest way to install *movekit* is by using `pip` :
 
 ## Demo
 
-You can view a demo of common features in this
-[Jupyter Notebooks](https://github.com/dbvis-ukon/movekit/blob/master/examples/).
+You can view a demo of common features here:
+[Jupyter Notebooks](examples/).
 
 ---
 
 ### License
 
-Released under a GNU General Public License. See the [LICENSE](LICENSE) file for details. [Authors](AUTHORS.rst)
+Released under a GNU General Public License. See the [LICENSE](LICENSE) file for details. List of [Authors](AUTHORS.rst)
 
 The package is funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy – EXC 2117 – 422037984.
