@@ -2,12 +2,19 @@
 Changelog
 =========
 
+Version 0.1.14
+=============
+    * New documentation with examples
+    * Network analysis
+    * Clustering
+    * Spatial analysis
+
 Version 0.1.9
 =============
     * Time series feature extraction and clustering
-    * Basic plot functionality 
-    * Dynamic graph extraction already added 
-    * Voronoi diagram 
+    * Basic plot functionality
+    * Dynamic graph extraction already added
+    * Voronoi diagram
 
 Version 0.1
 ===========
