@@ -56,6 +56,7 @@ def grouping_data(processed_data, pick_vars=None):
                 aid].loc[:, pick_vars]
     return data_animal_id_groups
 
+
 def timewise_dict(data):
     """
     Group records by timestep.
@@ -161,7 +162,8 @@ def compute_distance_and_direction(data_animal_id_groups):
         except TypeError:
             data = 0
 
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(direction=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            direction=data)
 
     # Compute 'distance' for 'animal_id' groups-
     for aid in data_animal_id_groups.keys():
@@ -171,12 +173,13 @@ def compute_distance_and_direction(data_animal_id_groups):
             p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
             p2.iloc[0, :] = [0.0, 0.0]
 
-            data = ((p1-p2)**2).sum(axis=1)**0.5
+            data = ((p1 - p2)**2).sum(axis=1)**0.5
 
         except TypeError:
             data = 0
 
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(distance=data)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            distance=data)
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
