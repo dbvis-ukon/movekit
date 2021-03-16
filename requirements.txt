@@ -7,3 +7,5 @@ pyod==0.8.7
 fastdtw==0.3.4
 tslearn==0.5.0.5
 h5py==3.1.0
+geoalchemy2>=0.8.4
+networkx>=2.5
