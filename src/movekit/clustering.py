@@ -8,7 +8,7 @@ from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
-from tslearn.clustering import TimeSeriesKMeans
+#from tslearn.clustering import TimeSeriesKMeans
 from functools import reduce
 
 from .feature_extraction import *
@@ -71,7 +71,7 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
     else:
         return distance_df
 
-
+"""
 def ts_cluster(feats,
                n_clust,
                varlst=[
@@ -82,7 +82,7 @@ def ts_cluster(feats,
                max_iter=5,
                random_state=0,
                inertia=False):
-    """
+
     Incorporate time series clustering for absolute features.
 
     Note: Function can be used with extracted features beforehand. If features are not extracted, function performs
@@ -96,7 +96,6 @@ def ts_cluster(feats,
     :param random_state: Default: 0.
     :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
     :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
-    """
 
     # check for each feature if it's contained in feats dataset - if not, calculate
     for feat in varlst:
@@ -154,7 +153,7 @@ def ts_cluster(feats,
 
     else:
         return clustered_df
-
+"""
 
 def compute_centroid_direction(data,
                                colname="centroid_direction",
