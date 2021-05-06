@@ -3,7 +3,6 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 
-
 def parse_csv(path_to_file):
     """
     Read CSV file into Pandas DataFrame.
@@ -20,6 +19,8 @@ def parse_csv(path_to_file):
 
         # change column names all to lower case values
         data.columns = map(str.lower, data.columns)
+
+        format_col = ['time', 'animal_id', 'x', 'y']
 
         # check if all required columns are there in the right format
         if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
@@ -43,11 +44,13 @@ def parse_csv(path_to_file):
                 )
 
             return data
+        else:
+            raise ValueError('Movekit requires columns to be named {} but was given {} instead'.format(format_col, data.columns))
+
     except FileNotFoundError:
         print("The file could not be found.\nPath given: {0}\n\n".format(
             path_to_file))
-    except EmptyDataError:
-        print("The provided dataset is empty}\n\n".format(path_to_file))
+
 
 
 def parse_excel(path_to_file):
@@ -64,8 +67,13 @@ def parse_excel(path_to_file):
         else:
             data = pd.read_excel(path_to_file + '.xlsx')
 
+        if data.empty:
+            raise EmptyDataError
+
         # change column names all to lower case values
         data.columns = map(str.lower, data.columns)
+
+        format_col = ['time', 'animal_id', 'x', 'y']
 
         # check if all required columns are there in the right format
         if 'time' in data and 'animal_id' in data and 'x' in data and 'y' in data:
@@ -88,12 +96,12 @@ def parse_excel(path_to_file):
                     "\n'heading_angle' attribute is found and will be processed\n"
                 )
             return data
+        else:
+            raise ValueError('Movekit requires columns to be named {} but was given {} instead'.format(format_col, data.columns))
 
     except FileNotFoundError:
         print("The file could not be found.\nPath given: {0}\n\n".format(
             path_to_file))
-    except EmptyDataError:
-        print("The provided dataset is empty}\n\n".format(path_to_file))
 
 
 def read_data(path):

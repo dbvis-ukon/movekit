@@ -1,5 +1,3 @@
-
-
 import os
 import unittest
 import pandas as pd
@@ -74,19 +72,11 @@ class Test_IO(unittest.TestCase):
 
     def test_read_csv_file_empty(self):
         path = '../tests/data/empty.csv'
-        self.assertRaises(EmptyDataError, parse_excel(path))
+        self.assertRaises(EmptyDataError, lambda: parse_csv(path))
 
     def test_read_csv_file_missing_header(self):
-        path = '../tests/data/missing-col.csv'
-
-        # df = parse_csv(path)
-        df = pd.read_csv(path)
-
-        expected = ['time', 'animal_id', 'x', 'y']
-        result = list(df.columns)
-
-        # self.assertCountEqual(result, expected)
-        self.assertNotEqual(result, expected)
+        path = '../tests/data/missing-header.csv'
+        self.assertRaises(ValueError, lambda: parse_csv(path))
 
     '''
     Unit test for Microsoft Excel file
@@ -114,17 +104,11 @@ class Test_IO(unittest.TestCase):
     def test_read_excel_file_empty(self):
         path = '../tests/data/empty.xlsx'
 
-        self.assertRaises(EmptyDataError, parse_excel(path))
+        self.assertRaises(EmptyDataError, lambda: parse_excel(path))
 
     def test_read_excel_file_missing_header(self):
-        path = '../tests/data/missing-col.xlsx'
-
-        df = pd.read_excel(path)
-        expected = ['time', 'animal_id', 'x', 'y']
-        result = list(df.columns)
-
-        # self.assertCountEqual(result, expected)
-        self.assertNotEqual(expected, result)
+        path = '../tests/data/missing-header.xlsx'
+        self.assertRaises(ValueError, lambda: parse_excel(path))
 
     def test_csv_excel_equal(self):
         '''
