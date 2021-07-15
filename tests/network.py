@@ -18,7 +18,7 @@ class Test_network(unittest.TestCase):
          'medoid': 312,
          'polarization': 0.12527606232425814,
          'total_dist': 0.9189596262265769,
-         'mean_speed': 0.1559511285765958,
+         'mean_speed': 0.15595112857659577,
          'mean_acceleration': 0.0,
          'mean_distance_centroid': 29.7782,
          'centroid_direction': 83.9909940424787}
@@ -27,7 +27,7 @@ class Test_network(unittest.TestCase):
          'x': 405.3,
          'y': 416.86,
          'distance': 0.2102379604162655,
-         'average_speed': 0.22518761105289878,
+         'average_speed': 0.22518761105289875,
          'average_acceleration': 0.0,
          'direction': -92.72631099390406,
          'stopped': 1,
