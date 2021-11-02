@@ -8,3 +8,4 @@ fastdtw==0.3.4
 h5py==3.1.0
 geoalchemy2>=0.8.4
 networkx>=2.5
+ipympl==0.8.2
