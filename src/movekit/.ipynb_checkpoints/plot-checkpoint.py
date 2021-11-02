@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import animation
 from .feature_extraction import *
 
 
@@ -25,38 +24,6 @@ def plot_movement(data, frm, to):
     plt.show()
 
     return None
-
-
-def animate_movement(data, viewsize):
-    """
-    Animated version of plot_movement function.
-    Animates 'x' and 'y' attributes for given Pandas DataFrame in specified time frame.
-    :param data: Pandas DataFrame (should be sorted by 'time' attribute).
-    :param viewsize: Int. Define how many time steps/frames should be visible in the animation.
-    """
-    
-    xmin = data['x'].min()
-    xmax = data['x'].max()
-    ymin = data['y'].min()
-    ymax = data['y'].max()
-
-    fig = plt.figure()
-    ax = plt.axes(xlim=(xmin, xmax), ylim=(ymin, ymax))
-
-    scat = ax.scatter(x='x', y='y', data=data.loc[(data['time'] >= 0) & (data['time'] <= viewsize), :]) # first frame 
-    
-    def animate(i): # update frame sequentially
-        subset = data.loc[(data['time'] >= i) & (data['time'] <= i+viewsize), :]
-        x = subset['x']
-        y = subset['y']
-        scat.set_offsets(np.c_[x, y])   
-    
-    anim = animation.FuncAnimation(
-        fig, animate, interval=100, frames=data['time'].max())
- 
-    plt.draw()
-    plt.show()
-    return anim # need to return anim otherwise it gets eaten by garbage collector and animation is not updated
 
 
 def plot_animal_timesteps(data_animal_id_groups):
