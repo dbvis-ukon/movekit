@@ -3,7 +3,6 @@ MOVEKIT
 
 <p align="center">
     <img src="media/mover.gif" height=150px/>
-    <img src="media/movement.png" height=150px>
     <img src="media/voronoi.png" height=150px>
     <img src="media/network.png" height=150px> 
 </p>
