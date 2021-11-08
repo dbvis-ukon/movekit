@@ -285,14 +285,3 @@ def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1):
                                         preprocessed_data.loc[:, "y"].max()),
         (y_min, y_max))
     return preprocessed_data
-
-
-def normalize(data):
-    """
-    Normalizes values for the 'x' and 'y' column
-    :param data: DataFrame to perform preprocessing on
-    :return: normalized DataFrame
-    """
-    data['x'] = (data['x'] - data['x'].min()) / (data['x'].max() - data['x'].min())
-    data['y'] = (data['y'] - data['y'].min()) / (data['y'].max() - data['y'].min())
-    return data

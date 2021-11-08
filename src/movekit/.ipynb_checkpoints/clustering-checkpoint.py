@@ -10,7 +10,6 @@ from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 #from tslearn.clustering import TimeSeriesKMeans
 from functools import reduce
-import st_clustering as stc
 
 from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
@@ -83,6 +82,7 @@ def ts_cluster(feats,
                max_iter=5,
                random_state=0,
                inertia=False):
+
     Incorporate time series clustering for absolute features.
 
     Note: Function can be used with extracted features beforehand. If features are not extracted, function performs
@@ -96,8 +96,7 @@ def ts_cluster(feats,
     :param random_state: Default: 0.
     :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
     :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
-    
-    
+
     # check for each feature if it's contained in feats dataset - if not, calculate
     for feat in varlst:
         if feat not in feats.columns:
@@ -378,67 +377,3 @@ def get_group_data(preprocessed_data):
         lambda left, right: pd.merge(left, right, on=['time'], how='left'),
         data_frames)
     return group
-
-
-def clustering(algorithm, data, **kwargs):
-    """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
-    """
-    if algorithm == 'dbscan':
-        clusterer = stc.ST_DBSCAN(**kwargs)
-    elif algorithm == 'hdbscan':
-        clusterer = stc.ST_HDBSCAN(**kwargs)
-    elif algorithm == 'agglomerative':
-        clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
-    elif algorithm == 'optics':
-        clusterer = stc.ST_OPTICS(**kwargs)
-    elif algorithm == 'spectral':
-        clusterer = stc.ST_SpectralClustering(**kwargs)
-    elif algorithm == 'affinitypropagation':
-        clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
-    else:
-        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
-        
-    data = data.loc[:, ['time','x','y']].values
-    clusterer.st_fit(data)
-    return clusterer.labels
-    
-    
-
-def clustering_with_splits(algorithm, data, frame_size, **kwargs):
-    """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :param frame_size: the dataset is partitioned into frames and merged aferwards
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
-    """
-    if algorithm == 'dbscan':
-        clusterer = stc.ST_DBSCAN(**kwargs)
-    elif algorithm == 'hdbscan':
-        clusterer = stc.ST_HDBSCAN(**kwargs)
-    elif algorithm == 'agglomerative':
-        clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
-    elif algorithm == 'optics':
-        clusterer = stc.ST_OPTICS(**kwargs)
-    elif algorithm == 'spectral':
-        clusterer = stc.ST_SpectralClustering(**kwargs)
-    elif algorithm == 'affinitypropagation':
-        clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
-    else:
-        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
-        
-    data = data.loc[:, ['time','x','y']].values
-    clusterer.st_fit_frame_split(data, frame_size)
-    return clusterer.labels
