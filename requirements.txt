@@ -9,3 +9,4 @@ h5py==3.1.0
 geoalchemy2>=0.8.4
 networkx>=2.5
 ipympl==0.8.2
+st-clustering==0.0.1
