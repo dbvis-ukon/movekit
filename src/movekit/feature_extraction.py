@@ -127,7 +127,8 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
     :return: data_animal_id_groups
     """
     for aid in data_animal_id_groups.keys():
-        data = data_animal_id_groups[aid][param_direction] - data_animal_id_groups[aid][param_direction].shift(periods=1)
+        data = data_animal_id_groups[aid][param_direction] - data_animal_id_groups[aid][param_direction].shift(
+            periods=1)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             inp=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
@@ -293,6 +294,33 @@ def computing_stops(data_animal_id_groups, threshold_speed):
 
     return data_animal_id_groups
     '''
+
+
+def distance_by_time(data, frm, to):
+    """
+    Computes the distance between positions for a particular time window for all movers.
+    :param data: pandas DataFrame with all records of movements.
+    :param frm: int defining the start of the time window
+    :param to: int defining the end of the time window (inclusive)
+    :return: pandas DataFrame with animal_id and distance
+    """
+    # use auxiliary functions to get distances for each timestep
+    data_animal_id_groups = grouping_data(data)
+    data_animal_id_groups = compute_distance(data_animal_id_groups)
+
+    aids = []
+    distances = []
+    # iterate over grouped dataframes
+    for aid in data_animal_id_groups.keys():
+        # take a subst of each dataframe as defined by the time window
+        df = data_animal_id_groups[aid]
+        subset = df[(df['time'] >= frm) & (df['time'] <= to)]
+        # sum up all distances in that time window
+        distance = subset['distance'].sum()
+        aids.append(aid)
+        distances.append(distance)
+
+    return pd.DataFrame({'animal_id': aids, 'distance': distances})
 
 
 def group_movement(feats):
