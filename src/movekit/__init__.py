@@ -18,7 +18,8 @@ finally:
 
 from .io import read_data  # noqa: E402
 from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
-    resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize  # noqa:
+    resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize, \
+    delete_mover# noqa:
 # E402
 from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
 from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, centroid_medoid_computation, \

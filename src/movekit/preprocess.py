@@ -296,3 +296,13 @@ def normalize(data):
     data['x'] = (data['x'] - data['x'].min()) / (data['x'].max() - data['x'].min())
     data['y'] = (data['y'] - data['y'].min()) / (data['y'].max() - data['y'].min())
     return data
+
+
+def delete_mover(data, animal_id):
+    """
+    Delete a particular mover from the DataFrame
+    :param data: DataFrame
+    :param animal_id: int. The animal_id as found in the column animal_id
+    :return: DataFrame
+    """
+    return data.drop(data[data['animal_id'] == animal_id].index)
