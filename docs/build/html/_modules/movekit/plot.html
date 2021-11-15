@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>movekit.plot &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for movekit.plot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">animation</span>
+<span class="kn">from</span> <span class="nn">.feature_extraction</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="plot_movement"><a class="viewcode-back" href="../../api/movekit.html#movekit.plot.plot_movement">[docs]</a><span class="k">def</span> <span class="nf">plot_movement</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">frm</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot &#39;x&#39; and &#39;y&#39; attributes for given Pandas DataFrame in specified time frame.</span>
+
+<span class="sd">    :param data: Pandas DataFrame (should be sorted by &#39;time&#39; attribute).</span>
+<span class="sd">    :param frm: Starting from time step.</span>
+<span class="sd">    :param to: Ending to time step.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">frm</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">to</span><span class="p">),</span> <span class="p">:])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Plotting &#39;x&#39; and &#39;y&#39; coordinates&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;&#39;x&#39; coordinate&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;&#39;y&#39; coordinate&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="animate_movement"><a class="viewcode-back" href="../../api/movekit.html#movekit.plot.animate_movement">[docs]</a><span class="k">def</span> <span class="nf">animate_movement</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">viewsize</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Animated version of plot_movement function.</span>
+<span class="sd">    Animates &#39;x&#39; and &#39;y&#39; attributes for given Pandas DataFrame in specified time frame.</span>
+<span class="sd">    :param data: Pandas DataFrame (should be sorted by &#39;time&#39; attribute).</span>
+<span class="sd">    :param viewsize: Int. Define how many time steps/frames should be visible in the animation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">xmin</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">ymin</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
+
+    <span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">viewsize</span><span class="p">),</span> <span class="p">:])</span> <span class="c1"># first frame </span>
+    
+    <span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="c1"># update frame sequentially</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="o">+</span><span class="n">viewsize</span><span class="p">),</span> <span class="p">:]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">subset</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">subset</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+        <span class="n">scat</span><span class="o">.</span><span class="n">set_offsets</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>   
+    
+    <span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">animate</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+ 
+    <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">anim</span> <span class="c1"># need to return anim otherwise it gets eaten by garbage collector and animation is not updated</span></div>
+
+
+<div class="viewcode-block" id="plot_animal_timesteps"><a class="viewcode-back" href="../../api/movekit.html#movekit.plot.plot_animal_timesteps">[docs]</a><span class="k">def</span> <span class="nf">plot_animal_timesteps</span><span class="p">(</span><span class="n">data_animal_id_groups</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the number of time steps for each &#39;animal_id&#39;</span>
+
+<span class="sd">    :param data_animal_id_groups: Dictionary containing grouping of data by &#39;animal_id&#39;.</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize Python 3.X dict to hold number of time steps</span>
+    <span class="c1"># for each animals-</span>
+    <span class="n">animals_timesteps</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_animal_id_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">animals_timesteps</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_animal_id_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="c1"># Sort &#39;animals_timesteps&#39; dict in ascending order-</span>
+    <span class="c1"># sorted((val, key) for (key, val) in animals_timesteps.items())</span>
+    <span class="c1"># [(43201, 312), (43201, 511), (43201, 607), (43201, 811), (43201, 905)]</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">animals_timesteps</span><span class="p">)),</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">animals_timesteps</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+            <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">animals_timesteps</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">animals_timesteps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Barchart: number of timesteps versus animals&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Animal IDs&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Number of time steps&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="plot_pace"><a class="viewcode-back" href="../../api/movekit.html#movekit.plot.plot_pace">[docs]</a><span class="k">def</span> <span class="nf">plot_pace</span><span class="p">(</span><span class="n">avg_speed_data</span><span class="p">,</span> <span class="n">feature</span><span class="o">=</span><span class="s2">&quot;speed&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot average speed extracted feature for each animal.</span>
+
+<span class="sd">    :param avg_speed_data: dictionary containing grouping of data by &#39;animal_id&#39; including average speed feature.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Group data into dictionary with animal_id as keys</span>
+    <span class="n">data_animal_id_groups</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">(</span><span class="n">avg_speed_data</span><span class="p">)</span>
+
+    <span class="c1"># Init dictionary to hold requested parameter</span>
+    <span class="n">animals_vals</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">feature</span> <span class="o">==</span> <span class="s2">&quot;speed&quot;</span><span class="p">:</span>
+
+        <span class="c1"># Fill dictionary with average speed feature</span>
+        <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_animal_id_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_animal_id_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s1">&#39;average_speed&#39;</span><span class="p">]</span>
+            <span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">])</span>
+
+        <span class="c1"># List containing animal ids to be used within loop-</span>
+        <span class="n">animal_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">animals_vals</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Indices for stacking and making subplots in grid-</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">),</span>
+                                <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Plot: Average Acceleration for each animal&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">):</span>
+            <span class="n">axs</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">animals_vals</span><span class="p">[</span><span class="n">animal_ids</span><span class="p">[</span><span class="n">c</span><span class="p">]])</span>
+            <span class="n">axs</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Animal ID: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span>
+            <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;number of time steps&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;avg speed&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Hide x labels and tick labels for top plots and y ticks</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">label_outer</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">feature</span> <span class="o">==</span> <span class="s2">&quot;acceleration&quot;</span><span class="p">:</span>
+
+        <span class="c1"># Fill dictionary with average acceleration feature</span>
+        <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_animal_id_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_animal_id_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span>
+                <span class="s1">&#39;average_acceleration&#39;</span><span class="p">]</span>
+            <span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">animals_vals</span><span class="p">[</span><span class="n">aid</span><span class="p">])</span>
+
+        <span class="c1"># List containing animal ids to be used within loop-</span>
+        <span class="n">animal_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">animals_vals</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Indices for stacking and making subplots in grid-</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">),</span>
+                                <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Plot: Average Acceleration for each animal&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">):</span>
+            <span class="n">axs</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">animals_vals</span><span class="p">[</span><span class="n">animal_ids</span><span class="p">[</span><span class="n">c</span><span class="p">]])</span>
+            <span class="n">axs</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Animal ID: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">animal_ids</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span>
+            <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;number of time steps&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;avg acc&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Hide x labels and tick labels for top plots and y ticks</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">label_outer</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="plot_animal"><a class="viewcode-back" href="../../api/movekit.html#movekit.plot.plot_animal">[docs]</a><span class="k">def</span> <span class="nf">plot_animal</span><span class="p">(</span><span class="n">inp_data</span><span class="p">,</span> <span class="n">animal_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot individual animal&#39;s &#39;x&#39; and &#39;y&#39; coordinates.</span>
+
+<span class="sd">    :param data_animal_id_groups: DataFrame containing &#39;x&#39; &amp; &#39;y&#39; attributes.</span>
+<span class="sd">    :param animal_id: ID of animal to be plotted.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_animal_id_groups</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">(</span><span class="n">inp_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">animal_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_animal_id_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error!! animal id: </span><span class="si">{0}</span><span class="s2"> does NOT exist in the provided data!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span>
+            <span class="nb">format</span><span class="p">(</span><span class="n">animal_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data_animal_id_groups</span><span class="p">[</span><span class="n">animal_id</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
+             <span class="n">data_animal_id_groups</span><span class="p">[</span><span class="n">animal_id</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Plotting animal id: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">animal_id</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x coordinates&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;y coordinates&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/04_spatial_analysis.html">Spatial Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

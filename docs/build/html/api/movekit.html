@@ -1,0 +1,852 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>movekit package &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="movekit" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="movekit-package">
+<h1>movekit package<a class="headerlink" href="#movekit-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-movekit.clustering">
+<span id="movekit-clustering-module"></span><h2>movekit.clustering module<a class="headerlink" href="#module-movekit.clustering" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.clustering">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.clustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clustering of spatio-temporal data
+:param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
+:param data: DataFrame to perform clustering on
+:return: labels as numpy array where the label in the first position corresponds to the first row of the input data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.clustering_with_splits">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">clustering_with_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#clustering_with_splits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.clustering_with_splits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clustering of spatio-temporal data
+:param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
+:param data: DataFrame to perform clustering on
+:param frame_size: the dataset is partitioned into frames and merged aferwards
+:return: labels as numpy array where the label in the first position corresponds to the first row of the input data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.compute_centroid_direction">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">compute_centroid_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'centroid_direction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_centroid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#compute_centroid_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.compute_centroid_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the direction of the centroid. Calculates centroid, if not in input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>DataFrame</strong> (<em>pd</em>) – DataFrame with x/y positional data and animal_ids, optionally include centroid</p></li>
+<li><p><strong>colname</strong> – Name of the column. Default: centroid_direction.</p></li>
+<li><p><strong>group_output</strong> – Boolean, defines form of output. Default: Animal-Level</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>pandas DF with centroid direction included</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.compute_polarization">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">compute_polarization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#compute_polarization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.compute_polarization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the polarization of a group at all record timepoints.</p>
+<p>More info about the formula: Here: <a class="reference external" href="https://bit.ly/2xZ8uSI">https://bit.ly/2xZ8uSI</a> and Here: <a class="reference external" href="https://bit.ly/3aWfbDv">https://bit.ly/3aWfbDv</a>.
+:param preprocessed_data: Pandas Dataframe with or without previously extracted features.
+:return: Pandas Dataframe, with extracted features along with a new “polarization” variable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.dtw_matrix">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">dtw_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance=&lt;function</span> <span class="pre">euclidean&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#dtw_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.dtw_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
+:param data_groups: Grouped dictionary by animal_id.
+:param path: Boolean to specify if matrix of dtw-path gets returned as well
+:param distance: Specify with distance measure to use. Default: “euclidean”. (ex. Alternatives: pdist, minkowski)
+:return: pandas Dataframe with distances between trajectories.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.get_group_data">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">get_group_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#get_group_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.get_group_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function to get all group data at one place.
+:param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
+:return: pd DataFrame containing all relevant group variables</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.get_heading_difference">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">get_heading_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#get_heading_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.get_heading_difference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the difference in degrees between the animal’s direction and the centroid’s direction for each timestep.</p>
+<p>Note: Calculate the difference in degrees between the animal’s direction and the centroid’s direction for each
+timestep. Stronger gain in y gives positive difference, weaker gain in y gives negative difference, since constant
+y is defined to be 0 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>preprocessed_data</strong> – Pandas Dataframe containing preprocessed animal records.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas Dataframe containing animal and centroid directions as well as the heading difference.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.get_spatial_objects">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">get_spatial_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#get_spatial_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.get_spatial_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.
+Please visit <a class="reference external" href="https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html">https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html</a> for detailed documentation of spatial attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>preprocessed_data</strong> – Pandas Df, containing x and y coordinates.</p></li>
+<li><p><strong>group_output</strong> – Boolean, default: False, If true, one line per time capture for entire animal group.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.get_trajectories">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">get_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_groups</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#get_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.get_trajectories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain trajectories out of a grouped dictionary with multiple ids.
+:param data_groups: Grouped dictionary by animal_id.
+:return: Grouped dictionary by animal id, containing tuples of positions in 2d coordinate system.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.clustering.voronoi_volumes">
+<span class="sig-prename descclassname"><span class="pre">movekit.clustering.</span></span><span class="sig-name descname"><span class="pre">voronoi_volumes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/clustering.html#voronoi_volumes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.clustering.voronoi_volumes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to calculate area in a voronoi-diagram. Used in function below.
+:param points: Nested list, indicating points with coordinates.
+:return: Volume for each point, infinite if area is not closed to each direction (usually outmost points).</p>
+</dd></dl>
+
+</section>
+<section id="module-movekit.feature_extraction">
+<span id="movekit-feature-extraction-module"></span><h2>movekit.feature_extraction module<a class="headerlink" href="#module-movekit.feature_extraction" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.centroid_medoid_computation">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">centroid_medoid_computation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_centroid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#centroid_medoid_computation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.centroid_medoid_computation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
+Uses group by on ‘time’ attribute
+:param data: Pandas DataFrame containing movement records
+:param data: Boolean in case we just want to compute the centroids. Default: False.
+:return: Pandas DataFrame containing computed medoids &amp; centroids</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_average_acceleration">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_average_acceleration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_average_acceleration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_average_acceleration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute average acceleration of an animal based on fps (frames per second) parameter.
+Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
+Use output of compute_average_speed() function to this function.
+:param data_animal_id_groups: dictionary with ‘animal_id’ as keys
+:param fps: integer to specify frames per second
+:return: dictionary, including measure for ‘average_acceleration’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_average_speed">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_average_speed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_average_speed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_average_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute average speed of an animal based on fps (frames per second) parameter.
+Formula used Average Speed = Total Distance Travelled / Total Time taken;
+Use output of compute_distance_and_direction() function to this function.
+:param data_animal_id_groups: dictionary with ‘animal_id’ as keys
+:param fps: integer to specify frames per second
+:return: dictionary, including measure for ‘average_speed’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_direction">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'direction'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate angle of degrees, an animal is heading in between two timesteps.
+:param data_animal_id_groups: dictionary ordered by ‘animal_id’.
+:param param_x: Column name to be recognized as x. Default “x”.
+:param param_y: Column name to be recognized as y. Default “y”.
+:return: dictionary containing computed ‘distance’ attribute.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_distance">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate metric distance of animals in between two timesteps.
+:param data_animal_id_groups: dictionary ordered by ‘animal_id’.
+:param param_x: Column name to be recognized as x. Default “x”.
+:param param_y: Column name to be recognized as y. Default “y”.
+:return: dictionary containing computed ‘distance’ attribute.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_distance_and_direction">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_distance_and_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_distance_and_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_distance_and_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to calculate metric distance and direction attributes.
+Calculates the metric distance between two consecutive time frames/time stamps
+for each moving entity (in this case, fish).
+:param data_animal_id_groups: dictionary ordered by ‘animal_id’.
+:return: dictionary containing computed ‘distance’ and ‘direction’ attributes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_similarity">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute positional similarity between animals.
+Computing the positional similarity in a distance matrix according to animal_id for each time step.
+:param data: pandas DataFrame, containing preprocessed movement records.
+:param weights: dictionary, giving variable’s weights in weighted distance calculation.
+:param p: integer, giving p-norm for Minkowski, weighted and unweighted. Default: 2.
+:return: pandas DataFrame, including computed similarities.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.compute_turning">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_turning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'direction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'turning'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#compute_turning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.compute_turning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the turning angle for a mover between two timesteps as the difference of its direction
+:param data_animal_id_groups: dictionary ordered by ‘animal_id’.
+:param param_direction: Column name to be recognized as direction. Default “direction”.
+:param colname: the new column to be added
+:return: data_animal_id_groups</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.computing_stops">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">computing_stops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_speed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#computing_stops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.computing_stops" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate absolute feature, describing a record as stop, based on threshold.
+Calculate absolute feature called ‘Stopped’ where the value is 1 if ‘Average_Speed’ &lt;= threshold_speed
+and 0 otherwise.
+:param data_animal_id_groups: dictionary with ‘animal_id’ as keys.
+:param threshold_speed:  integer, defining maximum value for ‘average_speed’ to be considered as a stop.
+:return: dictionary, including variable ‘stopped’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.distance_by_time">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">distance_by_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#distance_by_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.distance_by_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the distance between positions for a particular time window for all movers.
+:param data: pandas DataFrame with all records of movements.
+:param frm: int defining the start of the time window
+:param to: int defining the end of the time window (inclusive)
+:return: pandas DataFrame with animal_id and distance</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.distance_euclidean_matrix">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">distance_euclidean_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#distance_euclidean_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.distance_euclidean_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates record’s euclidean distances.
+Displays euclidean distances as a distance matrix of each animal at a given point in time to each other animal at
+the same point in time, sorted by ‘time’ and ‘animal_id’.
+:param data: pandas DataFrame, containing preprocessed movement records.
+:return: pandas DataFrame with euclidean distances to each other ‘animal_id’ at a given time.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.euclidean_dist">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">euclidean_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#euclidean_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.euclidean_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate distances
+Compute the euklidean distance for one individual grouped time step using the Scipy ‘pdist’ and ‘squareform’ methods
+:param data: pandas DataFrame with positional record data.
+:return: pandas DataFrame, including computed similarities.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.explore_features">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">explore_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#explore_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.explore_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show percentage of environment space explored by singular animal.
+Using minumum and maximum of 2-D coordinates, given by ‘x’ and ‘y’ features in input DataFrame.
+:param data: pandas DataFrame, containing preprocessed movement records.
+:return: None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.explore_features_geospatial">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">explore_features_geospatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#explore_features_geospatial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.explore_features_geospatial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show exploration of environment space by each animal using ‘shapely’ package.
+Gives singular descriptions of polygon area covered by each animal and combined.
+Additionally a plot of the respective areas is provided.
+:param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
+:return: None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.extract_features">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">extract_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#extract_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.extract_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return all absolute features for input animal group.
+Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
+compute_average_acceleration(), computing_stops()
+:param data: pandas DataFrame with all records of movements.
+:param fps: integer to specify frames per second.
+:param stop_threshold: integer to specify threshold, at which we consider a “stop”.
+:return: pandas DataFrame with additional variables consisting of all relevant features.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.group_movement">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">group_movement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#group_movement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.group_movement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns aggregated movement data, such as distance, mean speed, mean acceleration and mean distance to centroid for the entire group at each time capture.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>feats</strong> – pd DataFrame with animal-specific data - if no features contained, they will be extracted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>pd DataFrame with group-specific values for each time-capture</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.grouping_data">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">grouping_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pick_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#grouping_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.grouping_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to group data records by ‘animal_id’. Adds additional attributes/columns, if features aren’t extracted yet.
+:param processed_data: pd.DataFrame with all preprocessed records.
+:return: dictionary with ‘animal_id’ as key and all records as value.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.outlier_detection">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">outlier_detection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['distance',</span> <span class="pre">'average_speed',</span> <span class="pre">'average_acceleration',</span> <span class="pre">'direction',</span> <span class="pre">'stopped']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contamination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'minkowski'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#outlier_detection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.outlier_detection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect outliers based on pyod KNN.</p>
+<p>Note: User may decide upon contamination threshold, number of neighbors, method and metric.
+For method three kNN detectors are supported:</p>
+<blockquote>
+<div><p>-largest: use the distance to the kth neighbor as the outlier score
+-mean(default): use the average of all k neighbors as the outlier score
+-median: use the median of the distance to k neighbors as the outlier score</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – list of features to detect outliers upon.</p></li>
+<li><p><strong>contamination</strong> – float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,</p></li>
+</ul>
+</dd>
+</dl>
+<p>i.e. the proportion of outliers in the data set.
+:param n_neighbors: int, (default = 5) Number of neighbors to use by default for k neighbors queries.
+:param method: str, (default=’largest’) {‘largest’, ‘mean’, ‘median’}
+:param metric: string or callable, default ‘minkowski’ metric to use for distance computation. Any metric from
+scikit-learn or scipy.spatial.distance can be used.
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.regrouping_data">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">regrouping_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#regrouping_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.regrouping_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate all Pandas DataFrames in grouped dictionary into one.
+:param data_animal_id_groups: dictionary ordered by ‘animal_id’.
+:return: Pandas DataFrame containing all records of all andimal_ids.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.similarity_computation">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">similarity_computation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#similarity_computation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.similarity_computation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute similarity between records.
+Compute the Minkowski similarity for one individual grouped time step using the Scipy pdist and squareform methods
+:param group: pandas DataFrame, containing preprocessed movement records.
+:param w: array, consisting of the weight vector.
+:param p: double, applies the respective p-norm for weighted Minkowski.
+:return: pandas DataFrame, including the distances of the records.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.timewise_dict">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">timewise_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#timewise_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.timewise_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group records by timestep.
+:param data: pd.DataFrame with all preprocessed records.
+:return: dictionary with ‘time’ as key and all animal records as value.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.ts_all_features">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">ts_all_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#ts_all_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.ts_all_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform time series analysis on record data.
+Remove the column ‘stopped’ as it has nominal values
+:param data: pandas DataFrame, containing preprocessed movement records and features.
+:return: pandas DataFrame, containing autocorrelation for each id for each feature.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.feature_extraction.ts_feature">
+<span class="sig-prename descclassname"><span class="pre">movekit.feature_extraction.</span></span><span class="sig-name descname"><span class="pre">ts_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/feature_extraction.html#ts_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.feature_extraction.ts_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform time series analysis on specified feature of record data.
+:param data: pandas DataFrame, containing preprocessed movement records and features.
+:param feature: feature to perform time series analysis on
+:return: pandas DataFrame, containing autocorrelation for each id for defined feature.</p>
+</dd></dl>
+
+</section>
+<section id="module-movekit.io">
+<span id="movekit-io-module"></span><h2>movekit.io module<a class="headerlink" href="#module-movekit.io" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.io.parse_csv">
+<span class="sig-prename descclassname"><span class="pre">movekit.io.</span></span><span class="sig-name descname"><span class="pre">parse_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/io.html#parse_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.io.parse_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read CSV file into Pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path_to_file</strong> – Complete path/relative path to CSV file along with file name.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame containing imported data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.io.parse_excel">
+<span class="sig-prename descclassname"><span class="pre">movekit.io.</span></span><span class="sig-name descname"><span class="pre">parse_excel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/io.html#parse_excel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.io.parse_excel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read Excel file into Pandas DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path_to_file</strong> – Complete path/relative path to Excel file along with file name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame containing imported data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.io.read_data">
+<span class="sig-prename descclassname"><span class="pre">movekit.io.</span></span><span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/io.html#read_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.io.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Containing all of Input Output (IO) functions as function arguments (which by default are False).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> – Complete path/relative path to Excel file along with file name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame containing imported data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-movekit.network">
+<span id="movekit-network-module"></span><h2>movekit.network module<a class="headerlink" href="#module-movekit.network" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.network.network_time_graphlist">
+<span class="sig-prename descclassname"><span class="pre">movekit.network.</span></span><span class="sig-name descname"><span class="pre">network_time_graphlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'delaunay_object'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/network.html#network_time_graphlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.network.network_time_graphlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a network list for each timestep based on delaunay triangulation (currently only one available)
+:param preprocessed_data: Pandas DataFrame containing movement records
+:param object_type: delaunay_object - currently the only one available.
+:return: List of nx graphs, containing, singular group and relational attributes on nodes, graph and edges.</p>
+</dd></dl>
+
+</section>
+<section id="module-movekit.plot">
+<span id="movekit-plot-module"></span><h2>movekit.plot module<a class="headerlink" href="#module-movekit.plot" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.plot.animate_movement">
+<span class="sig-prename descclassname"><span class="pre">movekit.plot.</span></span><span class="sig-name descname"><span class="pre">animate_movement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewsize</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/plot.html#animate_movement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.plot.animate_movement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Animated version of plot_movement function.
+Animates ‘x’ and ‘y’ attributes for given Pandas DataFrame in specified time frame.
+:param data: Pandas DataFrame (should be sorted by ‘time’ attribute).
+:param viewsize: Int. Define how many time steps/frames should be visible in the animation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.plot.plot_animal">
+<span class="sig-prename descclassname"><span class="pre">movekit.plot.</span></span><span class="sig-name descname"><span class="pre">plot_animal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animal_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/plot.html#plot_animal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.plot.plot_animal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot individual animal’s ‘x’ and ‘y’ coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_animal_id_groups</strong> – DataFrame containing ‘x’ &amp; ‘y’ attributes.</p></li>
+<li><p><strong>animal_id</strong> – ID of animal to be plotted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.plot.plot_animal_timesteps">
+<span class="sig-prename descclassname"><span class="pre">movekit.plot.</span></span><span class="sig-name descname"><span class="pre">plot_animal_timesteps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_animal_id_groups</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/plot.html#plot_animal_timesteps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.plot.plot_animal_timesteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the number of time steps for each ‘animal_id’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_animal_id_groups</strong> – Dictionary containing grouping of data by ‘animal_id’.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.plot.plot_movement">
+<span class="sig-prename descclassname"><span class="pre">movekit.plot.</span></span><span class="sig-name descname"><span class="pre">plot_movement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/plot.html#plot_movement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.plot.plot_movement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot ‘x’ and ‘y’ attributes for given Pandas DataFrame in specified time frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Pandas DataFrame (should be sorted by ‘time’ attribute).</p></li>
+<li><p><strong>frm</strong> – Starting from time step.</p></li>
+<li><p><strong>to</strong> – Ending to time step.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.plot.plot_pace">
+<span class="sig-prename descclassname"><span class="pre">movekit.plot.</span></span><span class="sig-name descname"><span class="pre">plot_pace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avg_speed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'speed'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/plot.html#plot_pace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.plot.plot_pace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot average speed extracted feature for each animal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>avg_speed_data</strong> – dictionary containing grouping of data by ‘animal_id’ including average speed feature.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-movekit.preprocess">
+<span id="movekit-preprocess-module"></span><h2>movekit.preprocess module<a class="headerlink" href="#module-movekit.preprocess" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.convert_measueres">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">convert_measueres</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preprocessed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#convert_measueres"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.convert_measueres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a linear scale with input parameters for x,y for transformation of position data.
+:param preprocessed_data: Pandas DataFrame only with x and y position data
+:param x_min: int minimum for x - default: 0.
+:param x_max: int maximum for x - default: 1.
+:param y_min: int minimum for y - default: 0.
+:param y_max: int maximum for y - default: 1.
+:return: Pandas DataFrame with linearly transformed position data.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.delete_mover">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">delete_mover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animal_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#delete_mover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.delete_mover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a particular mover from the DataFrame
+:param data: DataFrame
+:param animal_id: int. The animal_id as found in the column animal_id
+:return: DataFrame</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.filter_dataframe">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">filter_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#filter_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.filter_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract records of assigned time frame from preprocessed movement record data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Pandas DataFrame, containing preprocessed movement record data.</p></li>
+<li><p><strong>frm</strong> – Int, defining starting point from where to extract records.</p></li>
+<li><p><strong>to</strong> – Int, defining end point up to where to extract records.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame, filtered by records matching the defined frame in ‘from’-‘to’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.interpolate">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'forward'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate over missing values in pandas Dataframe of movement records.
+Interpolation methods consist of “linear”, “polynomial, “time”, “index”, “pad”.
+(see  <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html</a>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Pandas DataFrame of movement records</p></li>
+<li><p><strong>limit</strong> – Maximum number of consecutive NANs to fill</p></li>
+<li><p><strong>limit_direction</strong> – If limit is specified, consecutive NaNs will be filled in this direction.</p></li>
+<li><p><strong>method</strong> – Interpolation technique to use. Default is “linear”.</p></li>
+<li><p><strong>order</strong> – To be used in case of polynomial interpolation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interpolated DataFrame.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.normalize">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes values for the ‘x’ and ‘y’ column
+:param data: DataFrame to perform preprocessing on
+:return: normalized DataFrame</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.plot_missing_values">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">plot_missing_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#plot_missing_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.plot_missing_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the missing values of an animal-ID against time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Pandas DataFrame containing records of movement.</p></li>
+<li><p><strong>animal_id</strong> – ID of the animal whose missing values will be plotted against time.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.preprocess">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'forward'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to perform data preprocessing.</p>
+<p>Print the number of missing values per column; Drop columns with  missing values for ‘time’ and ‘animal_id’;
+Remove the duplicated rows found.
+:param data: DataFrame to perform preprocessing on
+:param dropna: Optional parameter to drop columns with  missing values for ‘time’ and ‘animal_id’
+:param interpolate: Optional parameter to perform linear interpolation
+:param limit: Maximum number of consecutive NANs to fill
+:param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+:param method: Interpolation technique to use. Default is “linear”.
+:param order: To be used in case of polynomial interpolation.
+:return: Preprocessed DataFrame.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.print_duplicate">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">print_duplicate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#print_duplicate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.print_duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print rows, which are duplicates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> – Pandas DataFrame of movement records.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.print_missing">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">print_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#print_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.print_missing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the missing values for each column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> – Pandas DataFrame of movement records.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.replace_parts_animal_movement">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">replace_parts_animal_movement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animal_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replacement_value_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replacement_value_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#replace_parts_animal_movement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.replace_parts_animal_movement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace subsets (segments) of animal movement based on some indices e.g. time.
+This function can be used to remove outliers.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>data_groups = grouping_data(data)
+arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
+replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_groups</strong> – Dictionary with key ‘animal_id’and value with records for ‘animal_id’.</p></li>
+<li><p><strong>animal_id</strong> – Int defining ‘animal_id’ whose movements have to be replaced.</p></li>
+<li><p><strong>time_array</strong> – Array defining time indices whose movements have to replaced</p></li>
+<li><p><strong>replacement_value_x</strong> – Int value that will replace all ‘x’ attribute values in ‘time_array’.</p></li>
+<li><p><strong>replacement_value_y</strong> – Int value that will replace all ‘y’ attribute values in ‘time_array’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with replaced subsets.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.resample_random">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">resample_random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsample_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#resample_random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.resample_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample the movement data of each animal - by downsampling at random time intervals.</p>
+<p>This is done to reduce resolution of the dataset. This function does this by randomly choosing
+samples from each animal</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_groups</strong> – Dictionary with key ‘animal_id’ and value record data of ‘animal_id’.</p></li>
+<li><p><strong>downsample_size</strong> – Int sample size to which each animal has to be reduced by downsampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary, modified from original size ‘data_groups’ to ‘downsample_size’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.resample_systematic">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">resample_systematic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsample_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#resample_systematic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.resample_systematic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample the movement data of each animal - by downsampling at fixed time intervals.</p>
+<p>This is done to reduce the resolution of the dataset. This function does this by systematically choosing
+samples from each animal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_groups</strong> – Dictionary with key: ‘animal_id’ and value with record data to that ‘animal_id’.</p></li>
+<li><p><strong>downsample_size</strong> – Int sample size to which each animal has to be reduced by downsampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary, modified from original size ‘data_groups’ to ‘downsample_size’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="movekit.preprocess.split_trajectories">
+<span class="sig-prename descclassname"><span class="pre">movekit.preprocess.</span></span><span class="sig-name descname"><span class="pre">split_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuzzy_segment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/movekit/preprocess.html#split_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#movekit.preprocess.split_trajectories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split trajectory of a single animal into several segments based on specific criterion.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>data_groups = group_animals(data)
+split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_groups</strong> – Dictionary with key ‘animal_id’ and value record data of ‘animal_id’.</p></li>
+<li><p><strong>segment</strong> – Int, defining point where the animals are split into several Pandas Data Frames.</p></li>
+<li><p><strong>fuzzy_segment</strong> – Int, defining interval which will overlap on either side of the segments.</p></li>
+<li><p><strong>csv</strong> – Boolean, defining if each interval shall be exported locally as singular csv</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None. All segmented Pandas Data Frames are saved to HDD.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-movekit">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-movekit" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/04_spatial_analysis.html">Spatial Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Module Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">movekit package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">movekit</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">movekit</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/movekit.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

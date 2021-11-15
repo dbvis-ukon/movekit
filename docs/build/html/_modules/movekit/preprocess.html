@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>movekit.preprocess &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for movekit.preprocess</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="interpolate"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.interpolate">[docs]</a><span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;forward&quot;</span><span class="p">,</span>
+                <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interpolate over missing values in pandas Dataframe of movement records.</span>
+<span class="sd">    Interpolation methods consist of &quot;linear&quot;, &quot;polynomial, &quot;time&quot;, &quot;index&quot;, &quot;pad&quot;.</span>
+<span class="sd">    (see  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html)</span>
+
+<span class="sd">    :param data: Pandas DataFrame of movement records</span>
+<span class="sd">    :param limit: Maximum number of consecutive NANs to fill</span>
+<span class="sd">    :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.</span>
+<span class="sd">    :param method: Interpolation technique to use. Default is &quot;linear&quot;.</span>
+<span class="sd">    :param order: To be used in case of polynomial interpolation.</span>
+<span class="sd">    :return: Interpolated DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Interpolating record data</span>
+    <span class="n">interp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                              <span class="n">limit_direction</span><span class="o">=</span><span class="n">limit_direction</span><span class="p">,</span>
+                              <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
+                              <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">interp</span></div>
+
+
+<span class="c1"># Function only plots missings for all animals, therefore dead parameter</span>
+<div class="viewcode-block" id="plot_missing_values"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.plot_missing_values">[docs]</a><span class="k">def</span> <span class="nf">plot_missing_values</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the missing values of an animal-ID against time.</span>
+
+<span class="sd">    :param data: Pandas DataFrame containing records of movement.</span>
+<span class="sd">    :param animal_id: ID of the animal whose missing values will be plotted against time.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Visualizing the count of missing values for all attributes-</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Visualizing count of missing values for all attributes&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="preprocess"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.preprocess">[docs]</a><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+               <span class="n">dropna</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">interpolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+               <span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;forward&quot;</span><span class="p">,</span>
+               <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to perform data preprocessing.</span>
+
+<span class="sd">    Print the number of missing values per column; Drop columns with  missing values for &#39;time&#39; and &#39;animal_id&#39;;</span>
+<span class="sd">    Remove the duplicated rows found.</span>
+<span class="sd">    :param data: DataFrame to perform preprocessing on</span>
+<span class="sd">    :param dropna: Optional parameter to drop columns with  missing values for &#39;time&#39; and &#39;animal_id&#39;</span>
+<span class="sd">    :param interpolate: Optional parameter to perform linear interpolation</span>
+<span class="sd">    :param limit: Maximum number of consecutive NANs to fill</span>
+<span class="sd">    :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.</span>
+<span class="sd">    :param method: Interpolation technique to use. Default is &quot;linear&quot;.</span>
+<span class="sd">    :param order: To be used in case of polynomial interpolation.</span>
+<span class="sd">    :return: Preprocessed DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Print the number of missing values per column</span>
+    <span class="n">print_missing</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Interpolate data with missings</span>
+    <span class="k">if</span> <span class="n">interpolation</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                           <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                           <span class="n">limit_direction</span><span class="o">=</span><span class="n">limit_direction</span><span class="p">,</span>
+                           <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
+                           <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+
+    <span class="c1"># Drop columns with  missing values for &#39;time&#39;  and &#39;animal_id&#39;</span>
+
+    <span class="k">if</span> <span class="n">dropna</span><span class="p">:</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Remove the duplicated rows found above</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="print_missing"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.print_missing">[docs]</a><span class="k">def</span> <span class="nf">print_missing</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print the missing values for each column.</span>
+
+<span class="sd">    :param df: Pandas DataFrame of movement records.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total number of missing values = &quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">format</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="print_duplicate"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.print_duplicate">[docs]</a><span class="k">def</span> <span class="nf">print_duplicate</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print rows, which are duplicates.</span>
+
+<span class="sd">    :param df: Pandas DataFrame of movement records.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dup</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">([</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">])]</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;Removed duplicate rows based on the columns &#39;animal_id&#39; and &#39;time&#39; column are:&quot;</span><span class="p">,</span>
+        <span class="n">dup</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="filter_dataframe"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.filter_dataframe">[docs]</a><span class="k">def</span> <span class="nf">filter_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">frm</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract records of assigned time frame from preprocessed movement record data.</span>
+
+<span class="sd">    :param data: Pandas DataFrame, containing preprocessed movement record data.</span>
+<span class="sd">    :param frm: Int, defining starting point from where to extract records.</span>
+<span class="sd">    :param to: Int, defining end point up to where to extract records.</span>
+<span class="sd">    :return: Pandas DataFrame, filtered by records matching the defined frame in &#39;from&#39;-&#39;to&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">frm</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">to</span><span class="p">),</span> <span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="replace_parts_animal_movement"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.replace_parts_animal_movement">[docs]</a><span class="k">def</span> <span class="nf">replace_parts_animal_movement</span><span class="p">(</span><span class="n">data_groups</span><span class="p">,</span> <span class="n">animal_id</span><span class="p">,</span> <span class="n">time_array</span><span class="p">,</span>
+                                  <span class="n">replacement_value_x</span><span class="p">,</span> <span class="n">replacement_value_y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace subsets (segments) of animal movement based on some indices e.g. time.</span>
+<span class="sd">    This function can be used to remove outliers.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        data_groups = grouping_data(data)</span>
+<span class="sd">        arr_index = np.array([10, 20, 200, 20000, 40000, 43200])</span>
+<span class="sd">        replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)</span>
+
+<span class="sd">    :param data_groups: Dictionary with key &#39;animal_id&#39;and value with records for &#39;animal_id&#39;.</span>
+<span class="sd">    :param animal_id: Int defining &#39;animal_id&#39; whose movements have to be replaced.</span>
+<span class="sd">    :param time_array: Array defining time indices whose movements have to replaced</span>
+<span class="sd">    :param replacement_value_x: Int value that will replace all &#39;x&#39; attribute values in &#39;time_array&#39;.</span>
+<span class="sd">    :param replacement_value_y: Int value that will replace all &#39;y&#39; attribute values in &#39;time_array&#39;.</span>
+<span class="sd">    :return: Dictionary with replaced subsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_groups</span><span class="p">[</span><span class="n">animal_id</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">time_array</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">replacement_value_x</span>
+    <span class="n">data_groups</span><span class="p">[</span><span class="n">animal_id</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">time_array</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">replacement_value_y</span>
+
+    <span class="k">return</span> <span class="n">data_groups</span></div>
+
+
+<div class="viewcode-block" id="resample_systematic"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.resample_systematic">[docs]</a><span class="k">def</span> <span class="nf">resample_systematic</span><span class="p">(</span><span class="n">data_groups</span><span class="p">,</span> <span class="n">downsample_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resample the movement data of each animal - by downsampling at fixed time intervals.</span>
+
+<span class="sd">    This is done to reduce the resolution of the dataset. This function does this by systematically choosing</span>
+<span class="sd">    samples from each animal.</span>
+
+<span class="sd">    :param data_groups: Dictionary with key: &#39;animal_id&#39; and value with record data to that &#39;animal_id&#39;.</span>
+<span class="sd">    :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.</span>
+<span class="sd">    :return: Dictionary, modified from original size &#39;data_groups&#39; to &#39;downsample_size&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get first key-</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># size of each animal&#39;s group-</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">first</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">step_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">size</span> <span class="o">/</span> <span class="n">downsample_size</span><span class="p">)</span>
+
+    <span class="c1"># DEAD LIST?</span>
+    <span class="n">arr_index</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">arr_index</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="n">step_size</span> <span class="o">*</span> <span class="n">downsample_size</span><span class="p">):</span><span class="n">step_size</span><span class="p">]</span>
+
+    <span class="c1"># Convert list to numpy array-</span>
+    <span class="n">arr_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr_index</span><span class="p">)</span>
+
+    <span class="c1"># Modified &#39;data_groups&#39; downsampled Python 3 dictionary-</span>
+    <span class="n">data_groups_downsampled</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">data_groups_downsampled</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">arr_index</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">data_groups_downsampled</span></div>
+
+
+<div class="viewcode-block" id="resample_random"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.resample_random">[docs]</a><span class="k">def</span> <span class="nf">resample_random</span><span class="p">(</span><span class="n">data_groups</span><span class="p">,</span> <span class="n">downsample_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resample the movement data of each animal - by downsampling at random time intervals.</span>
+
+<span class="sd">    This is done to reduce resolution of the dataset. This function does this by randomly choosing</span>
+<span class="sd">    samples from each animal</span>
+
+<span class="sd">    :param data_groups: Dictionary with key &#39;animal_id&#39; and value record data of &#39;animal_id&#39;.</span>
+<span class="sd">    :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.</span>
+<span class="sd">    :return: Dictionary, modified from original size &#39;data_groups&#39; to &#39;downsample_size&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get first key-</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># size of each animal&#39;s group-</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">first</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Random index (numpy.ndarray)-</span>
+    <span class="n">ix_random</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">downsample_size</span><span class="p">)</span>
+
+    <span class="c1"># Modified &#39;data_groups&#39; downsampled Python 3 dictionary-</span>
+    <span class="n">data_groups_downsampled</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">data_groups_downsampled</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ix_random</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">data_groups_downsampled</span></div>
+
+
+<div class="viewcode-block" id="split_trajectories"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.split_trajectories">[docs]</a><span class="k">def</span> <span class="nf">split_trajectories</span><span class="p">(</span><span class="n">data_groups</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">fuzzy_segment</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">csv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split trajectory of a single animal into several segments based on specific criterion.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        data_groups = group_animals(data)</span>
+<span class="sd">        split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)</span>
+
+<span class="sd">    :param data_groups: Dictionary with key &#39;animal_id&#39; and value record data of &#39;animal_id&#39;.</span>
+<span class="sd">    :param segment: Int, defining point where the animals are split into several Pandas Data Frames.</span>
+<span class="sd">    :param fuzzy_segment: Int, defining interval which will overlap on either side of the segments.</span>
+<span class="sd">    :param csv: Boolean, defining if each interval shall be exported locally as singular csv</span>
+<span class="sd">    :return: None. All segmented Pandas Data Frames are saved to HDD.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get first key-</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">first</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">segment_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">size</span> <span class="o">/</span> <span class="n">segment</span><span class="p">)</span>
+
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">segment_size</span>
+        <span class="c1"># groups[&#39;group_&#39; + str(aid)] = data_groups[aid]</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
+            <span class="c1"># groups[&#39;group_&#39; + str(aid)][&#39;df&#39; + str(l + 1)] = data_groups[aid].iloc[beg: end, :]</span>
+            <span class="n">groups</span><span class="p">[</span><span class="s1">&#39;group_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">aid</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_df&#39;</span> <span class="o">+</span>
+                   <span class="nb">str</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">beg</span><span class="p">:</span><span class="n">end</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">fuzzy_segment</span><span class="p">,</span> <span class="n">end</span> <span class="o">+</span> <span class="n">segment_size</span> <span class="o">+</span> <span class="n">fuzzy_segment</span>
+
+    <span class="k">if</span> <span class="n">csv</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">groups</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">groups</span></div>
+
+
+<div class="viewcode-block" id="convert_measueres"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.convert_measueres">[docs]</a><span class="k">def</span> <span class="nf">convert_measueres</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">,</span> <span class="n">x_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a linear scale with input parameters for x,y for transformation of position data.</span>
+<span class="sd">    :param preprocessed_data: Pandas DataFrame only with x and y position data</span>
+<span class="sd">    :param x_min: int minimum for x - default: 0.</span>
+<span class="sd">    :param x_max: int maximum for x - default: 1.</span>
+<span class="sd">    :param y_min: int minimum for y - default: 0.</span>
+<span class="sd">    :param y_max: int maximum for y - default: 1.</span>
+<span class="sd">    :return: Pandas DataFrame with linearly transformed position data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Preventing features input along position data</span>
+    <span class="k">if</span> <span class="p">[</span><span class="o">*</span><span class="n">preprocessed_data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span> <span class="o">!=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error! Conversion only allowed for dataframes with colnames [&#39;time&#39;, &#39;animal_id&#39;, &#39;x&#39;, &quot;</span>
+            <span class="s2">&quot;&#39;y&#39;]. </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Linear Transformation of position dimensions</span>
+    <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+        <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                                        <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+        <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">))</span>
+    <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+        <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                                        <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+        <span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">preprocessed_data</span></div>
+
+
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.normalize">[docs]</a><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalizes values for the &#39;x&#39; and &#39;y&#39; column</span>
+<span class="sd">    :param data: DataFrame to perform preprocessing on</span>
+<span class="sd">    :return: normalized DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="delete_mover"><a class="viewcode-back" href="../../api/movekit.html#movekit.preprocess.delete_mover">[docs]</a><span class="k">def</span> <span class="nf">delete_mover</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">animal_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delete a particular mover from the DataFrame</span>
+<span class="sd">    :param data: DataFrame</span>
+<span class="sd">    :param animal_id: int. The animal_id as found in the column animal_id</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;animal_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">animal_id</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/04_spatial_analysis.html">Spatial Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

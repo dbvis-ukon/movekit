@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>movekit.io &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for movekit.io</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="kn">import</span> <span class="n">is_numeric_dtype</span><span class="p">,</span> <span class="n">is_string_dtype</span>
+<span class="kn">from</span> <span class="nn">pandas.errors</span> <span class="kn">import</span> <span class="n">EmptyDataError</span>
+
+<div class="viewcode-block" id="parse_csv"><a class="viewcode-back" href="../../api/movekit.html#movekit.io.parse_csv">[docs]</a><span class="k">def</span> <span class="nf">parse_csv</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read CSV file into Pandas DataFrame.</span>
+
+<span class="sd">    :param path_to_file: Complete path/relative path to CSV file along with file name.</span>
+<span class="sd">    :return: Pandas DataFrame containing imported data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">path_to_file</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;csv&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_to_file</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
+
+        <span class="c1"># change column names all to lower case values</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="n">format_col</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="c1"># check if all required columns are there in the right format</span>
+        <span class="k">if</span> <span class="s1">&#39;time&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;animal_id&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;y&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># Check if &#39;time&#39; attribute is integer-</span>
+            <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">],</span>
+                                 <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="c1"># Check if &#39;time&#39; attribute is string-</span>
+            <span class="k">elif</span> <span class="n">is_string_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]):</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">],</span>
+                                 <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="s2">&quot;unname&quot;</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Check if &#39;heading_angle&#39; attribute is given in CSV file-</span>
+            <span class="k">if</span> <span class="s1">&#39;heading_angle&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;heading_angle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&#39;heading_angle&#39; attribute is found and will be processed</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Movekit requires columns to be named </span><span class="si">{}</span><span class="s1"> but was given </span><span class="si">{}</span><span class="s1"> instead&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">format_col</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The file could not be found.</span><span class="se">\n</span><span class="s2">Path given: </span><span class="si">{0}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">path_to_file</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="parse_excel"><a class="viewcode-back" href="../../api/movekit.html#movekit.io.parse_excel">[docs]</a><span class="k">def</span> <span class="nf">parse_excel</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read Excel file into Pandas DataFrame</span>
+
+<span class="sd">    :param path_to_file: Complete path/relative path to Excel file along with file name</span>
+<span class="sd">    :return: Pandas DataFrame containing imported data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">path_to_file</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;xls&#39;</span> <span class="ow">or</span> <span class="n">path_to_file</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;xlsx&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">path_to_file</span> <span class="o">+</span> <span class="s1">&#39;.xlsx&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EmptyDataError</span>
+
+        <span class="c1"># change column names all to lower case values</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="n">format_col</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="c1"># check if all required columns are there in the right format</span>
+        <span class="k">if</span> <span class="s1">&#39;time&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;animal_id&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;y&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># Check if &#39;time&#39; attribute is integer-</span>
+            <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">],</span>
+                                 <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="c1"># Check if &#39;time&#39; attribute is string-</span>
+            <span class="k">elif</span> <span class="n">is_string_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]):</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;animal_id&#39;</span><span class="p">],</span>
+                                 <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Check if &#39;heading_angle&#39; attribute is given in CSV file-</span>
+            <span class="k">if</span> <span class="s1">&#39;heading_angle&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;heading_angle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&#39;heading_angle&#39; attribute is found and will be processed</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Movekit requires columns to be named </span><span class="si">{}</span><span class="s1"> but was given </span><span class="si">{}</span><span class="s1"> instead&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">format_col</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The file could not be found.</span><span class="se">\n</span><span class="s2">Path given: </span><span class="si">{0}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">path_to_file</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../api/movekit.html#movekit.io.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Containing all of Input Output (IO) functions as function arguments (which by default are False).</span>
+
+<span class="sd">    :param path: Complete path/relative path to Excel file along with file name</span>
+<span class="sd">    :return: Pandas DataFrame containing imported data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Call appropriate IO function based on file extension</span>
+    <span class="c1"># Split string based on &#39;.&#39; (dot)-</span>
+    <span class="n">file_split</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">file_split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;csv&#39;</span><span class="p">:</span>
+
+        <span class="k">return</span> <span class="n">parse_csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">file_split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;xlsx&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_excel</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/04_spatial_analysis.html">Spatial Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,842 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Network analysis &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Network analysis" href="05_network_analysis.html" />
+    <link rel="prev" title="Group feature extraction" href="03_group_features.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="Network-analysis">
+<h1>Network analysis<a class="headerlink" href="#Network-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">movekit</span> <span class="k">as</span> <span class="nn">mkit</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Voronoi</span><span class="p">,</span> <span class="n">voronoi_plot_2d</span><span class="p">,</span> <span class="n">convex_hull_plot_2d</span><span class="p">,</span> <span class="n">delaunay_plot_2d</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;datasets/fish-5-features.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">mkit</span><span class="o">.</span><span class="n">read_data</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>animal_id</th>
+      <th>x</th>
+      <th>y</th>
+      <th>distance</th>
+      <th>average_speed</th>
+      <th>average_acceleration</th>
+      <th>direction</th>
+      <th>stopped</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>312</td>
+      <td>405.29</td>
+      <td>417.76</td>
+      <td>0.0</td>
+      <td>0.210217</td>
+      <td>-0.018039</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1000</th>
+      <td>1</td>
+      <td>511</td>
+      <td>369.99</td>
+      <td>428.78</td>
+      <td>0.0</td>
+      <td>0.020944</td>
+      <td>0.000236</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2000</th>
+      <td>1</td>
+      <td>607</td>
+      <td>390.33</td>
+      <td>405.89</td>
+      <td>0.0</td>
+      <td>0.070235</td>
+      <td>0.004961</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3000</th>
+      <td>1</td>
+      <td>811</td>
+      <td>445.15</td>
+      <td>411.94</td>
+      <td>0.0</td>
+      <td>0.370500</td>
+      <td>0.017482</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4000</th>
+      <td>1</td>
+      <td>905</td>
+      <td>366.06</td>
+      <td>451.76</td>
+      <td>0.0</td>
+      <td>0.118000</td>
+      <td>-0.006333</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<section id="Spatial-Objects">
+<h2>Spatial Objects<a class="headerlink" href="#Spatial-Objects" title="Permalink to this headline">¶</a></h2>
+<p>The function below produces three types of spatial objects: Voronoi-Diagrams, Convex Hulls and Delaunay Triangles. Optionally, one may obtain only group-specific outputs - one object per time-capture. These spatial objects may be used for a set of attributes, which are described below in detail. To get the full functionality of all attributes, please go to <a class="reference external" href="https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html">https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">spatial_obj</span> <span class="o">=</span> <span class="n">mkit</span><span class="o">.</span><span class="n">get_spatial_objects</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">group_output</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">spatial_obj</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>distance</th>
+      <th>average_speed</th>
+      <th>average_acceleration</th>
+      <th>direction</th>
+      <th>stopped</th>
+      <th>convex_hull_object</th>
+      <th>voronoi_object</th>
+      <th>delaunay_object</th>
+      <th>convex_hull_volume</th>
+      <th>voronoi_volume</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0.00</td>
+      <td>0.118000</td>
+      <td>-0.006333</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1519.44120</td>
+      <td>inf</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>0.20</td>
+      <td>0.111667</td>
+      <td>-0.006333</td>
+      <td>180.0</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1528.95525</td>
+      <td>inf</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.16</td>
+      <td>0.101429</td>
+      <td>-0.006333</td>
+      <td>180.0</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1539.23800</td>
+      <td>inf</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0.13</td>
+      <td>0.091250</td>
+      <td>-0.006333</td>
+      <td>180.0</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1549.61380</td>
+      <td>inf</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0.10</td>
+      <td>0.082222</td>
+      <td>-0.006333</td>
+      <td>180.0</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1560.33905</td>
+      <td>inf</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sing_spatial_obj</span> <span class="o">=</span> <span class="n">mkit</span><span class="o">.</span><span class="n">get_spatial_objects</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">group_output</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sing_spatial_obj</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>animal_id</th>
+      <th>x</th>
+      <th>y</th>
+      <th>distance</th>
+      <th>average_speed</th>
+      <th>average_acceleration</th>
+      <th>direction</th>
+      <th>stopped</th>
+      <th>convex_hull_object</th>
+      <th>voronoi_object</th>
+      <th>delaunay_object</th>
+      <th>convex_hull_volume</th>
+      <th>voronoi_volume</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>312</td>
+      <td>405.29</td>
+      <td>417.76</td>
+      <td>0.000000</td>
+      <td>0.210217</td>
+      <td>-0.018039</td>
+      <td>0.000000</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1519.44120</td>
+      <td>2414.225693</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>312</td>
+      <td>405.31</td>
+      <td>417.37</td>
+      <td>0.390512</td>
+      <td>0.192177</td>
+      <td>-0.018039</td>
+      <td>-87.064327</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1528.95525</td>
+      <td>2389.875725</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>312</td>
+      <td>405.31</td>
+      <td>417.07</td>
+      <td>0.300000</td>
+      <td>0.174723</td>
+      <td>-0.018039</td>
+      <td>-90.000000</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1539.23800</td>
+      <td>2372.018571</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>312</td>
+      <td>405.30</td>
+      <td>416.86</td>
+      <td>0.210238</td>
+      <td>0.159133</td>
+      <td>-0.018039</td>
+      <td>-92.726311</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1549.61380</td>
+      <td>2360.489279</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>312</td>
+      <td>405.29</td>
+      <td>416.71</td>
+      <td>0.150333</td>
+      <td>0.155506</td>
+      <td>-0.018039</td>
+      <td>-93.814075</td>
+      <td>1</td>
+      <td>&lt;scipy.spatial.qhull.ConvexHull object at 0x00...</td>
+      <td>&lt;scipy.spatial.qhull.Voronoi object at 0x00000...</td>
+      <td>&lt;scipy.spatial.qhull.Delaunay object at 0x0000...</td>
+      <td>1560.33905</td>
+      <td>2350.628662</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<section id="Producing-a-voronoi-diagram">
+<h3>Producing a voronoi diagram<a class="headerlink" href="#Producing-a-voronoi-diagram" title="Permalink to this headline">¶</a></h3>
+<p>Each timestep gets a voronoi object as well as the area of the voronoi - shape. Infinity, if respective animal is outmost in swarm.</p>
+<p>Voronoi object contains the following attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">points</span></code> Coordinates of input points.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vertices</span></code> Coordinates of the Voronoi vertices.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ridge_points</span></code> Indices of the points between which each Voronoi ridge lies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ridge_vertices</span></code> Indices of the Voronoi vertices forming each Voronoi ridge.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">regions</span></code> Indices of the Voronoi vertices forming each Voronoi region. -1 indicates vertex outside the Voronoi diagram.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">point_region</span></code> Index of the Voronoi region for each input point. If qhull option “Qc” was not specified, the list will contain -1 for points that are not associated with a Voronoi region.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">furthest_site</span></code> True if this was a furthest site triangulation and False if not.</p></li>
+</ul>
+</section>
+<section id="Producing-a-convex-hull">
+<h3>Producing a convex hull<a class="headerlink" href="#Producing-a-convex-hull" title="Permalink to this headline">¶</a></h3>
+<p>Similar to voronoi-diagram, also the convex hull is of interest for movement-related data. Additionally, a set of attributes may be attached to the convex hull objects. Examples are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">points</span></code> (array of ints) Coordinates of input points</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vertices</span></code> (array of ints ) Point indices forming the veritces of the convex hull</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">area</span></code> Area of the convex hull.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">volume</span></code> Volume of the convex hull.</p></li>
+</ul>
+</section>
+<section id="Producing-Delaunay-triangles">
+<h3>Producing Delaunay-triangles<a class="headerlink" href="#Producing-Delaunay-triangles" title="Permalink to this headline">¶</a></h3>
+<p>Examples for attributes of interest consist of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">transform</span></code> Affine transform from x to the barycentric coordinates c.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vertex_to_simplex</span></code> Lookup array, from a vertex, to some simplex which it is a part of.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">convex_hull</span></code> Vertices of facets forming the convex hull of the point set.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vertex_neighbor_vertices</span></code> Neighboring vertices of vertices.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">points</span></code> (ndarray of double, shape (npoints, ndim)) Coordinates of input points.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">simplices</span></code> (ndarray of ints, shape (nsimplex, ndim+1)) Indices of the points forming the simplices in the triangulation. For 2-D, the points are oriented counterclockwise.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">neighbors</span></code> (ndarray of ints, shape (nsimplex, ndim+1)) Indices of neighbor simplices for each simplex. The kth neighbor is opposite to the kth vertex. For simplices at the boundary, -1 denotes no neighbor.</p></li>
+</ul>
+</section>
+<section id="Plotting-all-spatial-objects-at-the-3rd-timestep.">
+<h3>Plotting all spatial objects at the 3rd timestep.<a class="headerlink" href="#Plotting-all-spatial-objects-at-the-3rd-timestep." title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot all scipy - spatial objects of a given timestamp</span>
+<span class="n">voronoi_plot_2d</span><span class="p">(</span><span class="n">spatial_obj</span><span class="o">.</span><span class="n">voronoi_object</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">convex_hull_plot_2d</span><span class="p">(</span><span class="n">spatial_obj</span><span class="o">.</span><span class="n">convex_hull_object</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">delaunay_plot_2d</span><span class="p">(</span><span class="n">spatial_obj</span><span class="o">.</span><span class="n">delaunay_object</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_04_spatial_analysis_11_0.png" src="../_images/examples_04_spatial_analysis_11_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_04_spatial_analysis_11_1.png" src="../_images/examples_04_spatial_analysis_11_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_04_spatial_analysis_11_2.png" src="../_images/examples_04_spatial_analysis_11_2.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Spatial Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Spatial-Objects">Spatial Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="03_group_features.html" title="previous chapter">Group feature extraction</a></li>
+      <li>Next: <a href="05_network_analysis.html" title="next chapter">Network analysis</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/examples/04_spatial_analysis.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

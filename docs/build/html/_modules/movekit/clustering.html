@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>movekit.clustering &#8212; movekit 0.1.15 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for movekit.clustering</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">distance_matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span><span class="p">,</span> <span class="n">squareform</span>
+<span class="kn">import</span> <span class="nn">tsfresh</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">fastdtw</span> <span class="kn">import</span> <span class="n">fastdtw</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">euclidean</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">import</span> <span class="nn">st_clustering</span> <span class="k">as</span> <span class="nn">stc</span>
+
+<span class="kn">from</span> <span class="nn">.feature_extraction</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Voronoi</span><span class="p">,</span> <span class="n">voronoi_plot_2d</span><span class="p">,</span> <span class="n">ConvexHull</span><span class="p">,</span> <span class="n">convex_hull_plot_2d</span><span class="p">,</span> <span class="n">Delaunay</span><span class="p">,</span> <span class="n">delaunay_plot_2d</span>
+
+
+<div class="viewcode-block" id="get_trajectories"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.get_trajectories">[docs]</a><span class="k">def</span> <span class="nf">get_trajectories</span><span class="p">(</span><span class="n">data_groups</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtain trajectories out of a grouped dictionary with multiple ids.</span>
+<span class="sd">    :param data_groups: Grouped dictionary by animal_id.</span>
+<span class="sd">    :return: Grouped dictionary by animal id, containing tuples of positions in 2d coordinate system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create new dictionary</span>
+    <span class="n">trajectories</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># add dict item, holding x-y tuples for the trajectories of each animal id</span>
+        <span class="n">trajectories</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">data_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">data_groups</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">trajectories</span></div>
+
+
+<div class="viewcode-block" id="dtw_matrix"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.dtw_matrix">[docs]</a><span class="k">def</span> <span class="nf">dtw_matrix</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">euclidean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtain dynamic time warping amongst all trajectories from the grouped animal-records.</span>
+<span class="sd">    :param data_groups: Grouped dictionary by animal_id.</span>
+<span class="sd">    :param path: Boolean to specify if matrix of dtw-path gets returned as well</span>
+<span class="sd">    :param distance: Specify with distance measure to use. Default: &quot;euclidean&quot;. (ex. Alternatives: pdist, minkowski)</span>
+<span class="sd">    :return: pandas Dataframe with distances between trajectories.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_groups</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+
+    <span class="c1"># get trajectory-dictionary with local function</span>
+    <span class="n">trajectories</span> <span class="o">=</span> <span class="n">get_trajectories</span><span class="p">(</span><span class="n">data_groups</span><span class="p">)</span>
+
+    <span class="c1"># create empty np array with size, depending on number of tracked animals</span>
+    <span class="n">distance_matr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()]),</span> <span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()])))</span>
+
+    <span class="c1"># create empty np list-array for paths with size, depending on number of tracked animals</span>
+    <span class="n">path_matr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()]),</span> <span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()])),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="c1"># double-iterate over obtained trajectory dict</span>
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()])):</span>
+        <span class="k">for</span> <span class="n">aid2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()])):</span>
+
+            <span class="c1"># fill np array field with euclidean distance of respective trajectories, same for path field</span>
+            <span class="n">distance_matr</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="n">aid2</span><span class="p">],</span> <span class="n">path_matr</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="n">aid2</span><span class="p">]</span> <span class="o">=</span> <span class="n">fastdtw</span><span class="p">(</span>
+                <span class="n">trajectories</span><span class="p">[[</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()][</span><span class="n">aid</span><span class="p">]],</span>
+                <span class="n">trajectories</span><span class="p">[[</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()][</span><span class="n">aid2</span><span class="p">]],</span>
+                <span class="n">dist</span><span class="o">=</span><span class="n">distance</span><span class="p">)</span>
+            <span class="c1"># generate pandas df from distance array</span>
+            <span class="n">distance_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">distance_matr</span><span class="p">,</span>
+                                       <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span>
+                                       <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">trajectories</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">distance_df</span><span class="p">,</span> <span class="n">path_matr</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">distance_df</span></div>
+
+<div class="viewcode-block" id="compute_centroid_direction"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.compute_centroid_direction">[docs]</a><span class="k">def</span> <span class="nf">compute_centroid_direction</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                               <span class="n">colname</span><span class="o">=</span><span class="s2">&quot;centroid_direction&quot;</span><span class="p">,</span>
+                               <span class="n">group_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">only_centroid</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the direction of the centroid. Calculates centroid, if not in input data.</span>
+
+<span class="sd">    :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid</span>
+<span class="sd">    :param colname: Name of the column. Default: centroid_direction.</span>
+<span class="sd">    :param group_output: Boolean, defines form of output. Default: Animal-Level</span>
+<span class="sd">    :return: pandas DF with centroid direction included</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle centroid not in data</span>
+    <span class="k">if</span> <span class="s2">&quot;x_centroid&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="s2">&quot;y_centroid&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s1">&#39;x_centroid or y_centroid not found in data. Calculating centroid...&#39;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">centroid_medoid_computation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">only_centroid</span><span class="o">=</span><span class="n">only_centroid</span><span class="p">)</span>
+
+    <span class="c1"># Group into animals</span>
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">compute_direction</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span>
+                            <span class="n">param_x</span><span class="o">=</span><span class="s2">&quot;x_centroid&quot;</span><span class="p">,</span>
+                            <span class="n">param_y</span><span class="o">=</span><span class="s2">&quot;y_centroid&quot;</span><span class="p">,</span>
+                            <span class="n">colname</span><span class="o">=</span><span class="n">colname</span><span class="p">)</span>
+
+    <span class="n">cen_direction</span> <span class="o">=</span> <span class="n">regrouping_data</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group_output</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cen_direction</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pol</span> <span class="o">=</span> <span class="n">cen_direction</span>
+        <span class="k">return</span> <span class="n">pol</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">colname</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_heading_difference"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.get_heading_difference">[docs]</a><span class="k">def</span> <span class="nf">get_heading_difference</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the difference in degrees between the animal&#39;s direction and the centroid&#39;s direction for each timestep.</span>
+
+<span class="sd">    Note: Calculate the difference in degrees between the animal&#39;s direction and the centroid&#39;s direction for each</span>
+<span class="sd">    timestep. Stronger gain in y gives positive difference, weaker gain in y gives negative difference, since constant</span>
+<span class="sd">    y is defined to be 0 degrees.</span>
+
+<span class="sd">    :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.</span>
+<span class="sd">    :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;direction&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">preprocessed_data</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;x_centroid&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="s2">&quot;y_centroid&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">preprocessed_data</span> <span class="o">=</span> <span class="n">centroid_medoid_computation</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+    <span class="c1"># Obtain the centroid positions for each timestep, group into dictionary</span>
+
+    <span class="n">animal_dir</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+
+    <span class="c1"># Get the directions  for each centroid for each timestep</span>
+    <span class="n">cen_dir</span> <span class="o">=</span> <span class="n">compute_direction</span><span class="p">(</span><span class="n">animal_dir</span><span class="p">,</span>
+                                <span class="n">param_x</span><span class="o">=</span><span class="s2">&quot;x_centroid&quot;</span><span class="p">,</span>
+                                <span class="n">param_y</span><span class="o">=</span><span class="s2">&quot;y_centroid&quot;</span><span class="p">,</span>
+                                <span class="n">colname</span><span class="o">=</span><span class="s2">&quot;centroid_direction&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Subtract animal&#39;s direction from centroid&#39;s direction</span>
+    <span class="n">directions</span> <span class="o">=</span> <span class="n">regrouping_data</span><span class="p">(</span><span class="n">cen_dir</span><span class="p">)</span>
+    <span class="n">raw_diff</span> <span class="o">=</span> <span class="n">directions</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span>
+                              <span class="s2">&quot;direction&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">directions</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span>
+                                                            <span class="s2">&quot;centroid_direction&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Calculate signed angle, store in new variable</span>
+    <span class="n">directions</span> <span class="o">=</span> <span class="n">directions</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">heading_difference</span><span class="o">=</span><span class="p">(</span><span class="n">raw_diff</span> <span class="o">+</span> <span class="mi">180</span><span class="p">)</span> <span class="o">%</span> <span class="mi">360</span> <span class="o">-</span>
+                                   <span class="mi">180</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">directions</span></div>
+
+
+<div class="viewcode-block" id="compute_polarization"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.compute_polarization">[docs]</a><span class="k">def</span> <span class="nf">compute_polarization</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">,</span> <span class="n">group_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the polarization of a group at all record timepoints.</span>
+
+<span class="sd">    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv.</span>
+<span class="sd">    :param preprocessed_data: Pandas Dataframe with or without previously extracted features.</span>
+<span class="sd">    :return: Pandas Dataframe, with extracted features along with a new &quot;polarization&quot; variable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Extract features if not done yet</span>
+    <span class="k">if</span> <span class="s2">&quot;direction&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;calculating direction, since not found in input!&#39;</span><span class="p">)</span>
+        <span class="n">preprocessed_data</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+
+    <span class="c1"># Group by &#39;time&#39;-</span>
+    <span class="n">data_time</span> <span class="o">=</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Dictionary to hold grouped data by &#39;time&#39; attribute-</span>
+    <span class="n">data_groups_time</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Obtain polarization for each point in time</span>
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_time</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_time</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="n">aid</span><span class="p">)</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s2">&quot;direction&quot;</span><span class="p">]))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)))</span>
+             <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">][</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)))</span>
+             <span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Assign polarization to new variable</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">polarization</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Regroup data into DataFrame</span>
+    <span class="n">polarization_data</span> <span class="o">=</span> <span class="n">regrouping_data</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">)</span>
+
+    <span class="c1"># If interested in fullstack output for each animal</span>
+    <span class="k">if</span> <span class="n">group_output</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">polarization_data</span>
+
+    <span class="c1"># If only interested in group level output, return one line per timeslot</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pol</span> <span class="o">=</span> <span class="n">polarization_data</span>
+        <span class="k">return</span> <span class="n">pol</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;polarization&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="voronoi_volumes"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.voronoi_volumes">[docs]</a><span class="k">def</span> <span class="nf">voronoi_volumes</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to calculate area in a voronoi-diagram. Used in function below.</span>
+<span class="sd">    :param points: Nested list, indicating points with coordinates.</span>
+<span class="sd">    :return: Volume for each point, infinite if area is not closed to each direction (usually outmost points).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">Voronoi</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="n">vol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">reg_num</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">point_region</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="n">reg_num</span><span class="p">]</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>  <span class="c1"># some regions can be opened</span>
+            <span class="n">vol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vol</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span><span class="o">.</span><span class="n">volume</span>
+    <span class="k">return</span> <span class="n">vol</span></div>
+
+
+<div class="viewcode-block" id="get_spatial_objects"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.get_spatial_objects">[docs]</a><span class="k">def</span> <span class="nf">get_spatial_objects</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">,</span> <span class="n">group_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.</span>
+<span class="sd">    Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.</span>
+
+<span class="sd">    :param preprocessed_data: Pandas Df, containing x and y coordinates.</span>
+<span class="sd">    :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.</span>
+<span class="sd">    :return: DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data_time</span> <span class="o">=</span> <span class="n">preprocessed_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Dictionary to hold grouped data by &#39;time&#39; attribute-</span>
+    <span class="n">data_groups_time</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">data_time</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_time</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="n">aid</span><span class="p">)</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Obtain shape objects</span>
+        <span class="n">conv_hull_obj</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]])</span>
+        <span class="n">voronoi_obj</span> <span class="o">=</span> <span class="n">Voronoi</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]])</span>
+        <span class="n">delaunay_obj</span> <span class="o">=</span> <span class="n">Delaunay</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]])</span>
+
+        <span class="c1"># Calculate area based on objects right above</span>
+        <span class="n">conv_hull_vol</span> <span class="o">=</span> <span class="n">conv_hull_obj</span><span class="o">.</span><span class="n">volume</span>
+        <span class="n">voronoi_vol</span> <span class="o">=</span> <span class="n">voronoi_volumes</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]])</span>
+
+        <span class="c1"># Assign shapes to dataframe</span>
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">convex_hull_object</span><span class="o">=</span><span class="n">conv_hull_obj</span><span class="p">,</span>
+            <span class="n">voronoi_object</span><span class="o">=</span><span class="n">voronoi_obj</span><span class="p">,</span>
+            <span class="n">delaunay_object</span><span class="o">=</span><span class="n">delaunay_obj</span><span class="p">)</span>
+
+        <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_groups_time</span><span class="p">[</span><span class="n">aid</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">convex_hull_volume</span><span class="o">=</span><span class="n">conv_hull_vol</span><span class="p">,</span>
+            <span class="n">voronoi_volume</span><span class="o">=</span><span class="n">voronoi_vol</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Regroup data into DataFrame</span>
+    <span class="n">out_data</span> <span class="o">=</span> <span class="n">regrouping_data</span><span class="p">(</span><span class="n">data_groups_time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group_output</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out_data</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pol</span> <span class="o">=</span> <span class="n">out_data</span>
+        <span class="n">pol</span> <span class="o">=</span> <span class="n">pol</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span> <span class="o">==</span>
+                      <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">animal_id</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pol</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;animal_id&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="get_group_data"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.get_group_data">[docs]</a><span class="k">def</span> <span class="nf">get_group_data</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to get all group data at one place.</span>
+<span class="sd">    :param preprocessed_data: pandas DataFrame, containing preprocessed movement records.</span>
+<span class="sd">    :return: pd DataFrame containing all relevant group variables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">movement</span> <span class="o">=</span> <span class="n">centroid_medoid_computation</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">)</span>
+    <span class="c1"># prepare for merge</span>
+    <span class="n">movement</span> <span class="o">=</span> <span class="n">movement</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;distance_to_centroid&#39;</span><span class="p">:</span> <span class="s1">&#39;distance_centroid&#39;</span><span class="p">})</span>
+
+    <span class="c1"># Take subset from dataset above, focusing only on group-level</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">movement</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">movement</span><span class="o">.</span><span class="n">animal_id</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">movement</span><span class="o">.</span><span class="n">animal_id</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;x_centroid&#39;</span><span class="p">,</span> <span class="s1">&#39;y_centroid&#39;</span><span class="p">,</span> <span class="s1">&#39;medoid&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># compute polarization</span>
+    <span class="n">pol</span> <span class="o">=</span> <span class="n">compute_polarization</span><span class="p">(</span><span class="n">preprocessed_data</span><span class="p">,</span> <span class="n">group_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># compute mean speed, acceleration and mean distance to centroid</span>
+    <span class="n">mov</span> <span class="o">=</span> <span class="n">group_movement</span><span class="p">(</span><span class="n">movement</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># compute centroid direction</span>
+    <span class="n">cen_dir</span> <span class="o">=</span> <span class="n">compute_centroid_direction</span><span class="p">(</span><span class="n">movement</span><span class="p">,</span> <span class="n">group_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># merge computed values into group-dataframe</span>
+    <span class="n">data_frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">group</span><span class="p">,</span> <span class="n">pol</span><span class="p">,</span> <span class="n">mov</span><span class="p">,</span> <span class="n">cen_dir</span><span class="p">]</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">),</span>
+        <span class="n">data_frames</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">group</span></div>
+
+
+<div class="viewcode-block" id="clustering"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.clustering">[docs]</a><span class="k">def</span> <span class="nf">clustering</span><span class="p">(</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clustering of spatio-temporal data</span>
+<span class="sd">    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch</span>
+<span class="sd">    :param data: DataFrame to perform clustering on</span>
+<span class="sd">    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;dbscan&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_DBSCAN</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;hdbscan&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_HDBSCAN</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;agglomerative&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_Agglomerative</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;kmeans&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_KMeans</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;optics&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_OPTICS</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_SpectralClustering</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;affinitypropagation&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_AffinityPropagation</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>   
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;birch&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_BIRCH</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>   
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.&#39;</span><span class="p">)</span>
+        
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">clusterer</span><span class="o">.</span><span class="n">st_fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">labels</span></div>
+    
+    
+
+<div class="viewcode-block" id="clustering_with_splits"><a class="viewcode-back" href="../../api/movekit.html#movekit.clustering.clustering_with_splits">[docs]</a><span class="k">def</span> <span class="nf">clustering_with_splits</span><span class="p">(</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">frame_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clustering of spatio-temporal data</span>
+<span class="sd">    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch</span>
+<span class="sd">    :param data: DataFrame to perform clustering on</span>
+<span class="sd">    :param frame_size: the dataset is partitioned into frames and merged aferwards</span>
+<span class="sd">    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;dbscan&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_DBSCAN</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;hdbscan&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_HDBSCAN</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;agglomerative&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_Agglomerative</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;kmeans&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_KMeans</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;optics&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_OPTICS</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_SpectralClustering</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;affinitypropagation&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_AffinityPropagation</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>   
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;birch&#39;</span><span class="p">:</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">stc</span><span class="o">.</span><span class="n">ST_BIRCH</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>   
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.&#39;</span><span class="p">)</span>
+        
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">clusterer</span><span class="o">.</span><span class="n">st_fit_frame_split</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">frame_size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">labels</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">movekit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/01_data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html">Extract features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/02_extract_features.html#Time-series-analysis">Time series analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/03_group_features.html">Group Feature Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/04_spatial_analysis.html">Spatial Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/05_network_analysis.html">Network Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/06_clustering.html">Cluster Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

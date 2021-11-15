@@ -15,7 +15,7 @@ __Features:__
 * Data pre-processing (e.g. data checks, smoothing, duplicate removal, interpolation, outlier detection)
 * Feature extraction (e.g. speed, acceleration, heading)
 * Individual-level movement analysis (e.g. autocorrelation, speed distribution, environment exploration)
-* Group-level analysis (e.g. cohesion, polarisation, coordination, leadership)
+* Group-level analysis (e.g. cohesion, polarisation, coordination, leadership, clustering)
 * Spatial data analysis (Voronoi, delaunay triangulation)
 * Network analysis with networkX
 
