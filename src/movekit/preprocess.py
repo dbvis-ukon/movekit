@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import pandas as pd
+import warnings
+import utm
 
 
 def interpolate(data,
@@ -306,3 +307,41 @@ def delete_mover(data, animal_id):
     :return: DataFrame
     """
     return data.drop(data[data['animal_id'] == animal_id].index)
+
+
+def convert_latlon(data, latitude='latitude', longitude='longitude', replace=True):
+    """
+    Project data from GPS coordinates (latitude and longitude) to the cartesian coordinate system
+    :param data: DataFrame with GPS coordinates
+    :param latitude: str. Name of the column where latitude is stored
+    :param longitude: str. Name of the column where longitude is stored
+    :param replace: bool. Flag whether the xy columns should replace the latlon columns
+    :return: DataFrame after the transformation where latitude is projected into y and longitude is projected into x
+    """
+
+    # get utm zone to check if all points are in same utm zone
+    utm_coord = utm.from_latlon(data[latitude].iloc[0], data[longitude].iloc[0])
+    zone = utm_coord[2]
+
+    data['x'] = np.nan
+    data['y'] = np.nan
+
+    for i, row in data.iterrows():
+        # get the xy coordinates
+        utm_coord = utm.from_latlon(row[latitude], row[
+            longitude])  # utm converts a (latitude, longitude) tuple into the form (EASTING, NORTHING, ZONE_NUMBER, ZONE_LETTER
+        x = utm_coord[0]
+        y = utm_coord[1]
+        # add to dataFrame
+        data.at[i, 'x'] = x
+        data.at[i, 'y'] = y
+
+        # issue warning if unseen zone
+        if utm_coord[2] != zone:
+            warnings.warn("Input data spans multiple UTM zones. Projection into plane will likely be inaccurate.")
+
+    if replace:
+        data.drop(latitude, axis=1, inplace=True)
+        data.drop(longitude, axis=1, inplace=True)
+
+    return data
