@@ -126,9 +126,17 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
     :param colname: the new column to be added
     :return: data_animal_id_groups
     """
+
+    # when differences exceed |180| convert values so that they stay in the domain -180 +180
+    boundary = lambda data: 360-data if data > 180 else -360-data if data < -180 else data
+    vboundary = np.vectorize(boundary)
+
+    # Compute 'turning' for 'animal_id' groups
     for aid in data_animal_id_groups.keys():
+        # for all timesteps
         data = data_animal_id_groups[aid][param_direction] - data_animal_id_groups[aid][param_direction].shift(
             periods=1)
+        data = vboundary(data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             inp=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(

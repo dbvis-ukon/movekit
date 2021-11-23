@@ -6,6 +6,24 @@ import warnings
 import utm
 
 
+def from_dataframe(data, dictionary):
+    """
+    Reformat an existing DataFrame to make it compatible with movekit
+    :param data: pandas DataFrame. The data to be reformatted
+    :param dictionary: Key-value pairs of column names. Keys store the old column names. The respective new column names
+    are stored as their values. Values that need to be defined include 'time', 'animal_id', 'x' and 'y'
+    :return: pandas DataFrame
+    """
+
+    # perform a check
+    mandatory = ['time', 'animal_id', 'x', 'y']
+    passed = all(elem in dictionary.values() for elem in mandatory)
+    if passed:
+        return data.rename(mapper=dictionary, axis=1)
+    else:
+        raise ValueError('Must contain the column names "time", "animal_id", "x" and "y"')
+
+
 def interpolate(data,
                 limit=1,
                 limit_direction="forward",
