@@ -17,6 +17,7 @@ finally:
 
 
 from .io import read_data  # noqa: E402
+from .utils import presence_3d, angle
 from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
     resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize, \
     delete_mover, convert_latlon, from_dataframe# noqa:

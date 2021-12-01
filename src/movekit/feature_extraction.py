@@ -11,6 +11,7 @@ from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
+from .utils import presence_3d, angle
 
 
 def grouping_data(processed_data, pick_vars=None):
@@ -93,28 +94,58 @@ def regrouping_data(data_animal_id_groups):
     return result
 
 
-def compute_direction(data_animal_id_groups,
-                      param_x="x",
-                      param_y="y",
-                      colname="direction"):
+# def compute_direction(data_animal_id_groups,
+#                       param_x="x",
+#                       param_y="y",
+#                       colname="direction"):
+#     """
+#     Calculate angle of degrees, an animal is heading in between two timesteps.
+#     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+#     :param param_x: Column name to be recognized as x. Default "x".
+#     :param param_y: Column name to be recognized as y. Default "y".
+#     :return: dictionary containing computed 'distance' attribute.
+#     """
+#     # Compute 'direction' for 'animal_id' groups-
+#     for aid in data_animal_id_groups.keys():
+#         data = np.rad2deg(
+#             np.arctan2((data_animal_id_groups[aid][param_y] -
+#                         data_animal_id_groups[aid][param_y].shift(periods=1)),
+#                        (data_animal_id_groups[aid][param_x] -
+#                         data_animal_id_groups[aid][param_x].shift(periods=1))))
+#         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+#             inp=data)
+#         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
+#             columns={'inp': colname})
+#     return data_animal_id_groups
+
+
+def compute_direction(data_animal_id_groups, colname='direction'):
     """
-    Calculate angle of degrees, an animal is heading in between two timesteps.
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
-    :param param_x: Column name to be recognized as x. Default "x".
-    :param param_y: Column name to be recognized as y. Default "y".
-    :return: dictionary containing computed 'distance' attribute.
+    Computes the angle of rotation of an animal between two timesteps
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'
+    :param colname: the name to appear in the new DataFrame
+    :return: dictionary containing computed 'distance' attribute
     """
-    # Compute 'direction' for 'animal_id' groups-
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+    else:
+        is_3d = False
+
+    # iterate over movers
     for aid in data_animal_id_groups.keys():
-        data = np.rad2deg(
-            np.arctan2((data_animal_id_groups[aid][param_y] -
-                        data_animal_id_groups[aid][param_y].shift(periods=1)),
-                       (data_animal_id_groups[aid][param_x] -
-                        data_animal_id_groups[aid][param_x].shift(periods=1))))
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            inp=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
-            columns={'inp': colname})
+        if is_3d:
+            coord = data_animal_id_groups[aid][['x', 'y', 'z']].to_numpy()
+        else:
+            coord = data_animal_id_groups[aid][['x', 'y']].to_numpy()
+
+        # compute the angles for two subsequent positions
+        angles = [angle(coord[i], coord[i - 1]) for i in range(1, len(coord))]
+
+        # we dont have an angle for the first observation
+        angles.insert(0, 0)
+
+        data_animal_id_groups[aid][colname] = angles
     return data_animal_id_groups
 
 
@@ -128,7 +159,7 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
     """
 
     # when differences exceed |180| convert values so that they stay in the domain -180 +180
-    boundary = lambda data: 360-data if data > 180 else -360-data if data < -180 else data
+    boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
     vboundary = np.vectorize(boundary)
 
     # Compute 'turning' for 'animal_id' groups
@@ -144,22 +175,36 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
     return data_animal_id_groups
 
 
-def compute_distance(data_animal_id_groups, param_x="x", param_y="y"):
+def compute_distance(data_animal_id_groups, param_x="x", param_y="y", param_z="z"):
     """
     Calculate metric distance of animals in between two timesteps.
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :param param_x: Column name to be recognized as x. Default "x".
     :param param_y: Column name to be recognized as y. Default "y".
+    :param param_z: Column name to be recognized as z. Default "z".
     :return: dictionary containing computed 'distance' attribute.
     """
-    for aid in data_animal_id_groups.keys():
-        p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
-        p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(
-            periods=1)
-        p2.iloc[0, :] = [0.0, 0.0]
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        for aid in data_animal_id_groups.keys():
+            p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y, param_z]]
+            p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y, param_z]].shift(
+                periods=1)
+            p2.iloc[0, :] = [0.0, 0.0, 0.0]
 
-        data_animal_id_groups[aid]['distance'] = ((p1 -
-                                                   p2) ** 2).sum(axis=1) ** 0.5
+            data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                       p2) ** 2).sum(axis=1) ** 0.5
+    # 2D dataset
+    else:
+        for aid in data_animal_id_groups.keys():
+            p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
+            p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(
+                periods=1)
+            p2.iloc[0, :] = [0.0, 0.0]
+
+            data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                       p2) ** 2).sum(axis=1) ** 0.5
+
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
@@ -168,7 +213,7 @@ def compute_distance(data_animal_id_groups, param_x="x", param_y="y"):
     return data_animal_id_groups
 
 
-def compute_distance_and_direction(data_animal_id_groups):
+def compute_distance_and_direction(data_animal_id_groups): # TODO deprecate
     """
     Function to calculate metric distance and direction attributes.
     Calculates the metric distance between two consecutive time frames/time stamps
@@ -266,7 +311,8 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
     tmp_data = grouping_data(data)
-    tmp_data = compute_distance_and_direction(tmp_data)
+    tmp_data = compute_distance(tmp_data)
+    tmp_data = compute_direction(tmp_data)
     tmp_data = compute_turning(tmp_data)
     tmp_data = compute_average_speed(tmp_data, fps)
     tmp_data = compute_average_acceleration(tmp_data, fps)
