@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import warnings
 import utm
+from .utils import presence_3d
 
 
 def from_dataframe(data, dictionary):
@@ -150,7 +151,7 @@ def filter_dataframe(data, frm, to):
 
 
 def replace_parts_animal_movement(data_groups, animal_id, time_array,
-                                  replacement_value_x, replacement_value_y):
+                                  replacement_value_x, replacement_value_y, replacement_value_z=None):
     """
     Replace subsets (segments) of animal movement based on some indices e.g. time.
     This function can be used to remove outliers.
@@ -169,6 +170,8 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
     """
     data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
     data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
+    if presence_3d(data_groups[animal_id]):
+        data_groups[animal_id].loc[time_array, 'z'] = replacement_value_z
 
     return data_groups
 
@@ -314,6 +317,8 @@ def normalize(data):
     """
     data['x'] = (data['x'] - data['x'].min()) / (data['x'].max() - data['x'].min())
     data['y'] = (data['y'] - data['y'].min()) / (data['y'].max() - data['y'].min())
+    if presence_3d(data):
+        data['z'] = (data['z'] - data['z'].min()) / (data['z'].max() - data['z'].min())
     return data
 
 
