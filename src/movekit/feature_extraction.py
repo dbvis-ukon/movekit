@@ -426,6 +426,13 @@ def centroid_medoid_computation(data,
     :param data: Boolean in case we just want to compute the centroids. Default: False.
     :return: Pandas DataFrame containing computed medoids & centroids
     """
+
+    # check 3D presence
+    if presence_3d(data):
+        is_3d = True
+    else:
+        is_3d = False
+
     # Group by 'time'-
     data_time = data.groupby('time')
 
@@ -445,6 +452,8 @@ def centroid_medoid_computation(data,
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=data_l)
         data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=data_l)
+        if is_3d:
+            data_groups_time[aid] = data_groups_time[aid].assign(z_centroid=data_l)
 
         if only_centroid == False:
             data_groups_time[aid] = data_groups_time[aid].assign(medoid=data_l)
@@ -454,9 +463,13 @@ def centroid_medoid_computation(data,
         # Calculate centroid coordinates (x, y)-
         x_mean = np.around(np.mean(data_groups_time[aid]['x']), 3)
         y_mean = np.around(np.mean(data_groups_time[aid]['y']), 3)
+        if is_3d:
+            z_mean = np.around(np.mean(data_groups_time[aid]['z']), 3)
 
         data_groups_time[aid] = data_groups_time[aid].assign(x_centroid=x_mean)
         data_groups_time[aid] = data_groups_time[aid].assign(y_centroid=y_mean)
+        if is_3d:
+            data_groups_time[aid] = data_groups_time[aid].assign(z_centroid=z_mean)
 
         # add additional variable for point object
         if object_output == True:
@@ -470,8 +483,15 @@ def centroid_medoid_computation(data,
             # Squared distance of each 'y' coordinate to 'centroid'-
             y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean) ** 2
 
+            # Squared distance of each 'z' coordinate to 'centroid'-
+            if is_3d:
+                z_temp = (data_groups_time[aid].loc[:, 'z'] - z_mean) ** 2
+
             # Distance of each point from centroid-
-            dist = np.sqrt(x_temp + y_temp)
+            if is_3d:
+                dist = np.sqrt(x_temp + y_temp + z_temp)
+            else:
+                dist = np.sqrt(x_temp + y_temp)
 
             # Assign computed distances to 'distance_to_centroid' attribute-
             data_groups_time[aid] = data_groups_time[aid].assign(
@@ -510,7 +530,10 @@ def euclidean_dist(data):
     :param data: pandas DataFrame with positional record data.
     :return: pandas DataFrame, including computed similarities.
     """
-    weights = {'x': 1, 'y': 1}
+    if presence_3d(data):
+        weights = {'x': 1, 'y': 1, 'z': 1}
+    else:
+        weights = {'x': 1, 'y': 1}
     out = compute_similarity(data, weights)
     return out
 
@@ -623,6 +646,11 @@ def explore_features(data):
     y_min = data['y'].min()
     y_max = data['y'].max()
 
+    if presence_3d(data):
+        is_3d = True
+        z_min = data['z'].min()
+        z_max = data['z'].max()
+
     # Group 'data' using 'animal_id' attribute-
     data_groups = grouping_data(data)
 
@@ -641,6 +669,12 @@ def explore_features(data):
 
         print("y-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
             (y_min / aid_y_min) * 100, (aid_y_max / y_max) * 100))
+
+        if is_3d:
+            aid_z_min = data_groups[aid]['z'].min()
+            aid_z_max = data_groups[aid]['z'].max()
+            print("z-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
+                (z_min / aid_z_min) * 100, (aid_z_max / z_max) * 100))
 
     return None
 
