@@ -8,7 +8,6 @@ from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
-#from tslearn.clustering import TimeSeriesKMeans
 from functools import reduce
 import st_clustering as stc
 
@@ -71,90 +70,6 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
         return distance_df, path_matr
     else:
         return distance_df
-
-"""
-def ts_cluster(feats,
-               n_clust,
-               varlst=[
-                   "distance", "average_speed", "average_acceleration",
-                   "direction", "stopped"
-               ],
-               metric="euclidean",
-               max_iter=5,
-               random_state=0,
-               inertia=False):
-    Incorporate time series clustering for absolute features.
-
-    Note: Function can be used with extracted features beforehand. If features are not extracted, function performs
-    standard feature extraction first.
-
-    :param feats: DataFrame, containing computed features of animal record data.
-    :param n_clust: Number of clusters to distinguish.
-    :param varlst: List of variables to use for clustering. Default: Only 2d positions x and y.
-    :param metric: Distance metric. Default: Euclidean. Alternatives: “dtw”, “softdtw”.
-    :param max_iter: Max number of iterations. Default: 5.
-    :param random_state: Default: 0.
-    :param inertia: Additionaly return sum of distances of samples to their closest cluster center.
-    :return: Default: features-dataframe with cluster and centroid columns added. Optional: inertia (see above).
-    
-    
-    # check for each feature if it's contained in feats dataset - if not, calculate
-    for feat in varlst:
-        if feat not in feats.columns:
-            feats = extract_features(feats)
-            break
-
-    # Group data into animal-id dictionary
-    data_groups = grouping_data(feats)
-
-    # Group variables of interest for clustering into animal-id dictionary
-    traj = grouping_data(feats, pick_vars=varlst)
-
-    # Convert variables of interest to nested list
-    tracks = []
-    for i in [*traj.keys()]:
-        tracks.append(traj[i].values.tolist())
-
-    # Calculate timeseries k-Means based on specified parameters
-    km = TimeSeriesKMeans(n_clusters=n_clust,
-                          metric=metric,
-                          max_iter=max_iter,
-                          random_state=random_state)
-    km = km.fit(tracks)
-    clustcens = km.cluster_centers_.tolist()
-
-    # Iterate over animal ids
-    for aid in range(len(traj)):
-        # append cluster label to animal id groups
-        clust = [*km.labels_][aid]
-        data_groups[[*data_groups.keys()
-                     ][aid]] = data_groups[[*data_groups.keys()
-                                            ][aid]].assign(cluster=clust)
-
-        # append centroid of cluster to animal id groups
-        data_groups[[*data_groups.keys()][aid]] = data_groups[[
-            *data_groups.keys()
-        ][aid]].assign(ClustCenter=clustcens[clust])
-
-    # convert animal-id groups to dataframe
-    clustered_df = regrouping_data(data_groups)
-
-    clst = list(clustered_df.loc[:, "ClustCenter"])
-    vars = list(zip(*clst))
-
-    # append DataFrame with new centroid variables
-    newvars = {}
-    for i in range(len(varlst)):
-        newvars['centroid_' + str(varlst[i])] = vars[i]
-    clustered_df = clustered_df.join(pd.DataFrame(newvars))
-
-    # if true, return inertia along with dataframe, else (default) just dataframe.
-    if inertia:
-        return clustered_df, km.inertia_
-
-    else:
-        return clustered_df
-"""
 
 def compute_centroid_direction(data,
                                colname="centroid_direction",

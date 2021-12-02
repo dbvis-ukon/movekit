@@ -5,11 +5,13 @@ from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
+# from tslearn.shapelets import LearningShapelets
 import matplotlib.pyplot as plt
 from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
+from .utils import presence_3d, angle
 
 
 def grouping_data(processed_data, pick_vars=None):
@@ -34,7 +36,7 @@ def grouping_data(processed_data, pick_vars=None):
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
     if list(processed_data.columns.values) == list(
-        ['time', 'animal_id', 'x', 'y']):
+            ['time', 'animal_id', 'x', 'y']):
         # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
             data = [None for x in range(data_animal_id_groups[aid].shape[0])]
@@ -53,7 +55,7 @@ def grouping_data(processed_data, pick_vars=None):
     if pick_vars != None:
         for aid in data_animal_id_groups.keys():
             data_animal_id_groups[aid] = data_animal_id_groups[
-                aid].loc[:, pick_vars]
+                                             aid].loc[:, pick_vars]
     return data_animal_id_groups
 
 
@@ -92,24 +94,80 @@ def regrouping_data(data_animal_id_groups):
     return result
 
 
-def compute_direction(data_animal_id_groups,
-                      param_x="x",
-                      param_y="y",
-                      colname="direction"):
+# def compute_direction(data_animal_id_groups,
+#                       param_x="x",
+#                       param_y="y",
+#                       colname="direction"):
+#     """
+#     Calculate angle of degrees, an animal is heading in between two timesteps.
+#     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+#     :param param_x: Column name to be recognized as x. Default "x".
+#     :param param_y: Column name to be recognized as y. Default "y".
+#     :return: dictionary containing computed 'distance' attribute.
+#     """
+#     # Compute 'direction' for 'animal_id' groups-
+#     for aid in data_animal_id_groups.keys():
+#         data = np.rad2deg(
+#             np.arctan2((data_animal_id_groups[aid][param_y] -
+#                         data_animal_id_groups[aid][param_y].shift(periods=1)),
+#                        (data_animal_id_groups[aid][param_x] -
+#                         data_animal_id_groups[aid][param_x].shift(periods=1))))
+#         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+#             inp=data)
+#         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
+#             columns={'inp': colname})
+#     return data_animal_id_groups
+
+
+def compute_direction(data_animal_id_groups, colname='direction'):
     """
-    Calculate angle of degrees, an animal is heading in between two timesteps.
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
-    :param param_x: Column name to be recognized as x. Default "x".
-    :param param_y: Column name to be recognized as y. Default "y".
-    :return: dictionary containing computed 'distance' attribute.
+    Computes the angle of rotation of an animal between two timesteps
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'
+    :param colname: the name to appear in the new DataFrame
+    :return: dictionary containing computed 'distance' attribute
     """
-    # Compute 'direction' for 'animal_id' groups-
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+    else:
+        is_3d = False
+
+    # iterate over movers
     for aid in data_animal_id_groups.keys():
-        data = np.rad2deg(
-            np.arctan2((data_animal_id_groups[aid][param_y] -
-                        data_animal_id_groups[aid][param_y].shift(periods=1)),
-                       (data_animal_id_groups[aid][param_x] -
-                        data_animal_id_groups[aid][param_x].shift(periods=1))))
+        if is_3d:
+            coord = data_animal_id_groups[aid][['x', 'y', 'z']].to_numpy()
+        else:
+            coord = data_animal_id_groups[aid][['x', 'y']].to_numpy()
+
+        # compute the angles for two subsequent positions
+        angles = [angle(coord[i], coord[i - 1]) for i in range(1, len(coord))]
+
+        # we dont have an angle for the first observation
+        angles.insert(0, 0)
+
+        data_animal_id_groups[aid][colname] = angles
+    return data_animal_id_groups
+
+
+def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
+    """
+    Computes the turning angle for a mover between two timesteps as the difference of its direction
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :param param_direction: Column name to be recognized as direction. Default "direction".
+    :param colname: the new column to be added
+    :return: data_animal_id_groups
+    """
+
+    # when differences exceed |180| convert values so that they stay in the domain -180 +180
+    boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
+    vboundary = np.vectorize(boundary)
+
+    # Compute 'turning' for 'animal_id' groups
+    for aid in data_animal_id_groups.keys():
+        # for all timesteps
+        data = data_animal_id_groups[aid][param_direction] - data_animal_id_groups[aid][param_direction].shift(
+            periods=1)
+        data = vboundary(data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
             inp=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
@@ -117,22 +175,36 @@ def compute_direction(data_animal_id_groups,
     return data_animal_id_groups
 
 
-def compute_distance(data_animal_id_groups, param_x="x", param_y="y"):
+def compute_distance(data_animal_id_groups, param_x="x", param_y="y", param_z="z"):
     """
     Calculate metric distance of animals in between two timesteps.
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :param param_x: Column name to be recognized as x. Default "x".
     :param param_y: Column name to be recognized as y. Default "y".
+    :param param_z: Column name to be recognized as z. Default "z".
     :return: dictionary containing computed 'distance' attribute.
     """
-    for aid in data_animal_id_groups.keys():
-        p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
-        p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(
-            periods=1)
-        p2.iloc[0, :] = [0.0, 0.0]
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        for aid in data_animal_id_groups.keys():
+            p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y, param_z]]
+            p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y, param_z]].shift(
+                periods=1)
+            p2.iloc[0, :] = [0.0, 0.0, 0.0]
 
-        data_animal_id_groups[aid]['distance'] = ((p1 -
-                                                   p2)**2).sum(axis=1)**0.5
+            data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                       p2) ** 2).sum(axis=1) ** 0.5
+    # 2D dataset
+    else:
+        for aid in data_animal_id_groups.keys():
+            p1 = data_animal_id_groups[aid].loc[:, [param_x, param_y]]
+            p2 = data_animal_id_groups[aid].loc[:, [param_x, param_y]].shift(
+                periods=1)
+            p2.iloc[0, :] = [0.0, 0.0]
+
+            data_animal_id_groups[aid]['distance'] = ((p1 -
+                                                       p2) ** 2).sum(axis=1) ** 0.5
+
 
     # Reset first entry for each 'animal_id' to zero-
     for aid in data_animal_id_groups.keys():
@@ -141,7 +213,7 @@ def compute_distance(data_animal_id_groups, param_x="x", param_y="y"):
     return data_animal_id_groups
 
 
-def compute_distance_and_direction(data_animal_id_groups):
+def compute_distance_and_direction(data_animal_id_groups): # TODO deprecate
     """
     Function to calculate metric distance and direction attributes.
     Calculates the metric distance between two consecutive time frames/time stamps
@@ -173,7 +245,7 @@ def compute_distance_and_direction(data_animal_id_groups):
             p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
             p2.iloc[0, :] = [0.0, 0.0]
 
-            data = ((p1 - p2)**2).sum(axis=1)**0.5
+            data = ((p1 - p2) ** 2).sum(axis=1) ** 0.5
 
         except TypeError:
             data = 0
@@ -217,7 +289,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 
         # rename into shortcut
         speed = data_animal_id_groups[aid]['average_speed']
-        #b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
+        # b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
         try:
             data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
                 min_periods=1, window=fps,
@@ -239,7 +311,9 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
     tmp_data = grouping_data(data)
-    tmp_data = compute_distance_and_direction(tmp_data)
+    tmp_data = compute_distance(tmp_data)
+    tmp_data = compute_direction(tmp_data)
+    tmp_data = compute_turning(tmp_data)
     tmp_data = compute_average_speed(tmp_data, fps)
     tmp_data = compute_average_acceleration(tmp_data, fps)
     tmp_data = computing_stops(tmp_data, stop_threshold)
@@ -276,6 +350,33 @@ def computing_stops(data_animal_id_groups, threshold_speed):
     '''
 
 
+def distance_by_time(data, frm, to):
+    """
+    Computes the distance between positions for a particular time window for all movers.
+    :param data: pandas DataFrame with all records of movements.
+    :param frm: int defining the start of the time window
+    :param to: int defining the end of the time window (inclusive)
+    :return: pandas DataFrame with animal_id and distance
+    """
+    # use auxiliary functions to get distances for each timestep
+    data_animal_id_groups = grouping_data(data)
+    data_animal_id_groups = compute_distance(data_animal_id_groups)
+
+    aids = []
+    distances = []
+    # iterate over grouped dataframes
+    for aid in data_animal_id_groups.keys():
+        # take a subst of each dataframe as defined by the time window
+        df = data_animal_id_groups[aid]
+        subset = df[(df['time'] >= frm) & (df['time'] <= to)]
+        # sum up all distances in that time window
+        distance = subset['distance'].sum()
+        aids.append(aid)
+        distances.append(distance)
+
+    return pd.DataFrame({'animal_id': aids, 'distance': distances})
+
+
 def group_movement(feats):
     """
     Returns aggregated movement data, such as distance, mean speed, mean acceleration and mean distance to centroid for the entire group at each time capture.
@@ -303,13 +404,13 @@ def group_movement(feats):
 
     group = pd.DataFrame({
         "total_dist":
-        data_dist.sum()['distance'],
+            data_dist.sum()['distance'],
         "mean_speed":
-        data_dist.mean()['average_speed'],
+            data_dist.mean()['average_speed'],
         "mean_acceleration":
-        data_dist.mean()['average_acceleration'],
+            data_dist.mean()['average_acceleration'],
         "mean_distance_centroid":
-        data_dist.mean()['distance_to_centroid']
+            data_dist.mean()['distance_to_centroid']
     })
 
     return group
@@ -364,10 +465,10 @@ def centroid_medoid_computation(data,
 
         if only_centroid == False:
             # Squared distance of each 'x' coordinate to 'centroid'-
-            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean)**2
+            x_temp = (data_groups_time[aid].loc[:, 'x'] - x_mean) ** 2
 
             # Squared distance of each 'y' coordinate to 'centroid'-
-            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean)**2
+            y_temp = (data_groups_time[aid].loc[:, 'y'] - y_mean) ** 2
 
             # Distance of each point from centroid-
             dist = np.sqrt(x_temp + y_temp)
@@ -389,7 +490,7 @@ def centroid_medoid_computation(data,
     return medoid_data
 
 
-#DEAD below? - gives almost exact result as euclidean_dist() function.
+# DEAD below? - gives almost exact result as euclidean_dist() function.
 def distance_euclidean_matrix(data):
     """
     Calculates record's euclidean distances.
@@ -577,7 +678,7 @@ def explore_features_geospatial(preprocessed_data):
         # Compute area of singular polygons and plot
         print(
             "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
-            .format(aid, poly.area))
+                .format(aid, poly.area))
         plt.plot(*poly.exterior.xy)
 
     # Polygon for collective group
@@ -600,9 +701,9 @@ def explore_features_geospatial(preprocessed_data):
     return None
 
 
-def outlier_detection(dataset, features = ["distance","average_speed", "average_acceleration","direction",
-                                            "stopped"], contamination = 0.01, n_neighbors = 5, method = "mean", \
-                                                                                           metric = "minkowski"):
+def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration", "direction",
+                                         "stopped"], contamination=0.01, n_neighbors=5, method="mean", \
+                      metric="minkowski"):
     """
     Detect outliers based on pyod KNN.
 

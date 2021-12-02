@@ -17,10 +17,12 @@ finally:
 
 
 from .io import read_data  # noqa: E402
+from .utils import presence_3d, angle
 from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
-    resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize  # noqa:
+    resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize, \
+    delete_mover, convert_latlon, from_dataframe# noqa:
 # E402
-from .feature_extraction import extract_features, euclidean_dist  # noqa: E402
+from .feature_extraction import extract_features, euclidean_dist, distance_by_time # noqa: E402
 from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, centroid_medoid_computation, \
     outlier_detection, group_movement
 from .clustering import dtw_matrix, get_heading_difference, compute_polarization, get_spatial_objects, compute_centroid_direction, clustering, clustering_with_splits

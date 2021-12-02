@@ -78,6 +78,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "nbsphinx"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -94,7 +95,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "movekit"
-copyright = "2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles"
+copyright = "2021, Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, Manuel Plank"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -245,7 +246,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "user_guide.tex", "movekit Documentation", "Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles", "manual")
+    ("index", "user_guide.tex", "movekit Documentation", "Lukas Weixkler, Arjun Majumdar, Eren Cakmak, Jolle Jolles, "
+                                                         "Manuel Plank", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
