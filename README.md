@@ -19,6 +19,14 @@ __Features:__
 * Spatial data analysis (Voronoi, delaunay triangulation)
 * Network analysis with networkX
 
+`movekit` provides support for use cases with movement data and trajectories:
+
+__Data:__
+
+* 2-dimensional data in the Euclidean space
+* 3-dimensional data in the Euclidean space
+* GPS coordinates (latitude and longitude)
+
 ---
 
 ## Installation
