@@ -8,6 +8,7 @@ from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
+from .utils import presence_3d
 from functools import reduce
 import st_clustering as stc
 
@@ -320,8 +321,11 @@ def clustering(algorithm, data, **kwargs):
         clusterer = stc.ST_BIRCH(**kwargs)   
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
-        
-    data = data.loc[:, ['time','x','y']].values
+
+    if presence_3d(data):
+        data = data.loc[:, ['time','x','y','z']].values
+    else:
+        data = data.loc[:, ['time','x','y']].values
     clusterer.st_fit(data)
     return clusterer.labels
     
@@ -353,7 +357,10 @@ def clustering_with_splits(algorithm, data, frame_size, **kwargs):
         clusterer = stc.ST_BIRCH(**kwargs)   
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
-        
-    data = data.loc[:, ['time','x','y']].values
+
+    if presence_3d(data):
+        data = data.loc[:, ['time','x','y','z']].values
+    else:
+        data = data.loc[:, ['time','x','y']].values
     clusterer.st_fit_frame_split(data, frame_size)
     return clusterer.labels
