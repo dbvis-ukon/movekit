@@ -5,7 +5,6 @@ from scipy.spatial import distance_matrix
 from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
-# from tslearn.shapelets import LearningShapelets
 import matplotlib.pyplot as plt
 from pyod.models.knn import KNN
 from fastdtw import fastdtw
@@ -119,7 +118,7 @@ def regrouping_data(data_animal_id_groups):
 #     return data_animal_id_groups
 
 
-def compute_direction(data_animal_id_groups, colname='direction'):
+def compute_direction(data_animal_id_groups, param_x='x', param_y='y', param_z='z', colname='direction'):
     """
     Computes the angle of rotation of an animal between two timesteps
     :param data_animal_id_groups: dictionary ordered by 'animal_id'
@@ -135,9 +134,9 @@ def compute_direction(data_animal_id_groups, colname='direction'):
     # iterate over movers
     for aid in data_animal_id_groups.keys():
         if is_3d:
-            coord = data_animal_id_groups[aid][['x', 'y', 'z']].to_numpy()
+            coord = data_animal_id_groups[aid][[param_x, param_z, param_z]].to_numpy()
         else:
-            coord = data_animal_id_groups[aid][['x', 'y']].to_numpy()
+            coord = data_animal_id_groups[aid][[param_x, param_y]].to_numpy()
 
         # compute the angles for two subsequent positions
         angles = [angle(coord[i], coord[i - 1]) for i in range(1, len(coord))]
