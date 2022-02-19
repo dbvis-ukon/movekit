@@ -13,7 +13,7 @@ from functools import reduce
 import st_clustering as stc
 from tqdm import tqdm
 
-from movekit.feature_extraction import *
+from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
 
 
