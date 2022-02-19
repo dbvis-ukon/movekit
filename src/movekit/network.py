@@ -3,10 +3,11 @@ import networkx as nx
 from functools import reduce
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
-from .preprocess import *
-from .clustering import *
-from .feature_extraction import *
+from movekit.preprocess import *
+from movekit.clustering import *
+from movekit.feature_extraction import *
 
 
 def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
@@ -42,7 +43,7 @@ def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
 
     # Create a new graph for each time step, compute edges, add them to graph and
     # finally, add graph to Python3 list-
-    for item in range(0, len(del_dict[object_type])):
+    for item in tqdm(range(0, len(del_dict[object_type])),position=0):
         # Create an empty graph with no nodes and no edges.
         G = nx.Graph()
 

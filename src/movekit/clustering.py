@@ -11,8 +11,9 @@ from scipy.spatial.distance import euclidean
 from .utils import presence_3d
 from functools import reduce
 import st_clustering as stc
+from tqdm import tqdm
 
-from .feature_extraction import *
+from movekit.feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
 
 
@@ -54,9 +55,8 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
         (len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
 
     # double-iterate over obtained trajectory dict
-    for aid in range(len([*trajectories.keys()])):
+    for aid in tqdm(range(len([*trajectories.keys()])),position=0):
         for aid2 in range(len([*trajectories.keys()])):
-
             # fill np array field with euclidean distance of respective trajectories, same for path field
             distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(
                 trajectories[[*trajectories.keys()][aid]],
@@ -66,7 +66,6 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
             distance_df = pd.DataFrame(data=distance_matr,
                                        index=[*trajectories.keys()],
                                        columns=[*trajectories.keys()])
-
     if path:
         return distance_df, path_matr
     else:
@@ -131,20 +130,23 @@ def get_heading_difference(preprocessed_data):
     animal_dir = grouping_data(preprocessed_data)
 
     # Get the directions  for each centroid for each timestep
-    cen_dir = compute_direction(animal_dir,
-                                param_x="x_centroid",
-                                param_y="y_centroid",
-                                colname="centroid_direction")
+    with tqdm(total=100,position=0) as pbar:
+        pbar.update(10)  # because the method compute_direction() assumes 10% are already filled
+        cen_dir = compute_direction(animal_dir,
+                                    pbar,
+                                    param_x="x_centroid",
+                                    param_y="y_centroid",
+                                    colname="centroid_direction")
 
-    # Subtract animal's direction from centroid's direction
-    directions = regrouping_data(cen_dir)
-    raw_diff = directions.loc[:,
-                              "direction"] - directions.loc[:,
-                                                            "centroid_direction"]
+        # Subtract animal's direction from centroid's direction
+        directions = regrouping_data(cen_dir)
+        raw_diff = directions.loc[:,
+                   "direction"] - directions.loc[:,
+                                  "centroid_direction"]
 
-    # Calculate signed angle, store in new variable
-    directions = directions.assign(heading_difference=(raw_diff + 180) % 360 -
-                                   180)
+        # Calculate signed angle, store in new variable
+        directions = directions.assign(heading_difference=(raw_diff + 180) % 360 -
+                                                          180)
     return directions
 
 
@@ -226,7 +228,7 @@ def get_spatial_objects(preprocessed_data, group_output=False):
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-    for aid in data_time.groups.keys():
+    for aid in tqdm(data_time.groups.keys(),position=0):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
@@ -261,7 +263,6 @@ def get_spatial_objects(preprocessed_data, group_output=False):
         pol = pol.loc[pol.animal_id ==
                       list(set(pol.animal_id))[0], :].reset_index(drop=True)
         return pol.drop(columns=['animal_id', 'x', 'y'])
-
 
 def get_group_data(preprocessed_data):
     """
@@ -326,7 +327,7 @@ def clustering(algorithm, data, **kwargs):
         data = data.loc[:, ['time','x','y','z']].values
     else:
         data = data.loc[:, ['time','x','y']].values
-    clusterer.st_fit(data)
+    clusterer.st_fit(data)  # percentage bar not possible
     return clusterer.labels
     
     
@@ -362,5 +363,5 @@ def clustering_with_splits(algorithm, data, frame_size, **kwargs):
         data = data.loc[:, ['time','x','y','z']].values
     else:
         data = data.loc[:, ['time','x','y']].values
-    clusterer.st_fit_frame_split(data, frame_size)
+    clusterer.st_fit_frame_split(data, frame_size)  # percentage bar not possible
     return clusterer.labels
