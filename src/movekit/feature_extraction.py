@@ -11,6 +11,7 @@ from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
 from .utils import presence_3d, angle
+from tqdm import tqdm
 
 
 def grouping_data(processed_data, pick_vars=None):
@@ -118,13 +119,16 @@ def regrouping_data(data_animal_id_groups):
 #     return data_animal_id_groups
 
 
-def compute_direction(data_animal_id_groups, param_x='x', param_y='y', param_z='z', colname='direction'):
+def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
     """
     Computes the angle of rotation of an animal between two timesteps
     :param data_animal_id_groups: dictionary ordered by 'animal_id'
+    :param pbar: percentage bar filled with 10% already
     :param colname: the name to appear in the new DataFrame
     :return: dictionary containing computed 'distance' attribute
     """
+    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
+
     # take the first dataframe to check the 3d presence
     if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
         is_3d = True
@@ -145,6 +149,8 @@ def compute_direction(data_animal_id_groups, param_x='x', param_y='y', param_z='
         angles.insert(0, 0)
 
         data_animal_id_groups[aid][colname] = angles
+        pbar.update(percent_update)
+
     return data_animal_id_groups
 
 
@@ -309,21 +315,24 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :param stop_threshold: integer to specify threshold, at which we consider a "stop".
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
-    tmp_data = grouping_data(data)
-    tmp_data = compute_distance(tmp_data)
-    tmp_data = compute_direction(tmp_data)
-    tmp_data = compute_turning(tmp_data)
-    tmp_data = compute_average_speed(tmp_data, fps)
-    tmp_data = compute_average_acceleration(tmp_data, fps)
-    tmp_data = computing_stops(tmp_data, stop_threshold)
 
-    # Regroup dictionary into pd DataFrame
-    regrouped_data = regrouping_data(tmp_data)
+    with tqdm(total=100, position=0) as pbar:  # to implement percentage loading bar
+        tmp_data = grouping_data(data)
+        pbar.update(10)  # first part takes about 10 % of the time
+        tmp_data = compute_distance(tmp_data)
+        tmp_data = compute_direction(tmp_data, pbar)  # as computing the direction takes most of the time, the percentage bar is given as a parameter
+        tmp_data = compute_turning(tmp_data)
+        tmp_data = compute_average_speed(tmp_data, fps)
+        tmp_data = compute_average_acceleration(tmp_data, fps)
+        tmp_data = computing_stops(tmp_data, stop_threshold)
 
-    # Replace NA
-    regrouped_data.fillna(0, inplace=True)
+        # Regroup dictionary into pd DataFrame
+        regrouped_data = regrouping_data(tmp_data)
 
-    return regrouped_data
+        # Replace NA
+        regrouped_data.fillna(0, inplace=True)
+
+        return regrouped_data
 
 
 def computing_stops(data_animal_id_groups, threshold_speed):
@@ -438,7 +447,7 @@ def centroid_medoid_computation(data,
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-    for aid in data_time.groups.keys():
+    for aid in tqdm(data_time.groups.keys(),position=0):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
@@ -509,6 +518,7 @@ def centroid_medoid_computation(data,
     return medoid_data
 
 
+
 # DEAD below? - gives almost exact result as euclidean_dist() function.
 def distance_euclidean_matrix(data):
     """
@@ -561,10 +571,15 @@ def compute_similarity(data, weights, p=2):
     normalized_df[not_allowed_keys] = data[not_allowed_keys]
 
     # compute the distance for each time moment
-    df2 = normalized_df.groupby('time').apply(similarity_computation, w=w, p=p)
+    df2 = normalized_df.groupby('time')
+    df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
+    for start in tqdm(df2.groups.keys(),position=0):
+        groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w, p=p)  # calculate distance for each time period
+        df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
+
 
     # combine the distance matrix with the data and return
-    return pd.merge(data, df2, left_index=True,
+    return pd.merge(data, df3, left_index=True,
                     right_index=True).sort_values(by=['time', 'animal_id'])
 
 
@@ -686,53 +701,57 @@ def explore_features_geospatial(preprocessed_data):
     :param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
-    # Create dictionary, grouping records by animal ID as key
-    data_groups = grouping_data(preprocessed_data)
+    with tqdm(total=100,position=0) as pbar:
 
-    # Python dict to hold X-Y coordinates for each animal-
-    xy_coord = {}
+        # Create dictionary, grouping records by animal ID as key
+        data_groups = grouping_data(preprocessed_data)
+        percent_update = 100 / (len(data_groups.keys()) + 1)  # since also group object is created
 
-    # Polygon for singular animal ID
-    for aid in data_groups.keys():
-        xy_coord[aid] = []
+        # Python dict to hold X-Y coordinates for each animal-
+        xy_coord = {}
 
-    # Extract position information per animal into list of xy-tuples
-    for aid in data_groups.keys():
-        for x in range(data_groups[aid].shape[0]):
-            temp_tuple = (data_groups[aid].loc[x,
-                                               'x'], data_groups[aid].loc[x,
-                                                                          'y'])
-            xy_coord[aid].append(temp_tuple)
+        # Polygon for singular animal ID
+        for aid in data_groups.keys():
+            xy_coord[aid] = []
 
-    # Polygons for individual animals
-    for aid in data_groups.keys():
-        poly = Polygon(xy_coord[aid]).convex_hull
+        # Extract position information per animal into list of xy-tuples
+        for aid in data_groups.keys():
+            for x in range(data_groups[aid].shape[0]):
+                temp_tuple = (data_groups[aid].loc[x,
+                                                   'x'], data_groups[aid].loc[x,
+                                                                              'y'])
+                xy_coord[aid].append(temp_tuple)
+            pbar.update(percent_update)
 
-        # Compute area of singular polygons and plot
-        print(
-            "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
-                .format(aid, poly.area))
-        plt.plot(*poly.exterior.xy)
+        # Polygons for individual animals
+        for aid in data_groups.keys():
+            poly = Polygon(xy_coord[aid]).convex_hull
 
-    # Polygon for collective group
-    xy_coord_full = []
-    for aid in data_groups.keys():
-        for x in range(data_groups[aid].shape[0]):
-            temp_tuple = (data_groups[aid].loc[x,
-                                               'x'], data_groups[aid].loc[x,
-                                                                          'y'])
-            xy_coord_full.append(temp_tuple)
+            # Compute area of singular polygons and plot
+            print(
+                "\nArea (polygon) covered by animal ID = {0} is = {1:.2f} sq. units\n"
+                    .format(aid, poly.area))
+            plt.plot(*poly.exterior.xy)
 
-    # Create 'Polygon' object using all coordinates for animal ID combined
-    full_poly = Polygon(xy_coord_full).convex_hull
+        # Polygon for collective group
+        xy_coord_full = []
+        for aid in data_groups.keys():
+            for x in range(data_groups[aid].shape[0]):
+                temp_tuple = (data_groups[aid].loc[x,
+                                                   'x'], data_groups[aid].loc[x,
+                                                                              'y'])
+                xy_coord_full.append(temp_tuple)
 
-    # Compute area of collective polygon and plot
-    print("\nArea (polygon) covered by animals collectively is = ",
-          full_poly.area, "sq. units")
-    plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
-    plt.show()
-    return None
+        # Create 'Polygon' object using all coordinates for animal ID combined
+        full_poly = Polygon(xy_coord_full).convex_hull
 
+        # Compute area of collective polygon and plot
+        print("\nArea (polygon) covered by animals collectively is = ",
+              full_poly.area, "sq. units")
+        plt.plot(*full_poly.exterior.xy, linewidth=5, color="black")
+        plt.show()
+        pbar.update(percent_update)
+        return None
 
 def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration", "direction",
                                          "stopped"], contamination=0.01, n_neighbors=5, method="mean", \
@@ -755,6 +774,7 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     scikit-learn or scipy.spatial.distance can be used.
     :return:
     """
+    # you cant split up features to create a percent bar no?
     clf = KNN(contamination=contamination,
               n_neighbors=n_neighbors,
               method=method,
@@ -772,3 +792,4 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     else:
         dataset.insert(2, "outlier", scores_pred)
     return dataset
+
