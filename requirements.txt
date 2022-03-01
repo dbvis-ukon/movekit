@@ -1,14 +1,21 @@
-scipy==1.6.1
-tsfresh==0.17.0
-openpyxl==3.0.7
-shapely==1.7.1
-matplotlib==3.3.4
-pyod==0.8.7
-fastdtw==0.3.4
-h5py==3.1.0
-geoalchemy2>=0.8.4
-networkx>=2.5
-ipympl==0.8.2
-st-clustering==0.0.1
-tslearn==0.5.2
-utm==0.7.0
+#die ersten drei sind nicht im setup.cfg und nicht in movekit/src
+#openpyxl==3.0.7
+#ipympl==0.8.2
+#tslearn==0.5.2
+
+importlib-metadata; python_version<"3.10" #passt oder?
+pandas>=1.4.1
+scipy>=1.8.0
+tsfresh>=0.19.0
+xlrd>=2.0.1
+shapely>=1.8.1
+matplotlib>=3.5.1
+pyod>=0.9.7
+fastdtw>=0.3.4
+h5py>=3.6.0
+geoalchemy2>=0.10.2
+networkx>=2.6.3
+utm>=0.7.0
+st-clustering>=0.0.1
+scikit-learn>=0.22.0,<=0.24.2
+tqdm>=4.62.3
