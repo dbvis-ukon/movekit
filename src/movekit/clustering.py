@@ -55,7 +55,7 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
         (len([*trajectories.keys()]), len([*trajectories.keys()])), dtype=list)
 
     # double-iterate over obtained trajectory dict
-    for aid in tqdm(range(len([*trajectories.keys()])),position=0):
+    for aid in tqdm(range(len([*trajectories.keys()])),position=0, desc="Calculating dynamic time warping"):
         for aid2 in range(len([*trajectories.keys()])):
             # fill np array field with euclidean distance of respective trajectories, same for path field
             distance_matr[aid][aid2], path_matr[aid][aid2] = fastdtw(
@@ -93,10 +93,13 @@ def compute_centroid_direction(data,
     # Group into animals
     dat = grouping_data(data)
 
-    dat = compute_direction(dat,
-                            param_x="x_centroid",
-                            param_y="y_centroid",
-                            colname=colname)
+    with tqdm(total=100, position=0, desc="Computing centroid direction") as pbar:
+        pbar.update(10)  # because compute_direction starts at 10% due to its call in extract_features
+        dat = compute_direction(dat,
+                                pbar,
+                                param_x="x_centroid",
+                                param_y="y_centroid",
+                                colname=colname)
 
     cen_direction = regrouping_data(dat)
 
@@ -130,7 +133,7 @@ def get_heading_difference(preprocessed_data):
     animal_dir = grouping_data(preprocessed_data)
 
     # Get the directions  for each centroid for each timestep
-    with tqdm(total=100,position=0) as pbar:
+    with tqdm(total=100,position=0, desc="Calculating heading difference") as pbar:
         pbar.update(10)  # because the method compute_direction() assumes 10% are already filled
         cen_dir = compute_direction(animal_dir,
                                     pbar,
@@ -228,7 +231,7 @@ def get_spatial_objects(preprocessed_data, group_output=False):
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-    for aid in tqdm(data_time.groups.keys(),position=0):
+    for aid in tqdm(data_time.groups.keys(),position=0, desc="Calculating spatial objects"):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 

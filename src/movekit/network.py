@@ -43,7 +43,7 @@ def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
 
     # Create a new graph for each time step, compute edges, add them to graph and
     # finally, add graph to Python3 list-
-    for item in tqdm(range(0, len(del_dict[object_type])),position=0):
+    for item in tqdm(range(0, len(del_dict[object_type])),position=0, desc="Calculating network list"):
         # Create an empty graph with no nodes and no edges.
         G = nx.Graph()
 
