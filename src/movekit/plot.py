@@ -200,3 +200,5 @@ def plot_animal(inp_data, animal_id):
     plt.show()
 
     return None
+
+
