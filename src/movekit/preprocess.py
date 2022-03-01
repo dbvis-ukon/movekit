@@ -29,7 +29,8 @@ def interpolate(data,
                 limit=1,
                 limit_direction="forward",
                 inplace=False,
-                method="linear"):
+                method="linear",
+                order=1):
     """
     Interpolate over missing values in pandas Dataframe of movement records.
     Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
@@ -39,14 +40,21 @@ def interpolate(data,
     :param limit: Maximum number of consecutive NANs to fill
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
     :param method: Interpolation technique to use. Default is "linear".
-    :param order: To be used in case of polynomial interpolation.
+    :param order: To be used in case of polynomial or spline interpolation.
     :return: Interpolated DataFrame.
     """
     # Interpolating record data
-    interp = data.interpolate(limit=limit,
-                              limit_direction=limit_direction,
-                              inplace=inplace,
-                              method=method)
+    if method != "polynomial" and method != "spline":
+        interp = data.interpolate(limit=limit,
+                                  limit_direction=limit_direction,
+                                  inplace=inplace,
+                                  method=method)
+    else:
+        interp = data.interpolate(limit=limit,
+                                  limit_direction=limit_direction,
+                                  inplace=inplace,
+                                  method=method,
+                                  order = order)
     return interp
 
 
@@ -133,7 +141,7 @@ def print_duplicate(df):
     """
     dup = df[df.duplicated(['time', 'animal_id'])]
     print(
-        "Removed duplicate rows based on the columns 'animal_id' and 'time' column are:",
+        "Duplicate rows based on the columns 'animal_id' and 'time' column are:",
         dup,
         sep='\n')
 
@@ -161,7 +169,7 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
         arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
         replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
 
-    :param data_groups: Dictionary with key 'animal_id'and value with records for 'animal_id'.
+    :param data_groups: Dictionary with key 'animal_id'and value with records for 'animal_id'. (as dataframe)
     :param animal_id: Int defining 'animal_id' whose movements have to be replaced.
     :param time_array: Array defining time indices whose movements have to replaced
     :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
@@ -280,7 +288,7 @@ def split_trajectories(data_groups, segment, fuzzy_segment=0, csv=False):
     return groups
 
 
-def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1):
+def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1, z_min=0, z_max=1):
     """
     Create a linear scale with input parameters for x,y for transformation of position data.
     :param preprocessed_data: Pandas DataFrame only with x and y position data
@@ -288,13 +296,15 @@ def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1):
     :param x_max: int maximum for x - default: 1.
     :param y_min: int minimum for y - default: 0.
     :param y_max: int maximum for y - default: 1.
+    :param z_min: int minimum for z - default: 0.
+    :param z_max: int maximum for z - default: 1.
     :return: Pandas DataFrame with linearly transformed position data.
     """
     # Preventing features input along position data
-    if [*preprocessed_data.columns] != ['time', 'animal_id', 'x', 'y']:
+    if [*preprocessed_data.columns] != ['time', 'animal_id', 'x', 'y'] and [*preprocessed_data.columns] != ['time', 'animal_id', 'x', 'y', 'z']:
         print(
             "\nError! Conversion only allowed for dataframes with colnames ['time', 'animal_id', 'x', "
-            "'y']. \n")
+            "'y'] or ['time', 'animal_id', 'x', 'y', 'z']. \n")
         return None
 
     # Linear Transformation of position dimensions
@@ -306,6 +316,12 @@ def convert_measueres(preprocessed_data, x_min=0, x_max=1, y_min=0, y_max=1):
         preprocessed_data.loc[:, "y"], (preprocessed_data.loc[:, "y"].min(),
                                         preprocessed_data.loc[:, "y"].max()),
         (y_min, y_max))
+
+    if presence_3d(preprocessed_data):
+        preprocessed_data.loc[:, "z"] = np.interp(
+            preprocessed_data.loc[:, "z"], (preprocessed_data.loc[:, "z"].min(),
+                                            preprocessed_data.loc[:, "z"].max()),
+            (z_min, z_max))
     return preprocessed_data
 
 
@@ -368,3 +384,4 @@ def convert_latlon(data, latitude='latitude', longitude='longitude', replace=Tru
         data.drop(longitude, axis=1, inplace=True)
 
     return data
+
