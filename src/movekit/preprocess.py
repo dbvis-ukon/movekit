@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import warnings
 import utm
+from datetime import datetime
 from .utils import presence_3d
 
 
@@ -30,7 +31,8 @@ def interpolate(data,
                 limit_direction="forward",
                 inplace=False,
                 method="linear",
-                order=1):
+                order=1,
+                date_format=False):
     """
     Interpolate over missing values in pandas Dataframe of movement records.
     Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
@@ -41,8 +43,20 @@ def interpolate(data,
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
     :param method: Interpolation technique to use. Default is "linear".
     :param order: To be used in case of polynomial or spline interpolation.
+    :param date_format: Boolean to define whether time is some kind of date format. In this case column type has to be converted before calling interpolate.
     :return: Interpolated DataFrame.
     """
+    # converting time column if needed
+    if date_format:
+        if 'time' in data.columns:
+            timestamp_column = data['time'].apply(lambda x: x.timestamp())
+            time_difference = timestamp_column.apply(lambda x: datetime.fromtimestamp(x))[data['time'].first_valid_index()]\
+            - data['time'][data['time'].first_valid_index()]
+            data['time'] = data['time'].apply(lambda x: x.timestamp())
+        else:
+            warnings.warn('Please rename the time column to "time".')
+
+
     # Interpolating record data
     if method != "polynomial" and method != "spline":
         interp = data.interpolate(limit=limit,
@@ -54,7 +68,11 @@ def interpolate(data,
                                   limit_direction=limit_direction,
                                   inplace=inplace,
                                   method=method,
-                                  order = order)
+                                  order=order)
+    # convert time column back to date
+    if date_format:
+        interp['time'] = interp['time'].apply(lambda x: datetime.fromtimestamp(x)) - time_difference
+
     return interp
 
 
@@ -82,7 +100,8 @@ def preprocess(data,
                limit=1,
                limit_direction="forward",
                inplace=False,
-               method="linear"):
+               method="linear",
+               date_format = False):
     """
     Function to perform data preprocessing.
 
@@ -95,6 +114,7 @@ def preprocess(data,
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
     :param method: Interpolation technique to use. Default is "linear".
     :param order: To be used in case of polynomial interpolation.
+    :param date_format: Boolean to define whether time is some kind of date format. Important for interpolation.
     :return: Preprocessed DataFrame.
     """
     # Print the number of missing values per column
@@ -106,7 +126,8 @@ def preprocess(data,
                            limit=limit,
                            limit_direction=limit_direction,
                            inplace=inplace,
-                           method=method)
+                           method=method,
+                           date_format = date_format)
 
     # Drop columns with  missing values for 'time'  and 'animal_id'
 
