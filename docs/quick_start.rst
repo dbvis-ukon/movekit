@@ -34,7 +34,7 @@ Preprocess your data with options to drop columns with missing values or interpo
 
 .. code-block:: python
 
-   clean_data = mkit.preprocess(data, dropna=True, interpolation=False, limit=1, limit_direction='forward', inplace=False, method='linear')
+   clean_data = mkit.preprocess(data, dropna=True, interpolation=False, limit=1, limit_direction='forward', inplace=False, method='linear', order=1, date_format=False)
 
 *****
 Some additional methods to reduce data size
@@ -86,7 +86,7 @@ With missing data can be dealt using interpolation (see also general method `pre
 
 .. code-block:: python
 
-    interpolated_data = mkit.interpolate(data,limit=1,limit_direction="forward",inplace=False,method="linear",order=1)
+    interpolated_data = mkit.interpolate(data,limit=1,limit_direction="forward",inplace=False,method="linear",order=1, date_format=False)
 
 To get an overview over the missing data there are two methods one can apply.
 
