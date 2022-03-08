@@ -32,11 +32,16 @@ Contents
 
    Quick Start <quick_start>
    Data Cleaning <examples/01_data_cleaning>
-   Feature Extraction <examples/02_extract_features>
-   Group Feature Extraction <examples/03_group_features>
-   Spatial Analysis <examples/04_spatial_analysis>
-   Network Analysis <examples/05_network_analysis>
-   Cluster Analysis <examples/06_clustering>
+   Feature Extraction <features.rst>
+   Feature Extraction Notebook <examples/02_extract_features>
+   Group Features <group_features.rst>
+   Group Feature Extraction Notebook <examples/03_group_features>
+   Spatial Analysis <spatial_analysis.rst>
+   Spatial Analysis Notebook <examples/04_spatial_analysis>
+   Network Analysis <network.rst>
+   Network Analysis Notebook <examples/05_network_analysis>
+   Spatio-Temporal Clustering <clustering.rst>
+   Cluster Analysis Notebook <examples/06_clustering>
    License <license>
    Authors <authors> 
    Changelog <changelog>

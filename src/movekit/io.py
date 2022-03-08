@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
+import warnings
 
 def parse_csv(path_to_file):
     """
@@ -36,6 +37,16 @@ def parse_csv(path_to_file):
                                  ascending=True,
                                  inplace=True)
                 data.drop(data.filter(regex="unname"), axis=1, inplace=True)
+            # check if 'x' and 'y' are numeric-
+            if not is_numeric_dtype(data['x']):
+                warnings.warn(
+                    "'x' attribute has to be of numeric data type for most of the analyses to be performed"
+                )
+            if not is_numeric_dtype(data['y']):
+                warnings.warn(
+                    "'y' attribute has to be of numeric data type for most of the analyses to be performed"
+                )
+
             # Check if 'heading_angle' attribute is given in CSV file-
             if 'heading_angle' in data and np.issubdtype(
                     data['heading_angle'].dtype, np.number):
@@ -53,19 +64,20 @@ def parse_csv(path_to_file):
 
 
 
-def parse_excel(path_to_file):
+def parse_excel(path_to_file, sheet):
     """
     Read Excel file into Pandas DataFrame
 
     :param path_to_file: Complete path/relative path to Excel file along with file name
+    :param sheet: name of specific sheet given, by default first sheet of the excel workbook
     :return: Pandas DataFrame containing imported data.
     """
     try:
 
         if path_to_file[-3:] == 'xls' or path_to_file[-4:] == 'xlsx':
-            data = pd.read_excel(path_to_file)
+            data = pd.read_excel(path_to_file, sheet)
         else:
-            data = pd.read_excel(path_to_file + '.xlsx')
+            data = pd.read_excel(path_to_file + '.xlsx', sheet)
 
         if data.empty:
             raise EmptyDataError
@@ -88,6 +100,15 @@ def parse_excel(path_to_file):
                 data.sort_values(['time', 'animal_id'],
                                  ascending=True,
                                  inplace=True)
+            # check if 'x' and 'y' are numeric-
+            if not is_numeric_dtype(data['x']):
+                warnings.warn(
+                    "'x' attribute has to be of numeric data type for most of the analyses to be performed"
+                )
+            if not is_numeric_dtype(data['y']):
+                warnings.warn(
+                    "'y' attribute has to be of numeric data type for most of the analyses to be performed"
+                )
 
             # Check if 'heading_angle' attribute is given in CSV file-
             if 'heading_angle' in data and np.issubdtype(
@@ -104,11 +125,12 @@ def parse_excel(path_to_file):
             path_to_file))
 
 
-def read_data(path):
+def read_data(path, sheet = 0):
     """
     Containing all of Input Output (IO) functions as function arguments (which by default are False).
 
     :param path: Complete path/relative path to Excel file along with file name
+    :param sheet: name of specific sheet given, by default first sheet of the excel workbook
     :return: Pandas DataFrame containing imported data.
     """
     # Call appropriate IO function based on file extension
@@ -119,4 +141,8 @@ def read_data(path):
 
         return parse_csv(path)
     elif file_split[-1] == 'xlsx':
-        return parse_excel(path)
+        return parse_excel(path, sheet)
+    elif file_split[-1] == 'xls':
+        return parse_excel(path, sheet)
+    else:
+        raise ValueError(f'File extension {file_split[-1]} can not be imported. Imported file has to be of type ".csv" or ".xlsx" or ".xls".')

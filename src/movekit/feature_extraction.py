@@ -30,7 +30,7 @@ def grouping_data(processed_data, pick_vars=None):
 
     # Get each animal_id's data from grouping performed-
     for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
+        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id).copy()
 
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
@@ -316,7 +316,7 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
 
-    with tqdm(total=100, position=0) as pbar:  # to implement percentage loading bar
+    with tqdm(total=100, position=0, desc="Extracting all absolute features") as pbar:  # to implement percentage loading bar
         tmp_data = grouping_data(data)
         pbar.update(10)  # first part takes about 10 % of the time
         tmp_data = compute_distance(tmp_data)
@@ -350,12 +350,7 @@ def computing_stops(data_animal_id_groups, threshold_speed):
             data_animal_id_groups[aid]['average_speed'] <= threshold_speed, 1,
             0)
     return data_animal_id_groups
-    '''
-    data_animal_id_groups['stopped'] = np.where(
-        data_animal_id_groups['average_speed'] <= threshold_speed, 1, 0)
 
-    return data_animal_id_groups
-    '''
 
 
 def distance_by_time(data, frm, to):
@@ -447,7 +442,7 @@ def centroid_medoid_computation(data,
     # Dictionary to hold grouped data by 'time' attribute-
     data_groups_time = {}
 
-    for aid in tqdm(data_time.groups.keys(),position=0):
+    for aid in tqdm(data_time.groups.keys(),position=0, desc="Calculating centroid distances"):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
@@ -573,7 +568,7 @@ def compute_similarity(data, weights, p=2):
     # compute the distance for each time moment
     df2 = normalized_df.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
-    for start in tqdm(df2.groups.keys(),position=0):
+    for start in tqdm(df2.groups.keys(),position=0, desc="Computing euclidean distance"):
         groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w, p=p)  # calculate distance for each time period
         df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
 
@@ -645,7 +640,7 @@ def ts_feature(data, feature):
         return
 
 
-def explore_features(data):
+def explore_features(data):  # why is this function not in _init_?
     """
     Show percentage of environment space explored by singular animal.
     Using minumum and maximum of 2-D coordinates, given by 'x' and 'y' features in input DataFrame.
@@ -701,7 +696,7 @@ def explore_features_geospatial(preprocessed_data):
     :param preprocessed_data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
-    with tqdm(total=100,position=0) as pbar:
+    with tqdm(total=100,position=0, desc="Calculating covered areas") as pbar:
 
         # Create dictionary, grouping records by animal ID as key
         data_groups = grouping_data(preprocessed_data)
@@ -792,4 +787,7 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     else:
         dataset.insert(2, "outlier", scores_pred)
     return dataset
+
+
+
 
