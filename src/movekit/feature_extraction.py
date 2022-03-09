@@ -29,8 +29,11 @@ def grouping_data(processed_data, pick_vars=None):
     data_animal_id_groups = {}
 
     # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id).copy()
+    #for animal_id in data_animal_id.groups.keys():
+    #    data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
+
+    for animal_id, df in data_animal_id:
+        data_animal_id_groups[animal_id] = df
 
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
