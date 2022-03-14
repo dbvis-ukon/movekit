@@ -13,4 +13,4 @@ def angle(vec1, vec2):
         cos = 1
     elif cos < -1:
         cos = -1
-    return np.arccos(cos)
+    return np.rad2deg(np.arccos(cos))
