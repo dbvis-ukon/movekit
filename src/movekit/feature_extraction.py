@@ -14,10 +14,11 @@ from .utils import presence_3d, angle
 from tqdm import tqdm
 
 
-def grouping_data(processed_data, pick_vars=None):
+def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
     """
     Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
+    :param preprocessedMethod: Boolean whether calling method is from preprocessing to check whether columns for features are added.
     :return: dictionary with 'animal_id' as key and all records as value.
     """
 
@@ -38,8 +39,7 @@ def grouping_data(processed_data, pick_vars=None):
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-    if list(processed_data.columns.values) == list(
-            ['time', 'animal_id', 'x', 'y']):
+    if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']) and not preprocessedMethod:
         # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
             data = [None for x in range(data_animal_id_groups[aid].shape[0])]
