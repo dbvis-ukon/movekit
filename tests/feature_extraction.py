@@ -570,7 +570,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		case = regrouping_data(inp)
 		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
-	def test_eucledian_dist(self):
+	def test_eucledian_dist(self):  # test fails because in ref we use the old function with errors (f.e. distance is calculated with normalized values)
 		"""
 		Testing euclidean distance calculation. Result of function on records data set is compared with reference over
 		all columns.
