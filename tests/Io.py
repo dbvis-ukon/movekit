@@ -60,7 +60,7 @@ class Test_IO(unittest.TestCase):
                      9: 451.76, 10: 451.76}})
         path = '../tests/data/fish-5_time.xlsx'
 
-        df = parse_excel(path)
+        df = parse_excel(path, sheet=0)
         pd.testing.assert_frame_equal(ref, df.head(11))
 
     def test_read_csv_file_without_suffix(self):
@@ -92,23 +92,23 @@ class Test_IO(unittest.TestCase):
                                   7: 405.89, 8: 412.26, 9: 451.76, 10: 417.07}})
         path = '../tests/data/fish-5.xlsx'
 
-        df = parse_excel(path)
+        df = parse_excel(path, sheet=0)
         pd.testing.assert_frame_equal(ref, df.head(11))
 
     def test_read_excel_file_without_suffix(self):
         path = '../tests/data/fish-5'
 
-        df = parse_excel(path)
+        df = parse_excel(path, sheet=0)
         self.assertEqual(len(df.index), 50)
 
     def test_read_excel_file_empty(self):
         path = '../tests/data/empty.xlsx'
 
-        self.assertRaises(EmptyDataError, lambda: parse_excel(path))
+        self.assertRaises(EmptyDataError, lambda: parse_excel(path, sheet=0))
 
     def test_read_excel_file_missing_header(self):
         path = '../tests/data/missing-header.xlsx'
-        self.assertRaises(ValueError, lambda: parse_excel(path))
+        self.assertRaises(ValueError, lambda: parse_excel(path, sheet=0))
 
     def test_csv_excel_equal(self):
         '''
@@ -125,10 +125,10 @@ class Test_IO(unittest.TestCase):
         excel_time_path = '../tests/data/fish-5_time.xlsx'
 
         df1 = parse_csv(csv_path)
-        df2 = parse_excel(excel_path)
+        df2 = parse_excel(excel_path, sheet=0)
 
         df3 = parse_csv(csv_time_path)
-        df4 = parse_excel(excel_time_path)
+        df4 = parse_excel(excel_time_path, sheet=0)
 
         pd.testing.assert_frame_equal(df1, df2)
         pd.testing.assert_frame_equal(df3, df4)

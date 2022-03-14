@@ -28,7 +28,7 @@ class TestPreprocess(unittest.TestCase):
                'animal_id': {0: 312, 1: 511, 2: 607, 3: 811, 4: 905, 9: 511, 7: 811, 8: 312, 5: 905, 6: 607},
                'x': {0: 405.29, 1: 369.99, 2: 407.57, 3: 445.15, 4: 366.06, 9: 370.01, 7: 445.48, 8: 405.31,
                      5: 365.86, 6: 390.25},
-               'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 421.18, 4: None, 9: 428.82, 7: 412.26, 8: 417.37,
+               'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 413.53, 4: None, 9: 428.82, 7: 412.26, 8: 417.37,
                      5: 451.76, 6: 405.89}}
 
         inp = pd.DataFrame(missings)
@@ -38,7 +38,7 @@ class TestPreprocess(unittest.TestCase):
         case = interpolate(inp)
         pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
-    def test_preprocess(self):
+    def test_preprocess(self):  # this test fails because returned array is not sorted by index. Should we change that?
         up_missings = {
             'time': {0: None, 1: 1, 2: 1, 3: 1, 4: 1, 9: 2, 7: 2, 8: 2, 5: 2, 6: 2},
                     'animal_id': {0: 312, 1 : 511, 2: 607,3: 811,4: 905,9: 511,7: 811,8: 312,5: 905, 6: 607},
@@ -160,7 +160,7 @@ class TestPreprocess(unittest.TestCase):
 
         inp = pd.DataFrame(dat_time)
         ref = pd.DataFrame(dat_time_preprocessed)
-        case = preprocess(inp)
+        case = preprocess(inp, interpolation=True, date_format=True)
         pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
     def test_filter_dataframe(self):

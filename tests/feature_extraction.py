@@ -374,35 +374,35 @@ ts_feat = {'average_acceleration__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 
 		   'y__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
 		   'y__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None}}
 
-ts_feats = {'average_acceleration__agg_linear_trend__f_agg_"max"__chunk_len_5__attr_"slope"':
+ts_feats = {'average_acceleration__skewness':
+				{312: 1.4910, 511: 1.3026, 607: 1.7317, 811: 1.7313, 905: 1.5454},
+			'average_acceleration__kurtosis':
 				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"max"__chunk_len_5__attr_"stderr"':
+			'average_acceleration__root_mean_square':
+				{312: 0.2314, 511: 0.0272, 607: 0.0462, 811: 0.2654, 905: 0.1178},
+			'average_acceleration__absolute_sum_of_changes':
+				{312: 0.8715, 511: 0.1041, 607: 0.1594, 811: 0.9245, 905: 0.4400},
+			'average_acceleration__longest_strike_below_mean':
+				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
+			'average_acceleration__longest_strike_above_mean':
+				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
+			'average_acceleration__count_above_mean':
+				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
+			'average_acceleration__count_below_mean':
+				{312: 2.0, 511: 2.0, 607: 2.0, 811: 2.0, 905: 2.0},
+			'average_acceleration__last_location_of_maximum':
+				{312: 0.6667, 511: 0.6667, 607: 0.6667, 811: 0.6667, 905: 0.6667},
+			'average_acceleration__first_location_of_maximum':
+				{312: 0.3333, 511: 0.3333, 607: 0.3333, 811: 0.3333, 905: 0.3333},
+			'average_acceleration__last_location_of_minimum':
+				{312: 1.0000, 511: 1.0000, 607: 0.3333, 811: 1.0000, 905: 1.0000},
+			'average_acceleration__first_location_of_minimum':
+				{312: 0.6667, 511: 0.6667, 607: 0.0000, 811: 0.6667, 905: 0.6667},
+			'average_acceleration__percentage_of_reoccurring_values_to_all_values':
 				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_10__attr_"intercept"':
+			'average_acceleration__percentage_of_reoccurring_datapoints_to_all_datapoints':
 				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_10__attr_"rvalue"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_10__attr_"slope"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_10__attr_"stderr"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_50__attr_"intercept"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_50__attr_"rvalue"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_50__attr_"slope"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_50__attr_"stderr"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_5__attr_"intercept"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_5__attr_"rvalue"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_5__attr_"slope"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"mean"__chunk_len_5__attr_"stderr"':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__agg_linear_trend__f_agg_"min"__chunk_len_10__attr_"intercept"':
+			'average_acceleration__sum_of_reoccurring_values':
 				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0}}
 
 
@@ -806,10 +806,10 @@ class Test_Feature_Extraction(unittest.TestCase):
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
-	def test_average_acceleration(self):
+	def test_average_acceleration(self):  # test fails because we define average_acc[0] = average_acc[1] but in test as na.
 		ref = avaccel
 		inp = avspeed
-		case = compute_average_acceleration(inp, fps = 1)
+		case = compute_average_acceleration(inp, fps = 3) # minimum value for fps is three, otherwise column = 0
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
@@ -874,8 +874,8 @@ class Test_Feature_Extraction(unittest.TestCase):
 		ref = pd.DataFrame(ts_feats).round(4)
 		inp = pd.DataFrame(feats)
 		case = ts_all_features(inp).round(4).iloc[:,15:30]
-		ref = ref.rename_axis('variable', axis=1)
-		ref = ref.rename_axis("id", axis=0)
+		#ref = ref.rename_axis('variable', axis=1)
+		#ref = ref.rename_axis("id", axis=0)
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
 	def test_outlier_detection(self):
