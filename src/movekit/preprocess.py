@@ -173,7 +173,7 @@ def filter_dataframe(data, frm, to):
     Extract records of assigned time frame from preprocessed movement record data.
 
     :param data: Pandas DataFrame, containing preprocessed movement record data.
-    :param frm: Int, defining starting point from where to extract records.
+    :param frm: Int, defining starting point from where to extract records.Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.filter_dataframe(data, 2008-01-01, 2010-10-01)
     :param to: Int, defining end point up to where to extract records.
     :return: Pandas DataFrame, filtered by records matching the defined frame in 'from'-'to'.
     """

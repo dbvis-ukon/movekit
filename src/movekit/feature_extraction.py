@@ -360,7 +360,8 @@ def distance_by_time(data, frm, to):
     """
     Computes the distance between positions for a particular time window for all movers.
     :param data: pandas DataFrame with all records of movements.
-    :param frm: int defining the start of the time window
+    :param frm: int defining the start of the time window. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.distance_by_time(data, 2008-01-01, 2010-10-01)
+    :param to: Int, defining end point up to where to extract records.
     :param to: int defining the end of the time window (inclusive)
     :return: pandas DataFrame with animal_id and distance
     """

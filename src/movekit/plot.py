@@ -10,7 +10,7 @@ def plot_movement(data, frm, to):
     Plot 'x' and 'y' attributes for given Pandas DataFrame in specified time frame.
 
     :param data: Pandas DataFrame (should be sorted by 'time' attribute).
-    :param frm: Starting from time step.
+    :param frm: Starting from time step. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.plot_movement(data, 2008-01-01, 2010-10-01)
     :param to: Ending to time step.
     :return: None.
     """
