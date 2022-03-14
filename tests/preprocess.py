@@ -40,12 +40,10 @@ class TestPreprocess(unittest.TestCase):
 
     def test_preprocess(self):  # this test fails because returned array is not sorted by index. Should we change that?
         up_missings = {
-            'time': {0: None, 1: 1, 2: 1, 3: 1, 4: 1, 9: 2, 7: 2, 8: 2, 5: 2, 6: 2},
-                    'animal_id': {0: 312, 1 : 511, 2: 607,3: 811,4: 905,9: 511,7: 811,8: 312,5: 905, 6: 607},
-                    'x': {0: 405.29, 1: 369.99, 2: None, 3: 445.15, 4: 366.06, 9: 370.01, 7: 445.48, 8: 405.31,
-                          5: 365.86, 6: 390.25},
-                    'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: None, 4: None, 9: 428.82, 7: 412.26, 8: 417.37,
-                          5: 451.76, 6: 405.89}}
+            'time': {0: None, 1: 1, 2: 1, 3: 1, 4: 1,5: 2, 6: 2, 7: 2, 8: 2, 9: 2},
+                    'animal_id': {0: 312, 1 : 511, 2: 607,3: 811,4: 905,5: 905,6: 607,7: 811,8: 312,9: 511},
+                    'x': {0: 405.29, 1: 369.99, 2: None, 3: 445.15, 4: 366.06,5: 365.86, 6: 390.25, 7: 445.48, 8: 405.31, 9: 370.01},
+                    'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: None, 4: None,5: 451.76, 6: 405.89, 7: 412.26, 8: 417.37, 9: 428.82}}
         preprocessed = {'time': {1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 2.0, 6: 2.0, 7: 2.0, 8: 2.0, 9: 2.0},
                         'animal_id': {1: 511, 2: 607, 3: 811, 4: 905, 5: 905, 6: 607, 7: 811, 8: 312, 9: 511},
                         'x': {1: 369.99, 2: 407.57, 3: 445.15, 4: 366.06, 5: 365.86, 6: 390.25, 7: 445.48, 8: 405.31,
@@ -54,7 +52,7 @@ class TestPreprocess(unittest.TestCase):
 
         inp = pd.DataFrame(up_missings)
         ref = pd.DataFrame(preprocessed)
-        case = preprocess(inp)
+        case = preprocess(inp, interpolation=True)
         pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
     def test_preprocess_time(self):
@@ -293,12 +291,17 @@ class TestPreprocess(unittest.TestCase):
             'direction': {0: None, 1: None, 2: None},
             'stopped': {0: None, 1: None, 2: None}})}
 
-        inp = dict_groups
+        inp = pd.DataFrame()
+        for key in dict_groups.keys():
+            inp = pd.concat([inp, dict_groups[key]])
 
-        ref = dict_replaced
+        ref = pd.DataFrame()
+        for key in dict_replaced.keys():
+            ref = pd.concat([ref, dict_replaced[key]], ignore_index=True)
+
         arr_index = np.array([0,1,2])
         case = replace_parts_animal_movement(inp, 811, arr_index, replacement_value_x = 100, replacement_value_y = 90)
-        pd.testing.assert_frame_equal(ref[811],case[811], check_dtype=False)
+        pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
     def test_resample_systematic(self):
         dict_groups = {
@@ -405,11 +408,17 @@ class TestPreprocess(unittest.TestCase):
             'direction': {0: None},
             'stopped': {0: None}})}
 
-        inp = dict_groups
-        ref = resamples
+        inp = pd.DataFrame()
+        for key in dict_groups.keys():
+            inp = pd.concat([inp, dict_groups[key]])
+
+        ref = pd.DataFrame()
+        for key in resamples.keys():
+            ref = pd.concat([ref, resamples[key]], ignore_index=True)
+
         case = resample_systematic(inp, 1)
-        for i in ref.keys():
-            self.assertTrue((ref[i].all() == case[i].all()).all(), "Results don't match")
+
+        pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
 
     def test_resample_random(self):
@@ -465,11 +474,13 @@ class TestPreprocess(unittest.TestCase):
                                   'direction': {0: None, 1: None, 2: None},
                                   'stopped': {0: None, 1: None, 2: None}})}
 
+        inp = pd.DataFrame()
+        for key in dict_groups.keys():
+            inp = pd.concat([inp, dict_groups[key]])
 
-        inp = dict_groups
         case = resample_random(inp, 10)
-        for i in case.keys():
-            self.assertEqual(len(case[i]), 10, "Results don't match")
+        for i in dict_groups.keys():
+            self.assertEqual(len(case[case['animal_id'] == i]), 10, "Results don't match")
 
     def test_split_trajectories(self):
         dict_groups = {
@@ -569,7 +580,9 @@ class TestPreprocess(unittest.TestCase):
                                                    'average_acceleration': {0: None, 1: None, 2: None},
                                                    'direction': {0: None, 1: None, 2: None},
                                                    'stopped': {0: None, 1: None, 2: None}} )}
-        inp = dict_groups
+        inp = pd.DataFrame()
+        for key in dict_groups.keys():
+            inp = pd.concat([inp, dict_groups[key]])
         ref = split_traj
         case = split_trajectories(inp, 1)
         for i in ref.keys():
