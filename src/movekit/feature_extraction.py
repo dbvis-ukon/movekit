@@ -563,13 +563,14 @@ def compute_similarity(data, weights, p=2):
             w.append(weights[key])
 
     # normalize the data frame
-    normalized_df = (df - df.min()) / (df.max() - df.min())
+    #normalized_df = (df - df.min()) / (df.max() - df.min())
 
     # add the columns time and animal id to the window needed for group by and the column generation
-    normalized_df[not_allowed_keys] = data[not_allowed_keys]
+    #normalized_df[not_allowed_keys] = data[not_allowed_keys]
 
     # compute the distance for each time moment
-    df2 = normalized_df.groupby('time')
+    #df2 = normalized_df.groupby('time')
+    df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(),position=0, desc="Computing euclidean distance"):
         groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w, p=p)  # calculate distance for each time period
@@ -593,7 +594,7 @@ def similarity_computation(group, w, p):
     # ids of each animal
     ids = group['animal_id'].tolist()
     # compute and assign the distances for each time step
-    return pd.DataFrame(squareform(pdist(group, 'wminkowski', p=p, w=w)),
+    return pd.DataFrame(squareform(pdist(group.loc[:,['x','y']], 'minkowski', p=p)),
                         index=group.index,
                         columns=ids)
 
