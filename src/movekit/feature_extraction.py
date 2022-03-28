@@ -12,6 +12,7 @@ from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
 from .utils import presence_3d, angle
 from tqdm import tqdm
+import math
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -121,15 +122,14 @@ def regrouping_data(data_animal_id_groups):
 #             columns={'inp': colname})
 #     return data_animal_id_groups
 
-
+"""
 def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
-    """
     Computes the angle of rotation of an animal between two timesteps
     :param data_animal_id_groups: dictionary ordered by 'animal_id'
     :param pbar: percentage bar filled with 10% already
     :param colname: the name to appear in the new DataFrame
     :return: dictionary containing computed 'distance' attribute
-    """
+    
     percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
 
     # take the first dataframe to check the 3d presence
@@ -155,6 +155,31 @@ def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', par
         pbar.update(percent_update)
 
     return data_animal_id_groups
+"""
+
+"""
+def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
+    Computes the angle of rotation of an animal between two timesteps
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'
+    :param pbar: percentage bar filled with 10% already
+    :param colname: the name to appear in the new DataFrame
+    :return: dictionary containing computed 'distance' attribute as angle from 0-360 degrees (x-axis to the right is 0 degrees)
+"""
+def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
+    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
+    # iterate over movers
+    for aid in data_animal_id_groups.keys():
+        data_animal_id_groups[aid]['y_change'] = data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1)  # change of y and x coordinate to create direction vector
+        data_animal_id_groups[aid]['x_change'] = data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1)
+        data_animal_id_groups[aid][colname] = data_animal_id_groups[aid]['y_change'] / data_animal_id_groups[aid]['x_change']  # formula: tan^(-1) (y_change / x_change) = angle of direction change
+        data_animal_id_groups[aid][colname] = data_animal_id_groups[aid][colname].apply(lambda x: math.degrees(math.atan(x)))  # convert angle to degrees
+        data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle if movement is to upper  left or lower right
+        data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] >= 0), colname] = 360 + data_animal_id_groups[aid][colname]
+        data_animal_id_groups[aid].loc[0, [colname]] = 0  # direction for first timestamp is 0
+        data_animal_id_groups[aid].drop(['y_change', 'x_change'], inplace=True, axis=1)
+        pbar.update(percent_update)
+    return data_animal_id_groups
+
 
 
 def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
@@ -792,7 +817,3 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     else:
         dataset.insert(2, "outlier", scores_pred)
     return dataset
-
-
-
-
