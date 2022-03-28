@@ -38,7 +38,7 @@ class TestPreprocess(unittest.TestCase):
         case = interpolate(inp)
         pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
-    def test_preprocess(self):  # this test fails because returned array is not sorted by index. Should we change that?
+    def test_preprocess(self):
         up_missings = {
             'time': {0: None, 1: 1, 2: 1, 3: 1, 4: 1,5: 2, 6: 2, 7: 2, 8: 2, 9: 2},
                     'animal_id': {0: 312, 1 : 511, 2: 607,3: 811,4: 905,5: 905,6: 607,7: 811,8: 312,9: 511},
