@@ -92,7 +92,7 @@ def regrouping_data(data_animal_id_groups):
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
-    result.sort_values(['animal_id', 'time'], ascending=True, inplace=True)
+    result.sort_values(['time','animal_id'], ascending=True, inplace=True)
     # Reset index-
     result.reset_index(drop=True, inplace=True)
     return result
