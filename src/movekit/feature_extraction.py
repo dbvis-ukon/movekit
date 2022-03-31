@@ -10,7 +10,7 @@ from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
-from .utils import presence_3d, angle
+from .utils import presence_3d, angle, cosine_similarity
 from tqdm import tqdm
 import math
 
@@ -157,39 +157,124 @@ def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', par
     return data_animal_id_groups
 """
 
-"""
-def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
-    Computes the angle of rotation of an animal between two timesteps
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'
-    :param pbar: percentage bar filled with 10% already
-    :param colname: the name to appear in the new DataFrame
-    :return: dictionary containing computed 'distance' attribute as angle from 0-360 degrees (x-axis to the right is 0 degrees)
-"""
-def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
-    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
+
+def compute_direction_angle(data, param_x='x', param_y='y', param_z='z', colname='direction_angle'):
+    """
+        Computes the angle of rotation of an animal between two timesteps. Only possible if coordinates are 2D only.
+        :param data: dataframe containing the movement records
+        :param param_x: column name of the x coordinate
+        :param param_y: column name of the y coordinate
+        :param param_z: column name of the z coordinate
+        :param colname: the name to appear in the new DataFrame for the direction angle computed.
+        :return: dataframe containing computed 'direction_angle' as angle from 0-360 degrees (x-axis to the right is 0 degrees)
+    """
+
+    data_animal_id_groups = grouping_data(data)
+
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+        warnings.warn('The direction angle can only be calculated for two-dimensional coordinate data. The dataframe given to the function has more than two dimensions.')
+    else:
+        # iterate over movers
+        for aid in data_animal_id_groups.keys():
+            data_animal_id_groups[aid]['y_change'] = data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1)  # change of y and x coordinate to create direction vector
+            data_animal_id_groups[aid]['x_change'] = data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1)
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid]['y_change'] / data_animal_id_groups[aid]['x_change']  # formula: tan^(-1) (y_change / x_change) = angle of direction change
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid][colname].apply(lambda x: math.degrees(math.atan(x)))  # convert angle to degrees
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle if movement is to upper  left or lower right
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] >= 0), colname] = 360 + data_animal_id_groups[aid][colname]
+            data_animal_id_groups[aid].loc[0, [colname]] = 0  # direction for first timestamp is 0
+            data_animal_id_groups[aid].drop(['y_change', 'x_change'], inplace=True, axis=1)
+        data = regrouping_data(data_animal_id_groups)
+    return data
+
+
+def compute_turning_angle(data, colname='turning_angle', direction_angle_name='direction_angle'):
+    """
+    Computes the turning angle for a mover between two timesteps as the difference of its direction angle. Only possible for 2D data.
+    :param data: dataframe containing the movement records.
+    :param colname: the name of the new column to be added.
+    :param direction_angle_name: the name of the column containg the direction angle for each movement record.
+    :return: dataframe containing an additional column with the difference in degrees between current and previous timestamp for each record.
+    Note that difference can not be higher than +-180 degrees.
+    """
+
+    # when differences exceed |180| convert values so that they stay in the domain -180 +180
+    boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
+    vboundary = np.vectorize(boundary)
+
+    # check dataframe if data contains direction_angle column
+    if direction_angle_name not in data.columns:
+        warnings.warn('As it is needed to calculate the turning angle at first the direction angle has to be computed.')
+        data = compute_direction_angle(data)
+
+    data_animal_id_groups = grouping_data(data)
     # iterate over movers
     for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid]['y_change'] = data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1)  # change of y and x coordinate to create direction vector
-        data_animal_id_groups[aid]['x_change'] = data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1)
-        data_animal_id_groups[aid][colname] = data_animal_id_groups[aid]['y_change'] / data_animal_id_groups[aid]['x_change']  # formula: tan^(-1) (y_change / x_change) = angle of direction change
-        data_animal_id_groups[aid][colname] = data_animal_id_groups[aid][colname].apply(lambda x: math.degrees(math.atan(x)))  # convert angle to degrees
-        data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle if movement is to upper  left or lower right
-        data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] >= 0), colname] = 360 + data_animal_id_groups[aid][colname]
-        data_animal_id_groups[aid].loc[0, [colname]] = 0  # direction for first timestamp is 0
-        data_animal_id_groups[aid].drop(['y_change', 'x_change'], inplace=True, axis=1)
+        turning_angles = data_animal_id_groups[aid][direction_angle_name] - data_animal_id_groups[aid][direction_angle_name].shift(
+            periods=1)  # calculate difference in direction angle between current and previous timestamp
+        turning_angles = vboundary(turning_angles)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            inp=turning_angles)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
+            columns={'inp': colname})
+    data = regrouping_data(data_animal_id_groups)
+    return data
+
+
+
+
+def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
+    """
+    Computes the movement vector for each timestamp by checking the difference of the coordinates to the previous timestamp.
+    :param data_animal_id_groups: dictionary containing the data frames for each animal
+    :param pbar: percentage bar filled with 10% already
+    :param param_x: column name of the x coordinate
+    :param param_y: column name of the y coordinate
+    :param param_z: column name of the z coordinate
+    :param colname: the name to appear in the new DataFrame for the calculated direction
+    :return: dictionary containing computed 'direction' attribute
+    """
+
+    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
+
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+    else:
+        is_3d = False
+
+    # iterate over movers
+    for aid in data_animal_id_groups.keys():
+        if is_3d:
+            data_animal_id_groups[aid]['x_change'] = round(data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1),4)
+            data_animal_id_groups[aid]['y_change'] = round(data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1),4)
+            data_animal_id_groups[aid]['z_change'] = round(data_animal_id_groups[aid][param_z] - data_animal_id_groups[aid][param_z].shift(periods=1),4)
+            data_animal_id_groups[aid].loc[0, 'x_change'], data_animal_id_groups[aid].loc[0,'y_change'], data_animal_id_groups[aid].loc[0,'z_change'] = 0,0,0
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid].apply(lambda row: (row.x_change, row.y_change, row.z_change), axis=1)
+            data_animal_id_groups[aid].drop(['x_change', 'y_change', 'z_change'], inplace=True, axis=1)
+
+        else:
+            data_animal_id_groups[aid]['x_change'] = round(data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1),4)
+            data_animal_id_groups[aid]['y_change'] = round(data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1),4)
+            data_animal_id_groups[aid].loc[0, 'x_change'], data_animal_id_groups[aid].loc[0,'y_change']= 0,0
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid].apply(lambda row: (row.x_change, row.y_change), axis=1)
+            data_animal_id_groups[aid].drop(['x_change', 'y_change'], inplace=True, axis=1)
+
         pbar.update(percent_update)
+
     return data_animal_id_groups
 
-
-
+"""
 def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
-    """
+    
     Computes the turning angle for a mover between two timesteps as the difference of its direction
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :param param_direction: Column name to be recognized as direction. Default "direction".
     :param colname: the new column to be added
     :return: data_animal_id_groups
-    """
+    
 
     # when differences exceed |180| convert values so that they stay in the domain -180 +180
     boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
@@ -205,6 +290,21 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
             inp=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
             columns={'inp': colname})
+    return data_animal_id_groups
+"""
+
+def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
+    """
+    Computes the turning for a mover between two timesteps as the cosine similarity between its direction vectors.
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :param param_direction: Column name to be recognized as direction. Default "direction".
+    :param colname: the name of the new column added  which contains the computed cosine similarity.
+    :return: data_animal_id_groups
+    """
+    for aid in data_animal_id_groups.keys():
+        cos_similarities = [cosine_similarity(data_animal_id_groups[aid][param_direction][i], data_animal_id_groups[aid][param_direction][i + 1]) for i in range(0, len(data_animal_id_groups[aid][param_direction]) - 1)]  # cosine similarity for direction vectors of two following timestamps
+        cos_similarities.insert(0, 0)  # first entry has no previous entry -> cosine similarity can not be calculated and value is set to 0
+        data_animal_id_groups[aid][colname] = cos_similarities
     return data_animal_id_groups
 
 
