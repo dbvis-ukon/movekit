@@ -730,12 +730,12 @@ def similarity_computation(group, w, p):
 def ts_all_features(data):
     """
     Perform time series analysis on record data.
-    Remove the column 'stopped' as it has nominal values
+    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :return: pandas DataFrame, containing autocorrelation for each id for each feature.
     """
 
-    rm_colm = ['stopped']
+    rm_colm = ['stopped','direction']
     df = data[data.columns.difference(rm_colm)]
 
     time_series_features = tsfresh.extract_features(df,
@@ -750,6 +750,7 @@ def ts_all_features(data):
 def ts_feature(data, feature):
     """
     Perform time series analysis on specified feature of record data.
+    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :param feature: feature to perform time series analysis on
     :return: pandas DataFrame, containing autocorrelation for each id for defined feature.
@@ -759,13 +760,15 @@ def ts_feature(data, feature):
         settings = {}
         settings[feature] = fc_parameters[feature]
 
-        rm_colm = ['stopped']
+        rm_colm = ['stopped','direction']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
             df,
             column_id='animal_id',
             column_sort='time',
             default_fc_parameters=settings)
+        time_series_features = time_series_features.rename_axis('variable', axis=1)  # rename axis
+        time_series_features = time_series_features.rename_axis("id", axis=0)
         return time_series_features
     else:
         print("Time series feature is not known.")
