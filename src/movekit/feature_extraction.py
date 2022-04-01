@@ -395,7 +395,8 @@ def compute_distance_and_direction(data_animal_id_groups): # TODO deprecate
 
 def compute_average_speed(data_animal_id_groups, fps):
     """
-    Compute average speed of an animal based on fps (frames per second) parameter.
+    Compute average speed of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
+    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
     Formula used Average Speed = Total Distance Travelled / Total Time taken;
     Use output of compute_distance_and_direction() function to this function.
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
@@ -411,7 +412,8 @@ def compute_average_speed(data_animal_id_groups, fps):
 
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
-    Compute average acceleration of an animal based on fps (frames per second) parameter.
+    Compute average acceleration of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
+    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
     Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
     Use output of compute_average_speed() function to this function.
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
@@ -426,7 +428,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         try:
             data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
                 min_periods=1, window=fps,
-                center=True).apply(lambda x: x[1] - x[0], raw=True).fillna(0)
+                center=True).apply(lambda x: (x[-1] - x[0]) / (fps-1), raw=True).fillna(0)
         except:
             data_animal_id_groups[aid]['average_acceleration'] = 0
 
