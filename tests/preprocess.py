@@ -298,6 +298,8 @@ class TestPreprocess(unittest.TestCase):
         ref = pd.DataFrame()
         for key in dict_replaced.keys():
             ref = pd.concat([ref, dict_replaced[key]], ignore_index=True)
+        ref.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
+        ref.reset_index(drop=True, inplace=True)
 
         arr_index = np.array([0,1,2])
         case = replace_parts_animal_movement(inp, 811, arr_index, replacement_value_x = 100, replacement_value_y = 90)
