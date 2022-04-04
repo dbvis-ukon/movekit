@@ -379,36 +379,16 @@ ts_feat = {'average_acceleration__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 
 		   'y__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
 		   'y__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None}}
 
-ts_feats = {'average_acceleration__skewness':
-				{312: 1.4910, 511: 1.3026, 607: 1.7317, 811: 1.7313, 905: 1.5454},
-			'average_acceleration__kurtosis':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__root_mean_square':
-				{312: 0.2314, 511: 0.0272, 607: 0.0462, 811: 0.2654, 905: 0.1178},
-			'average_acceleration__absolute_sum_of_changes':
-				{312: 0.8715, 511: 0.1041, 607: 0.1594, 811: 0.9245, 905: 0.4400},
-			'average_acceleration__longest_strike_below_mean':
-				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-			'average_acceleration__longest_strike_above_mean':
-				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-			'average_acceleration__count_above_mean':
-				{312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-			'average_acceleration__count_below_mean':
-				{312: 2.0, 511: 2.0, 607: 2.0, 811: 2.0, 905: 2.0},
-			'average_acceleration__last_location_of_maximum':
-				{312: 0.6667, 511: 0.6667, 607: 0.6667, 811: 0.6667, 905: 0.6667},
-			'average_acceleration__first_location_of_maximum':
-				{312: 0.3333, 511: 0.3333, 607: 0.3333, 811: 0.3333, 905: 0.3333},
-			'average_acceleration__last_location_of_minimum':
-				{312: 1.0000, 511: 1.0000, 607: 0.3333, 811: 1.0000, 905: 1.0000},
-			'average_acceleration__first_location_of_minimum':
-				{312: 0.6667, 511: 0.6667, 607: 0.0000, 811: 0.6667, 905: 0.6667},
-			'average_acceleration__percentage_of_reoccurring_values_to_all_values':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__percentage_of_reoccurring_datapoints_to_all_datapoints':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0},
-			'average_acceleration__sum_of_reoccurring_values':
-				{312: 0.0, 511: 0.0, 607: 0.0, 811: 0.0, 905: 0.0}}
+ts_feats = {'average_speed__mean_abs_change':
+				{312: 0.2405, 511: 0.0297, 607: 0.0403, 811: 0.2324, 905: 0.1200},
+			'average_speed__mean_change':
+				{312: 0.1500, 511: 0.0150, 607: 0.0403, 811: 0.2272, 905: 0.0800},
+			'average_speed__mean_second_derivative_central':
+				{312: -0.2405, 511: -0.0297, 607: -0.0397, 811: -0.2324, 905: -0.1200},
+			'average_speed__median':
+				{312: 0.3000, 511: 0.0300, 607: 0.0800, 811: 0.4545, 905: 0.1600},
+			'average_speed__mean':
+				{312: 0.2302, 511: 0.0249, 607: 0.0535, 811: 0.3047, 905: 0.1200}}
 
 
 class Test_Feature_Extraction(unittest.TestCase):
@@ -873,12 +853,13 @@ class Test_Feature_Extraction(unittest.TestCase):
 		case = ts_feature(inp, "autocorrelation").round(4)
 		ref = ref.rename_axis('variable', axis=1)
 		ref = ref.rename_axis("id", axis=0)
+		ref, case = ref.iloc[:,10:20], case.iloc[:,10:20]
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
 	def test_all_ts_features(self):
 		ref = pd.DataFrame(ts_feats).round(4)
 		inp = pd.DataFrame(feats)
-		case = ts_all_features(inp).round(4).iloc[:,15:30]
+		case = ts_all_features(inp).round(4).iloc[:,795:800]
 		#ref = ref.rename_axis('variable', axis=1)
 		#ref = ref.rename_axis("id", axis=0)
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
@@ -924,63 +905,3 @@ class Test_Feature_Extraction(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-import pandas as pd
-from src.movekit.feature_extraction import *
-case = compute_average_acceleration(avspeed, fps=3)
-case[312]['average_acceleration']
-
-
-
-avspeed = {
-			312: pd.DataFrame({
-								  'time': {0: 1, 1: 2, 2: 3},
-								  'animal_id': {0: 312, 1: 312, 2: 312},
-								  'x': {0: 405.29, 1: 405.31, 2: 405.31},
-								  'y': {0: 417.76, 1: 417.37, 2: 417.07},
-								  'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
-								  'average_speed': {0: 0.0, 1: 0.39051248379531817, 2: 0.3000000000000114},
-								  'average_acceleration': {0: None, 1: None, 2: None},
-								  'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
-								  'stopped': {0: None, 1: None, 2: None}}),
-			511: pd.DataFrame({
-								  'time': {0: 1, 1: 2, 2: 3},
-								  'animal_id': {0: 511, 1: 511, 2: 511},
-								  'x': {0: 369.99, 1: 370.01, 2: 370.01},
-								  'y': {0: 428.78, 1: 428.82, 2: 428.85},
-								  'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								  'average_speed': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								  'average_acceleration': {0: None, 1: None, 2: None},
-								  'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
-								  'stopped': {0: None, 1: None, 2: None}}),
-			607: pd.DataFrame({
-								  'time': {0: 1, 1: 2, 2: 3},
-								  'animal_id': {0: 607, 1: 607, 2: 607},
-								  'x': {0: 390.33, 1: 390.25, 2: 390.17},
-								  'y': {0: 405.89, 1: 405.89, 2: 405.88},
-								  'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								  'average_speed': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								  'average_acceleration': {0: None, 1: None, 2: None},
-								  'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
-								  'stopped': {0: None, 1: None, 2: None}}),
-			811: pd.DataFrame({
-								  'time': {0: 1, 1: 2, 2: 3},
-								  'animal_id': {0: 811, 1: 811, 2: 811},
-								  'x': {0: 445.15, 1: 445.48, 2: 445.77},
-								  'y': {0: 411.94, 1: 412.26, 2: 412.61},
-								  'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
-								  'average_speed': {0: 0.0, 1: 0.45967379738247277, 2: 0.4545327270945347},
-								  'average_acceleration': {0: None, 1: None, 2: None},
-								  'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
-								  'stopped': {0: None, 1: None, 2: None}}),
-			905: pd.DataFrame({
-								  'time': {0: 1, 1: 2, 2: 3},
-								  'animal_id': {0: 905, 1: 905, 2: 905},
-								  'x': {0: 366.06, 1: 365.86, 2: 365.7},
-								  'y': {0: 451.76, 1: 451.76, 2: 451.76},
-								  'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								  'average_speed': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								  'average_acceleration': {0: None, 1: None, 2: None},
-								  'direction': {0: None, 1: 180.0, 2: 180.0},
-								  'stopped': {0: None, 1: None, 2: None}})}
