@@ -6,6 +6,7 @@ import warnings
 import utm
 from datetime import datetime
 from .utils import presence_3d
+from .feature_extraction import grouping_data, regrouping_data
 
 
 def from_dataframe(data, dictionary):
@@ -172,7 +173,7 @@ def filter_dataframe(data, frm, to):
     Extract records of assigned time frame from preprocessed movement record data.
 
     :param data: Pandas DataFrame, containing preprocessed movement record data.
-    :param frm: Int, defining starting point from where to extract records.
+    :param frm: Int, defining starting point from where to extract records.Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.filter_dataframe(data, 2008-01-01, 2010-10-01)
     :param to: Int, defining end point up to where to extract records.
     :return: Pandas DataFrame, filtered by records matching the defined frame in 'from'-'to'.
     """
@@ -190,19 +191,22 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
         arr_index = np.array([10, 20, 200, 20000, 40000, 43200])
         replaced_data_groups = replace_parts_animal_movement(data_groups, 811, arr_index, 100, 90)
 
-    :param data_groups: Dictionary with key 'animal_id'and value with records for 'animal_id'. (as dataframe)
+    :param data_groups: DataFrame containing the movement records.
     :param animal_id: Int defining 'animal_id' whose movements have to be replaced.
     :param time_array: Array defining time indices whose movements have to replaced
     :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
     :param replacement_value_y: Int value that will replace all 'y' attribute values in 'time_array'.
     :return: Dictionary with replaced subsets.
     """
+    # Grouping DataFrame
+    data_groups = grouping_data(data_groups, preprocessedMethod=True)
+
     data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
     data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
     if presence_3d(data_groups[animal_id]):
         data_groups[animal_id].loc[time_array, 'z'] = replacement_value_z
 
-    return data_groups
+    return regrouping_data(data_groups)
 
 
 def resample_systematic(data_groups, downsample_size):
@@ -212,10 +216,13 @@ def resample_systematic(data_groups, downsample_size):
     This is done to reduce the resolution of the dataset. This function does this by systematically choosing
     samples from each animal.
 
-    :param data_groups: Dictionary with key: 'animal_id' and value with record data to that 'animal_id'.
+    :param data_groups: DataFrame containing the movement records.
     :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
-    :return: Dictionary, modified from original size 'data_groups' to 'downsample_size'.
+    :return: DataFrame, modified from original size 'data_groups' to 'downsample_size'.
     """
+    # group the dataFrame
+    data_groups = grouping_data(data_groups, preprocessedMethod=True)
+
     # Get first key-
     first = list(data_groups.keys())[0]
 
@@ -239,6 +246,8 @@ def resample_systematic(data_groups, downsample_size):
     for aid in data_groups.keys():
         data_groups_downsampled[aid] = data_groups[aid].loc[arr_index, :]
 
+    data_groups_downsampled = regrouping_data(data_groups_downsampled)
+
     return data_groups_downsampled
 
 
@@ -249,10 +258,13 @@ def resample_random(data_groups, downsample_size):
     This is done to reduce resolution of the dataset. This function does this by randomly choosing
     samples from each animal
 
-    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
+    :param data_groups: DataFrame containing the movement records.
     :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
-    :return: Dictionary, modified from original size 'data_groups' to 'downsample_size'.
+    :return: DataFrame, modified from original size 'data_groups' to 'downsample_size'.
     """
+    # group the dataFrame
+    data_groups = grouping_data(data_groups, preprocessedMethod=True)
+
     # Get first key-
     first = list(data_groups.keys())[0]
 
@@ -268,6 +280,8 @@ def resample_random(data_groups, downsample_size):
     for aid in data_groups.keys():
         data_groups_downsampled[aid] = data_groups[aid].loc[ix_random, :]
 
+    data_groups_downsampled = regrouping_data(data_groups_downsampled)
+
     return data_groups_downsampled
 
 
@@ -279,12 +293,15 @@ def split_trajectories(data_groups, segment, fuzzy_segment=0, csv=False):
         data_groups = group_animals(data)
         split_trajectories_fuzzy_segmentation(data_groups, segment = 5, fuzzy_segment = 5)
 
-    :param data_groups: Dictionary with key 'animal_id' and value record data of 'animal_id'.
+    :param data_groups: DataFrame with movement records.
     :param segment: Int, defining point where the animals are split into several Pandas Data Frames.
     :param fuzzy_segment: Int, defining interval which will overlap on either side of the segments.
     :param csv: Boolean, defining if each interval shall be exported locally as singular csv
-    :return: None. All segmented Pandas Data Frames are saved to HDD.
+    :return: Dictionary with the created DataFrames for each animal.
     """
+    # Group the DataFrame
+    data_groups = grouping_data(data_groups, preprocessedMethod=True)
+
     # Get first key-
     first = list(data_groups.keys())[0]
 
@@ -405,4 +422,3 @@ def convert_latlon(data, latitude='latitude', longitude='longitude', replace=Tru
         data.drop(longitude, axis=1, inplace=True)
 
     return data
-

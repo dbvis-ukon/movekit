@@ -12,6 +12,7 @@ from .utils import presence_3d
 from functools import reduce
 import st_clustering as stc
 from tqdm import tqdm
+from sklearn.metrics.pairwise import cosine_similarity
 
 from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
@@ -114,11 +115,8 @@ def compute_centroid_direction(data,
 
 def get_heading_difference(preprocessed_data):
     """
-    Calculate the difference in degrees between the animal's direction and the centroid's direction for each timestep.
-
-    Note: Calculate the difference in degrees between the animal's direction and the centroid's direction for each
-    timestep. Stronger gain in y gives positive difference, weaker gain in y gives negative difference, since constant
-    y is defined to be 0 degrees.
+    Calculate the difference in between the animal's direction and the centroid's direction for each timestep.
+    The difference is measured by the cosine similarity of the two direction vectors.
 
     :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
     :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
@@ -141,15 +139,10 @@ def get_heading_difference(preprocessed_data):
                                     param_y="y_centroid",
                                     colname="centroid_direction")
 
-        # Subtract animal's direction from centroid's direction
         directions = regrouping_data(cen_dir)
-        raw_diff = directions.loc[:,
-                   "direction"] - directions.loc[:,
-                                  "centroid_direction"]
+        # calculate cosine similarity of the centroids and the animals direction vector
+        directions['heading_difference'] = directions.apply(lambda row: cosine_similarity(np.array(row.direction), np.array(row.centroid_direction)), axis=1)
 
-        # Calculate signed angle, store in new variable
-        directions = directions.assign(heading_difference=(raw_diff + 180) % 360 -
-                                                          180)
     return directions
 
 

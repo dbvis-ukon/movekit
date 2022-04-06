@@ -12,12 +12,15 @@ from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
 from .utils import presence_3d, angle
 from tqdm import tqdm
+import math
+from sklearn.metrics.pairwise import cosine_similarity
 
 
-def grouping_data(processed_data, pick_vars=None):
+def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
     """
     Function to group data records by 'animal_id'. Adds additional attributes/columns, if features aren't extracted yet.
     :param processed_data: pd.DataFrame with all preprocessed records.
+    :param preprocessedMethod: Boolean whether calling method is from preprocessing to check whether columns for features are added.
     :return: dictionary with 'animal_id' as key and all records as value.
     """
 
@@ -29,14 +32,16 @@ def grouping_data(processed_data, pick_vars=None):
     data_animal_id_groups = {}
 
     # Get each animal_id's data from grouping performed-
-    for animal_id in data_animal_id.groups.keys():
-        data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id).copy()
+    #for animal_id in data_animal_id.groups.keys():
+    #    data_animal_id_groups[animal_id] = data_animal_id.get_group(animal_id)
+
+    for animal_id, df in data_animal_id:
+        data_animal_id_groups[animal_id] = df
 
     # To reset index for each group-
     for animal_id in data_animal_id_groups.keys():
         data_animal_id_groups[animal_id].reset_index(drop=True, inplace=True)
-    if list(processed_data.columns.values) == list(
-            ['time', 'animal_id', 'x', 'y']):
+    if list(processed_data.columns.values) == list(['time', 'animal_id', 'x', 'y']) and not preprocessedMethod:
         # Add additional attributes/columns to each groups-
         for aid in data_animal_id_groups.keys():
             data = [None for x in range(data_animal_id_groups[aid].shape[0])]
@@ -88,7 +93,7 @@ def regrouping_data(data_animal_id_groups):
     result = pd.concat(data_animal_id_groups[aid]
                        for aid in data_animal_id_groups.keys())
 
-    result.sort_values(['animal_id', 'time'], ascending=True, inplace=True)
+    result.sort_values(['time','animal_id'], ascending=True, inplace=True)
     # Reset index-
     result.reset_index(drop=True, inplace=True)
     return result
@@ -118,15 +123,14 @@ def regrouping_data(data_animal_id_groups):
 #             columns={'inp': colname})
 #     return data_animal_id_groups
 
-
+"""
 def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
-    """
     Computes the angle of rotation of an animal between two timesteps
     :param data_animal_id_groups: dictionary ordered by 'animal_id'
     :param pbar: percentage bar filled with 10% already
     :param colname: the name to appear in the new DataFrame
     :return: dictionary containing computed 'distance' attribute
-    """
+    
     percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
 
     # take the first dataframe to check the 3d presence
@@ -152,16 +156,126 @@ def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', par
         pbar.update(percent_update)
 
     return data_animal_id_groups
+"""
 
 
-def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
+def compute_direction_angle(data, param_x='x', param_y='y', param_z='z', colname='direction_angle'):
     """
+        Computes the angle of rotation of an animal between two timesteps. Only possible if coordinates are 2D only.
+        :param data: dataframe containing the movement records
+        :param param_x: column name of the x coordinate
+        :param param_y: column name of the y coordinate
+        :param param_z: column name of the z coordinate
+        :param colname: the name to appear in the new DataFrame for the direction angle computed.
+        :return: dataframe containing computed 'direction_angle' as angle from 0-360 degrees (x-axis to the right is 0 degrees)
+    """
+
+    data_animal_id_groups = grouping_data(data)
+
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+        warnings.warn('The direction angle can only be calculated for two-dimensional coordinate data. The dataframe given to the function has more than two dimensions.')
+    else:
+        # iterate over movers
+        for aid in data_animal_id_groups.keys():
+            data_animal_id_groups[aid]['y_change'] = data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1)  # change of y and x coordinate to create direction vector
+            data_animal_id_groups[aid]['x_change'] = data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1)
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid]['y_change'] / data_animal_id_groups[aid]['x_change']  # formula: tan^(-1) (y_change / x_change) = angle of direction change
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid][colname].apply(lambda x: math.degrees(math.atan(x)))  # convert angle to degrees
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle if movement is to upper  left or lower right
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] >= 0), colname] = 360 + data_animal_id_groups[aid][colname]
+            data_animal_id_groups[aid].loc[0, [colname]] = 0  # direction for first timestamp is 0
+            data_animal_id_groups[aid].drop(['y_change', 'x_change'], inplace=True, axis=1)
+        data = regrouping_data(data_animal_id_groups)
+    return data
+
+
+def compute_turning_angle(data, colname='turning_angle', direction_angle_name='direction_angle'):
+    """
+    Computes the turning angle for a mover between two timesteps as the difference of its direction angle. Only possible for 2D data.
+    :param data: dataframe containing the movement records.
+    :param colname: the name of the new column to be added.
+    :param direction_angle_name: the name of the column containg the direction angle for each movement record.
+    :return: dataframe containing an additional column with the difference in degrees between current and previous timestamp for each record.
+    Note that difference can not be higher than +-180 degrees.
+    """
+
+    # when differences exceed |180| convert values so that they stay in the domain -180 +180
+    boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
+    vboundary = np.vectorize(boundary)
+
+    # check dataframe if data contains direction_angle column
+    if direction_angle_name not in data.columns:
+        warnings.warn('As it is needed to calculate the turning angle at first the direction angle has to be computed.')
+        data = compute_direction_angle(data)
+
+    data_animal_id_groups = grouping_data(data)
+    # iterate over movers
+    for aid in data_animal_id_groups.keys():
+        turning_angles = data_animal_id_groups[aid][direction_angle_name] - data_animal_id_groups[aid][direction_angle_name].shift(
+            periods=1)  # calculate difference in direction angle between current and previous timestamp
+        turning_angles = vboundary(turning_angles)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
+            inp=turning_angles)
+        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
+            columns={'inp': colname})
+    data = regrouping_data(data_animal_id_groups)
+    return data
+
+
+
+
+def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
+    """
+    Computes the movement vector for each timestamp by checking the difference of the coordinates to the previous timestamp.
+    :param data_animal_id_groups: dictionary containing the data frames for each animal
+    :param pbar: percentage bar filled with 10% already
+    :param param_x: column name of the x coordinate
+    :param param_y: column name of the y coordinate
+    :param param_z: column name of the z coordinate
+    :param colname: the name to appear in the new DataFrame for the calculated direction
+    :return: dictionary containing computed 'direction' attribute
+    """
+
+    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
+
+    # take the first dataframe to check the 3d presence
+    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
+        is_3d = True
+    else:
+        is_3d = False
+
+    # iterate over movers
+    for aid in data_animal_id_groups.keys():
+        if is_3d:
+            data_animal_id_groups[aid]['x_change'] = round(data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1),4)
+            data_animal_id_groups[aid]['y_change'] = round(data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1),4)
+            data_animal_id_groups[aid]['z_change'] = round(data_animal_id_groups[aid][param_z] - data_animal_id_groups[aid][param_z].shift(periods=1),4)
+            data_animal_id_groups[aid].loc[0, 'x_change'], data_animal_id_groups[aid].loc[0,'y_change'], data_animal_id_groups[aid].loc[0,'z_change'] = 0,0,0
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid].apply(lambda row: (row.x_change, row.y_change, row.z_change), axis=1)
+            data_animal_id_groups[aid].drop(['x_change', 'y_change', 'z_change'], inplace=True, axis=1)
+
+        else:
+            data_animal_id_groups[aid]['x_change'] = round(data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1),4)
+            data_animal_id_groups[aid]['y_change'] = round(data_animal_id_groups[aid][param_y] - data_animal_id_groups[aid][param_y].shift(periods=1),4)
+            data_animal_id_groups[aid].loc[0, 'x_change'], data_animal_id_groups[aid].loc[0,'y_change']= 0,0
+            data_animal_id_groups[aid][colname] = data_animal_id_groups[aid].apply(lambda row: (row.x_change, row.y_change), axis=1)
+            data_animal_id_groups[aid].drop(['x_change', 'y_change'], inplace=True, axis=1)
+
+        pbar.update(percent_update)
+
+    return data_animal_id_groups
+
+"""
+def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
+    
     Computes the turning angle for a mover between two timesteps as the difference of its direction
     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
     :param param_direction: Column name to be recognized as direction. Default "direction".
     :param colname: the new column to be added
     :return: data_animal_id_groups
-    """
+    
 
     # when differences exceed |180| convert values so that they stay in the domain -180 +180
     boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
@@ -177,6 +291,21 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
             inp=data)
         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
             columns={'inp': colname})
+    return data_animal_id_groups
+"""
+
+def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
+    """
+    Computes the turning for a mover between two timesteps as the cosine similarity between its direction vectors.
+    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
+    :param param_direction: Column name to be recognized as direction. Default "direction".
+    :param colname: the name of the new column added  which contains the computed cosine similarity.
+    :return: data_animal_id_groups
+    """
+    for aid in data_animal_id_groups.keys():
+        cos_similarities = [cosine_similarity(np.array([data_animal_id_groups[aid][param_direction][i]]), np.array([data_animal_id_groups[aid][param_direction][i + 1]]))[0][0] for i in range(0, len(data_animal_id_groups[aid][param_direction]) - 1)]  # cosine similarity for direction vectors of two following timestamps
+        cos_similarities.insert(0, 0)  # first entry has no previous entry -> cosine similarity can not be calculated and value is set to 0
+        data_animal_id_groups[aid][colname] = cos_similarities
     return data_animal_id_groups
 
 
@@ -267,7 +396,8 @@ def compute_distance_and_direction(data_animal_id_groups): # TODO deprecate
 
 def compute_average_speed(data_animal_id_groups, fps):
     """
-    Compute average speed of an animal based on fps (frames per second) parameter.
+    Compute average speed of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
+    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
     Formula used Average Speed = Total Distance Travelled / Total Time taken;
     Use output of compute_distance_and_direction() function to this function.
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
@@ -283,7 +413,8 @@ def compute_average_speed(data_animal_id_groups, fps):
 
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
-    Compute average acceleration of an animal based on fps (frames per second) parameter.
+    Compute average acceleration of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
+    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
     Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
     Use output of compute_average_speed() function to this function.
     :param data_animal_id_groups: dictionary with 'animal_id' as keys
@@ -298,7 +429,7 @@ def compute_average_acceleration(data_animal_id_groups, fps):
         try:
             data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
                 min_periods=1, window=fps,
-                center=True).apply(lambda x: x[1] - x[0], raw=True).fillna(0)
+                center=True).apply(lambda x: (x[-1] - x[0]) / (fps-1), raw=True).fillna(0)
         except:
             data_animal_id_groups[aid]['average_acceleration'] = 0
 
@@ -357,7 +488,8 @@ def distance_by_time(data, frm, to):
     """
     Computes the distance between positions for a particular time window for all movers.
     :param data: pandas DataFrame with all records of movements.
-    :param frm: int defining the start of the time window
+    :param frm: int defining the start of the time window. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.distance_by_time(data, 2008-01-01, 2010-10-01)
+    :param to: Int, defining end point up to where to extract records.
     :param to: int defining the end of the time window (inclusive)
     :return: pandas DataFrame with animal_id and distance
     """
@@ -560,13 +692,14 @@ def compute_similarity(data, weights, p=2):
             w.append(weights[key])
 
     # normalize the data frame
-    normalized_df = (df - df.min()) / (df.max() - df.min())
+    #normalized_df = (df - df.min()) / (df.max() - df.min())
 
     # add the columns time and animal id to the window needed for group by and the column generation
-    normalized_df[not_allowed_keys] = data[not_allowed_keys]
+    #normalized_df[not_allowed_keys] = data[not_allowed_keys]
 
     # compute the distance for each time moment
-    df2 = normalized_df.groupby('time')
+    #df2 = normalized_df.groupby('time')
+    df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(),position=0, desc="Computing euclidean distance"):
         groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w, p=p)  # calculate distance for each time period
@@ -590,7 +723,7 @@ def similarity_computation(group, w, p):
     # ids of each animal
     ids = group['animal_id'].tolist()
     # compute and assign the distances for each time step
-    return pd.DataFrame(squareform(pdist(group, 'wminkowski', p=p, w=w)),
+    return pd.DataFrame(squareform(pdist(group.loc[:,['x','y']], 'minkowski', p=p)),
                         index=group.index,
                         columns=ids)
 
@@ -598,12 +731,12 @@ def similarity_computation(group, w, p):
 def ts_all_features(data):
     """
     Perform time series analysis on record data.
-    Remove the column 'stopped' as it has nominal values
+    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :return: pandas DataFrame, containing autocorrelation for each id for each feature.
     """
 
-    rm_colm = ['stopped']
+    rm_colm = ['stopped','direction']
     df = data[data.columns.difference(rm_colm)]
 
     time_series_features = tsfresh.extract_features(df,
@@ -618,6 +751,7 @@ def ts_all_features(data):
 def ts_feature(data, feature):
     """
     Perform time series analysis on specified feature of record data.
+    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
     :param data: pandas DataFrame, containing preprocessed movement records and features.
     :param feature: feature to perform time series analysis on
     :return: pandas DataFrame, containing autocorrelation for each id for defined feature.
@@ -627,13 +761,15 @@ def ts_feature(data, feature):
         settings = {}
         settings[feature] = fc_parameters[feature]
 
-        rm_colm = ['stopped']
+        rm_colm = ['stopped','direction']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
             df,
             column_id='animal_id',
             column_sort='time',
             default_fc_parameters=settings)
+        time_series_features = time_series_features.rename_axis('variable', axis=1)  # rename axis
+        time_series_features = time_series_features.rename_axis("id", axis=0)
         return time_series_features
     else:
         print("Time series feature is not known.")
@@ -748,7 +884,7 @@ def explore_features_geospatial(preprocessed_data):
         pbar.update(percent_update)
         return None
 
-def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration", "direction",
+def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration",
                                          "stopped"], contamination=0.01, n_neighbors=5, method="mean", \
                       metric="minkowski"):
     """
@@ -787,7 +923,3 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     else:
         dataset.insert(2, "outlier", scores_pred)
     return dataset
-
-
-
-

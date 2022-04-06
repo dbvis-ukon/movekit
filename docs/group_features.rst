@@ -27,7 +27,7 @@ Once one has obtained centroids, medoids and distances to centroid from the diff
     data = mkit.compute_centroid_direction(data,colname="centroid_direction",group_output=False,only_centroid=True)
     heading_diff = mkit.get_heading_difference(data)
 
-Also the polarization of animals can be computed for each timestep.
+Also the polarization of animals can be computed for each timestep. Value is between 0 and 1. More info about the formula used to calculate the polarization can be found on the following two links: https://bit.ly/2xZ8uSI and https://bit.ly/3aWfbDv.
 
 .. code-block:: python
 
@@ -37,6 +37,7 @@ Also the polarization of animals can be computed for each timestep.
 Dynamic time warping
 *****
 Also a matrix to display the similarity of the animals trajectories based on the DTW algorithm can be computed.
+
 .. code-block:: python
 
     mkit.dtw_matrix(data)
