@@ -10,9 +10,10 @@ from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
-from .utils import presence_3d, angle, cosine_similarity
+from .utils import presence_3d, angle
 from tqdm import tqdm
 import math
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -302,7 +303,7 @@ def compute_turning(data_animal_id_groups, param_direction="direction", colname=
     :return: data_animal_id_groups
     """
     for aid in data_animal_id_groups.keys():
-        cos_similarities = [cosine_similarity(data_animal_id_groups[aid][param_direction][i], data_animal_id_groups[aid][param_direction][i + 1]) for i in range(0, len(data_animal_id_groups[aid][param_direction]) - 1)]  # cosine similarity for direction vectors of two following timestamps
+        cos_similarities = [cosine_similarity(np.array([data_animal_id_groups[aid][param_direction][i]]), np.array([data_animal_id_groups[aid][param_direction][i + 1]]))[0][0] for i in range(0, len(data_animal_id_groups[aid][param_direction]) - 1)]  # cosine similarity for direction vectors of two following timestamps
         cos_similarities.insert(0, 0)  # first entry has no previous entry -> cosine similarity can not be calculated and value is set to 0
         data_animal_id_groups[aid][colname] = cos_similarities
     return data_animal_id_groups

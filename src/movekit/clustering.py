@@ -8,10 +8,11 @@ from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
-from .utils import presence_3d, cosine_similarity
+from .utils import presence_3d
 from functools import reduce
 import st_clustering as stc
 from tqdm import tqdm
+from sklearn.metrics.pairwise import cosine_similarity
 
 from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
@@ -140,7 +141,7 @@ def get_heading_difference(preprocessed_data):
 
         directions = regrouping_data(cen_dir)
         # calculate cosine similarity of the centroids and the animals direction vector
-        directions['heading_difference'] = directions.apply(lambda row: cosine_similarity(row.direction, row.centroid_direction), axis=1)
+        directions['heading_difference'] = directions.apply(lambda row: cosine_similarity(np.array(row.direction), np.array(row.centroid_direction)), axis=1)
 
     return directions
 
