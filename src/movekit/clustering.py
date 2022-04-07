@@ -141,8 +141,9 @@ def get_heading_difference(preprocessed_data):
 
         directions = regrouping_data(cen_dir)
         # calculate cosine similarity of the centroids and the animals direction vector
-        directions['heading_difference'] = directions.apply(lambda row: cosine_similarity(np.array(row.direction), np.array(row.centroid_direction)), axis=1)
-
+        cos_similarities = [cosine_similarity(np.array([directions['direction'][i]]), np.array([directions['centroid_direction'][i]]))[0][0] for i in range(0, len(directions[\
+        'direction']))]  # cosine similarity for direction vectors of animal and centroid
+        directions['heading_difference'] = cos_similarities
     return directions
 
 
