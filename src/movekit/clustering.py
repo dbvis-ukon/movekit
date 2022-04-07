@@ -151,14 +151,23 @@ def compute_polarization(preprocessed_data, group_output=False):
     """
     Compute the polarization of a group at all record timepoints.
 
-    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv.
+    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv. As the formula only takes angles as input,
+    the polarization is only calculated for the first two dimensions of the movement data.
     :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
     :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
     """
     # Extract features if not done yet
-    if "direction" not in preprocessed_data.columns:
-        warnings.warn('calculating direction, since not found in input!')
-        preprocessed_data = extract_features(preprocessed_data)
+    if "direction_angle" not in preprocessed_data.columns:
+        warnings.warn('calculating direction angle for first two dimensions, since not found in input!')
+        if 'z' in  preprocessed_data.columns:  # check if data is 3D and if true drop z temporary as compute_direction_angle() otherwise throws error
+            z = preprocessed_data.pop('z')
+            preprocessed_data = compute_direction_angle(preprocessed_data)
+            preprocessed_data['z'] = z
+        else:
+            preprocessed_data = compute_direction_angle(preprocessed_data)
+
+    # convert to radians for polarization formula
+    preprocessed_data['direction_angle'] = preprocessed_data['direction_angle'].apply(lambda x: math.radians(x))
 
     # Group by 'time'-
     data_time = preprocessed_data.groupby('time')
@@ -170,10 +179,10 @@ def compute_polarization(preprocessed_data, group_output=False):
     for aid in data_time.groups.keys():
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
-        data = (1 / len(data_groups_time[aid]["direction"])) * np.sqrt(
-            (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))
+        data = (1 / len(data_groups_time[aid]["direction_angle"])) * np.sqrt(
+            (sum(np.sin(data_groups_time[aid]["direction_angle"].astype(np.float64)))
              )**2 +
-            (sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))
+            (sum(np.cos(data_groups_time[aid]["direction_angle"].astype(np.float64)))
              )**2)
 
         # Assign polarization to new variable
@@ -181,6 +190,9 @@ def compute_polarization(preprocessed_data, group_output=False):
 
     # Regroup data into DataFrame
     polarization_data = regrouping_data(data_groups_time)
+
+    # convert direction angle back to degrees
+    polarization_data['direction_angle'] = polarization_data['direction_angle'].apply(lambda x: math.degrees(x))
 
     # If interested in fullstack output for each animal
     if group_output == False:
