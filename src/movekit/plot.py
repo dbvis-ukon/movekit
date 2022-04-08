@@ -96,7 +96,7 @@ def plot_pace(avg_speed_data, feature="speed"):
     """
     Plot average speed extracted feature for each animal.
 
-    :param avg_speed_data: dictionary containing grouping of data by 'animal_id' including average speed feature.
+    :param avg_speed_data: pandas Dataframe including average speed feature.
     :return: None.
     """
 
@@ -180,7 +180,7 @@ def plot_animal(inp_data, animal_id):
     """
     Plot individual animal's 'x' and 'y' coordinates.
 
-    :param data_animal_id_groups: DataFrame containing 'x' & 'y' attributes.
+    :param inp_data: DataFrame containing 'x' & 'y' attributes.
     :param animal_id: ID of animal to be plotted.
     :return: None.
     """

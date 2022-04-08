@@ -42,6 +42,7 @@ def interpolate(data,
     :param data: Pandas DataFrame of movement records
     :param limit: Maximum number of consecutive NANs to fill
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+    :param inplace: Update the data in place if possible.
     :param method: Interpolation technique to use. Default is "linear".
     :param order: To be used in case of polynomial or spline interpolation.
     :param date_format: Boolean to define whether time is some kind of date format. In this case column type has to be converted before calling interpolate.
@@ -83,7 +84,6 @@ def plot_missing_values(data):
     Plot the missing values of an animal-ID against time.
 
     :param data: Pandas DataFrame containing records of movement.
-    :param animal_id: ID of the animal whose missing values will be plotted against time.
     :return: None.
     """
     # Visualizing the count of missing values for all attributes-
@@ -102,19 +102,21 @@ def preprocess(data,
                limit_direction="forward",
                inplace=False,
                method="linear",
+               order=1,
                date_format = False):
     """
     Function to perform data preprocessing.
 
-    Print the number of missing values per column; Drop columns with  missing values for 'time' and 'animal_id';
+    Print the number of missing values per column; Drop columns with missing values for 'time' and 'animal_id';
     Remove the duplicated rows found.
     :param data: DataFrame to perform preprocessing on
     :param dropna: Optional parameter to drop columns with  missing values for 'time' and 'animal_id'
-    :param interpolate: Optional parameter to perform linear interpolation
+    :param interpolation: Optional parameter to perform interpolation
     :param limit: Maximum number of consecutive NANs to fill
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
+    :param inplace: Update the  data in place if possible.
     :param method: Interpolation technique to use. Default is "linear".
-    :param order: To be used in case of polynomial interpolation.
+    :param order: To be used in case of polynomial or spline interpolation.
     :param date_format: Boolean to define whether time is some kind of date format. Important for interpolation.
     :return: Preprocessed DataFrame.
     """
@@ -128,7 +130,8 @@ def preprocess(data,
                            limit_direction=limit_direction,
                            inplace=inplace,
                            method=method,
-                           date_format = date_format)
+                           order=order,
+                           date_format=date_format)
 
     # Drop columns with  missing values for 'time'  and 'animal_id'
 
@@ -196,6 +199,7 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
     :param time_array: Array defining time indices whose movements have to replaced
     :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
     :param replacement_value_y: Int value that will replace all 'y' attribute values in 'time_array'.
+    :param replacement_value_z: Int value that will replace all 'z' attribute values in 'time_array'. (optional)
     :return: Dictionary with replaced subsets.
     """
     # Grouping DataFrame

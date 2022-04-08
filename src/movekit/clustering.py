@@ -37,9 +37,9 @@ def get_trajectories(data_groups):
 def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
     """
     Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
-    :param data_groups: Grouped dictionary by animal_id.
-    :param path: Boolean to specify if matrix of dtw-path gets returned as well
-    :param distance: Specify with distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
+    :param preprocessed_data: pandas Dataframe containing the movement records.
+    :param path: Boolean to specify if matrix of dtw-path gets returned as well.
+    :param distance: Specify which distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
     :return: pandas Dataframe with distances between trajectories.
     """
     data_groups = grouping_data(preprocessed_data)
@@ -80,7 +80,8 @@ def compute_centroid_direction(data,
 
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
     :param colname: Name of the column. Default: centroid_direction.
-    :param group_output: Boolean, defines form of output. Default: Animal-Level
+    :param group_output: Boolean, defines form of output. Default: Animal-Level.
+    :param only_centroid: Boolean in case we just want to compute the centroids. Default: True.
     :return: pandas DF with centroid direction included
 
     """
@@ -116,7 +117,8 @@ def compute_centroid_direction(data,
 def get_heading_difference(preprocessed_data):
     """
     Calculate the difference in between the animal's direction and the centroid's direction for each timestep.
-    The difference is measured by the cosine similarity of the two direction vectors.
+    The difference is measured by the cosine similarity of the two direction vectors. The value range is from -1 to 1,
+    with 1 meaning animal and centroid having the same direction while -1 meaning they have opposite directions.
 
     :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
     :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
@@ -150,9 +152,9 @@ def get_heading_difference(preprocessed_data):
 def compute_polarization(preprocessed_data, group_output=False):
     """
     Compute the polarization of a group at all record timepoints.
-
     More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv. As the formula only takes angles as input,
     the polarization is only calculated for the first two dimensions of the movement data.
+
     :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
     :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
     """
@@ -224,12 +226,12 @@ def voronoi_volumes(points):
 
 def get_spatial_objects(preprocessed_data, group_output=False):
     """
-    Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.
+    Function to calculate convex hull, voronoi diagram and delaunay triangulation objects and also volumes of the first two objects.
     Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.
 
     :param preprocessed_data: Pandas Df, containing x and y coordinates.
     :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.
-    :return: DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.
+    :return: DataFrame either for each animal or for group at each time, containing convex hull and voronoi diagram area as well as convex hull, voronoi diagram and delaunay triangulation object.
     """
 
     data_time = preprocessed_data.groupby('time')
@@ -308,10 +310,10 @@ def get_group_data(preprocessed_data):
 
 def clustering(algorithm, data, **kwargs):
     """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
+    Clustering of spatio-temporal data.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param data: DataFrame to perform clustering on.
+    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
     """
     if algorithm == 'dbscan':
         clusterer = stc.ST_DBSCAN(**kwargs)
@@ -343,11 +345,11 @@ def clustering(algorithm, data, **kwargs):
 
 def clustering_with_splits(algorithm, data, frame_size, **kwargs):
     """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :param frame_size: the dataset is partitioned into frames and merged aferwards
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
+    Clustering of spatio-temporal data.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param data: DataFrame to perform clustering on.
+    :param frame_size: the dataset is partitioned into frames and merged afterwards.
+    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
     """
     if algorithm == 'dbscan':
         clusterer = stc.ST_DBSCAN(**kwargs)

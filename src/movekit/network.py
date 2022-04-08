@@ -12,10 +12,10 @@ from .feature_extraction import *
 
 def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
     """
-    Calculates a network list for each timestep based on delaunay triangulation (currently only one available)
-    :param preprocessed_data: Pandas DataFrame containing movement records
+    Calculates a network list for each timestep based on delaunay triangulation (currently only one available).
+    :param preprocessed_data: Pandas DataFrame containing movement records.
     :param object_type: delaunay_object - currently the only one available.
-    :return: List of nx graphs, containing, singular group and relational attributes on nodes, graph and edges.
+    :return: List of nx graphs based on delaunay triangulation, containing singular, group and relational attributes on nodes, graph and edges.
     """
     # Get spateial objects
     spatial_obj = get_spatial_objects(preprocessed_data, group_output=True)
