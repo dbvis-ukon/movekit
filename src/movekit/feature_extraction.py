@@ -885,7 +885,7 @@ def explore_features_geospatial(preprocessed_data):
         return None
 
 def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration",
-                                         "stopped"], contamination=0.01, n_neighbors=5, method="mean", \
+                                         "stopped","turning"], contamination=0.01, n_neighbors=5, method="mean", \
                       metric="minkowski"):
     """
     Detect outliers based on pyod KNN.
