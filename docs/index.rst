@@ -31,7 +31,7 @@ Contents
    :maxdepth: 2
 
    Quick Start <quick_start>
-   Data Cleaning <examples/01_data_cleaning>
+   Data Cleaning Notebook <examples/01_data_cleaning>
    Feature Extraction <features.rst>
    Feature Extraction Notebook <examples/02_extract_features>
    Group Features <group_features.rst>
