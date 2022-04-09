@@ -207,6 +207,85 @@ def compute_polarization(preprocessed_data, group_output=False):
                        ['time', 'polarization']].reset_index(drop=True)
 
 
+def compute_polarization_2(preprocessed_data, group_output=False):
+    """
+    Compute the polarization of a group at all record timepoints.
+    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv. As the formula only takes angles as input,
+    the polarization is calculated for 2d - Data by first calculating the direction angles of the different movers and afterwards by calculating the polarization.
+    For 3-dimensional data for all two's-combinations of the three dimensions the polarization is calculated in the way described before for 2d-data,
+    afterwards the mean of the three results is taken as result for the polarization.
+
+    :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
+    :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
+    """
+
+    def polarization(preprocessed_data, group_output):
+        # convert to radians for polarization formula
+        preprocessed_data['direction_angle'] = preprocessed_data['direction_angle'].apply(lambda x: math.radians(x))
+
+        # Group by 'time'-
+        data_time = preprocessed_data.groupby('time')
+
+        # Dictionary to hold grouped data by 'time' attribute-
+        data_groups_time = {}
+
+        # Obtain polarization for each point in time
+        for aid in data_time.groups.keys():
+            data_groups_time[aid] = data_time.get_group(aid)
+            data_groups_time[aid].reset_index(drop=True, inplace=True)
+            data = (1 / len(data_groups_time[aid]["direction_angle"])) * np.sqrt(
+                (sum(np.sin(data_groups_time[aid]["direction_angle"].astype(np.float64)))
+                 )**2 +
+                (sum(np.cos(data_groups_time[aid]["direction_angle"].astype(np.float64)))
+                 )**2)
+
+            data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
+
+            # Regroup data into DataFrame
+        polarization_data = regrouping_data(data_groups_time)
+
+        # convert direction angle back to degrees
+        polarization_data['direction_angle'] = polarization_data['direction_angle'].apply(lambda x: math.degrees(x))
+
+        # If interested in fullstack output for each animal
+        if group_output == False:
+            return polarization_data
+
+        # If only interested in group level output, return one line per timeslot
+        else:
+            pol = polarization_data
+            return pol.loc[pol.animal_id == list(set(pol.animal_id))[0],
+                           ['time', 'polarization']].reset_index(drop=True)
+
+    # Check if 3d
+    if 'z' in preprocessed_data.columns:
+        # if 3d calculate direction angle for all three two's-combinations of the three dimensions
+        preprocessed_data = preprocessed_data.rename(columns={'z': 'zz'})
+        preprocessed_data_1 = compute_direction_angle(preprocessed_data)
+        preprocessed_data_2 = compute_direction_angle(preprocessed_data, param_x='x', param_y='zz')
+        preprocessed_data_3 = compute_direction_angle(preprocessed_data, param_x='y', param_y='zz')
+        polarizations = []
+        # then calculate the polarization for each combination and take the mean as the final result
+        for i in [preprocessed_data_1, preprocessed_data_2, preprocessed_data_3]:
+            polarizations.append(list(polarization(i, group_output=group_output)['polarization']))
+        data = [(polarizations[0][i] + polarizations[1][i] + polarizations[2][i]) / 3 for i in
+                range(len(polarizations[0]))]
+        preprocessed_data = preprocessed_data.rename(columns={'zz': 'z'})
+        polarization_data = extract_features(preprocessed_data)
+        polarization_data = polarization_data.assign(polarization=data)
+        return polarization_data
+
+    # if data is 2d check if it  already has direction angle calculated and afterwards calculate polarization
+    else:
+        if "direction_angle" not in preprocessed_data.columns:
+            warnings.warn('calculating direction angle for first two dimensions, since not found in input!')
+            preprocessed_data = compute_direction_angle(preprocessed_data)
+            return polarization(preprocessed_data, group_output)
+        else:
+            return polarization(preprocessed_data, group_output)
+
+
+
 def voronoi_volumes(points):
     """
     Function to calculate area in a voronoi-diagram. Used in function below.
