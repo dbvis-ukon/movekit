@@ -16,12 +16,12 @@ class Test_network(unittest.TestCase):
          'x_centroid': 395.396,
          'y_centroid': 423.272,
          'medoid': 312,
-         'polarization': 0.12527606232425814,
-         'total_dist': 0.9189596262265769,
+         'polarization': 0.341926206925558,
+         'total_dist': 0.9189596262265768,
          'mean_speed': 0.15595112857659577,
          'mean_acceleration': 0.0,
          'mean_distance_centroid': 29.7782,
-         'centroid_direction': 83.9909940424787}
+         'centroid_direction': (0.004, 0.038)}
         node = {'time': 4,
          'animal_id': 312,
          'x': 405.3,
@@ -29,14 +29,15 @@ class Test_network(unittest.TestCase):
          'distance': 0.2102379604162655,
          'average_speed': 0.22518761105289875,
          'average_acceleration': 0.0,
-         'direction': -92.72631099390406,
+         'direction': (-0.01, -0.21),
+         'turning': 0.9988681377244376,
          'stopped': 1,
          'x_centroid': 395.396,
          'y_centroid': 423.272,
          'medoid': 312,
          'distance_to_centroid': 11.798}
 
-        edge = {'distance': 0.5131580321328953}
+        edge = {'distance': 40.91249809043683}
 
         lst = network_time_graphlist(data)
         outgraph= lst[3].graph
