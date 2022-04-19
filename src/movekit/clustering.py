@@ -293,7 +293,7 @@ def get_spatial_objects(preprocessed_data, group_output=False):
         pol = out_data
         pol = pol.loc[pol.animal_id ==
                       list(set(pol.animal_id))[0], :].reset_index(drop=True)
-        return pol.drop(columns=['animal_id', 'x', 'y'])
+        return pol.loc[:,['time', 'convex_hull_object', 'voronoi_object','delaunay_object', 'convex_hull_volume','voronoi_volume']]
 
 def get_group_data(preprocessed_data):
     """
