@@ -9,7 +9,7 @@ One can perform detection of outliers, based on the KNN algorithm: user can defi
 
 .. code-block:: python
 
-   mkit.outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration", "direction", "stopped"], contamination=0.01, n_neighbors=5, method="mean", metric="minkowski")
+   mkit.outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration", "stopped", "turning"], contamination=0.01, n_neighbors=5, method="mean", metric="minkowski")
 
 *****
 Different analysis on group level
@@ -20,14 +20,14 @@ For each timestamp one can obtain different group-level records. Records consist
 
     group_data = mkit.group_movement(data)
 
-Once one has obtained centroids, medoids and distances to centroid from the different animals for each movement record with `centroid_medoid_computation`, one can continue with further analyses. For example one can calculate the centroid direction for each timestamp. Using this also the difference in degrees between the animal's direction and the centroid's direction for each timestep can be derived.
+Once one has obtained centroids, medoids and distances to centroid from the different animals for each movement record with `centroid_medoid_computation`, one can continue with further analyses. For example one can calculate the centroid direction for each timestamp. Using this also the difference in the animal's direction and the centroid's direction for each timestep can be derived by computing the cosine similarity of the two direction vectors.
 
 .. code-block:: python
 
     data = mkit.compute_centroid_direction(data,colname="centroid_direction",group_output=False,only_centroid=True)
     heading_diff = mkit.get_heading_difference(data)
 
-Also the polarization of animals can be computed for each timestep. Value is between 0 and 1. More info about the formula used to calculate the polarization can be found on the following two links: https://bit.ly/2xZ8uSI and https://bit.ly/3aWfbDv.
+Also the polarization of animals can be computed for each timestep. Value is between 0 and 1. More info about the formula used to calculate the polarization can be found on the following two links: https://bit.ly/2xZ8uSI and https://bit.ly/3aWfbDv. Note that if the data is three-dimensional, only the first two dimensions are considered to calculate the polarization.
 
 .. code-block:: python
 

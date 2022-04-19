@@ -127,7 +127,7 @@ def parse_excel(path_to_file, sheet):
 
 def read_data(path, sheet = 0):
     """
-    Containing all of Input Output (IO) functions as function arguments (which by default are False).
+    Function to import data from 'csv', 'xlsx' and 'xls' files.
 
     :param path: Complete path/relative path to Excel file along with file name
     :param sheet: name of specific sheet given, by default first sheet of the excel workbook

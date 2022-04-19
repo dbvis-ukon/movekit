@@ -1,7 +1,7 @@
 Extracting features
 ===========
 
-One can easily calculate features such as distance, direction, average speed, average acceleration, turning angles and stops with the `extract_features` function.
+One can easily calculate features such as distance, direction, average speed, average acceleration, turning and stops of the mover with the `extract_features` function.
 
 .. code-block:: python
 

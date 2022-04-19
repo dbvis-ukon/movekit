@@ -159,13 +159,12 @@ def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', par
 """
 
 
-def compute_direction_angle(data, param_x='x', param_y='y', param_z='z', colname='direction_angle'):
+def compute_direction_angle(data, param_x='x', param_y='y', colname='direction_angle'):
     """
         Computes the angle of rotation of an animal between two timesteps. Only possible if coordinates are 2D only.
         :param data: dataframe containing the movement records
         :param param_x: column name of the x coordinate
         :param param_y: column name of the y coordinate
-        :param param_z: column name of the z coordinate
         :param colname: the name to appear in the new DataFrame for the direction angle computed.
         :return: dataframe containing computed 'direction_angle' as angle from 0-360 degrees (x-axis to the right is 0 degrees)
     """
@@ -183,8 +182,9 @@ def compute_direction_angle(data, param_x='x', param_y='y', param_z='z', colname
             data_animal_id_groups[aid]['x_change'] = data_animal_id_groups[aid][param_x] - data_animal_id_groups[aid][param_x].shift(periods=1)
             data_animal_id_groups[aid][colname] = data_animal_id_groups[aid]['y_change'] / data_animal_id_groups[aid]['x_change']  # formula: tan^(-1) (y_change / x_change) = angle of direction change
             data_animal_id_groups[aid][colname] = data_animal_id_groups[aid][colname].apply(lambda x: math.degrees(math.atan(x)))  # convert angle to degrees
-            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle if movement is to upper  left or lower right
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] >= 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]  # adjust to correct angle
             data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] >= 0), colname] = 360 + data_animal_id_groups[aid][colname]
+            data_animal_id_groups[aid].loc[(data_animal_id_groups[aid]['y_change'] < 0) & (data_animal_id_groups[aid]['x_change'] < 0), colname] = 180 + data_animal_id_groups[aid][colname]
             data_animal_id_groups[aid].loc[0, [colname]] = 0  # direction for first timestamp is 0
             data_animal_id_groups[aid].drop(['y_change', 'x_change'], inplace=True, axis=1)
         data = regrouping_data(data_animal_id_groups)
@@ -442,8 +442,8 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
     compute_average_acceleration(), computing_stops()
     :param data: pandas DataFrame with all records of movements.
-    :param fps: integer to specify frames per second.
-    :param stop_threshold: integer to specify threshold, at which we consider a "stop".
+    :param fps: integer to specify the size of the window examined for calculating average speed and average acceleration.
+    :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
 
@@ -558,7 +558,8 @@ def centroid_medoid_computation(data,
     Calculates the data point (animal_id) closest to center/centroid/medoid for a time step
     Uses group by on 'time' attribute
     :param data: Pandas DataFrame containing movement records
-    :param data: Boolean in case we just want to compute the centroids. Default: False.
+    :param only_centroid: Boolean in case we just want to compute the centroids. Default: False.
+    :param object_output: Boolean whether to create a point object for the calculated centroids. Default: False.
     :return: Pandas DataFrame containing computed medoids & centroids
     """
 
@@ -661,10 +662,9 @@ def distance_euclidean_matrix(data):
 
 def euclidean_dist(data):
     """
-    Calculate distances
-    Compute the euklidean distance for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods
+    Compute the euclidean distance between movers for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods.
     :param data: pandas DataFrame with positional record data.
-    :return: pandas DataFrame, including computed similarities.
+    :return: pandas DataFrame, including computed euclidean distances.
     """
     if presence_3d(data):
         weights = {'x': 1, 'y': 1, 'z': 1}
@@ -731,11 +731,11 @@ def similarity_computation(group, w, p):
 def ts_all_features(data):
     """
     Perform time series analysis on record data.
-    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
     :param data: pandas DataFrame, containing preprocessed movement records and features.
-    :return: pandas DataFrame, containing autocorrelation for each id for each feature.
+    :return: pandas DataFrame, containing extracted time series features for each id for each feature.
     """
 
+    # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
     rm_colm = ['stopped','direction']
     df = data[data.columns.difference(rm_colm)]
 
@@ -750,17 +750,17 @@ def ts_all_features(data):
 
 def ts_feature(data, feature):
     """
-    Perform time series analysis on specified feature of record data.
-    Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
+    Perform time series analysis by extracting specified time series features from record data.
     :param data: pandas DataFrame, containing preprocessed movement records and features.
-    :param feature: feature to perform time series analysis on
-    :return: pandas DataFrame, containing autocorrelation for each id for defined feature.
+    :param feature: time series feature which is extracted from the movement records.
+    :return: pandas DataFrame, containing defined extracted time series features for each id for each feature.
     """
     fc_parameters = tsfresh.feature_extraction.ComprehensiveFCParameters()
     if feature in fc_parameters:
         settings = {}
         settings[feature] = fc_parameters[feature]
 
+        # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
         rm_colm = ['stopped','direction']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
@@ -776,7 +776,7 @@ def ts_feature(data, feature):
         return
 
 
-def explore_features(data):  # why is this function not in _init_?
+def explore_features(data):
     """
     Show percentage of environment space explored by singular animal.
     Using minumum and maximum of 2-D coordinates, given by 'x' and 'y' features in input DataFrame.
@@ -885,7 +885,7 @@ def explore_features_geospatial(preprocessed_data):
         return None
 
 def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration",
-                                         "stopped"], contamination=0.01, n_neighbors=5, method="mean", \
+                                         "stopped","turning"], contamination=0.01, n_neighbors=5, method="mean", \
                       metric="minkowski"):
     """
     Detect outliers based on pyod KNN.
@@ -896,14 +896,15 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
         -mean(default): use the average of all k neighbors as the outlier score
         -median: use the median of the distance to k neighbors as the outlier score
 
-    :param dataset: list of features to detect outliers upon.
+    :param dataset: Dataframe containing the movement records.
+    :param features: list of features to detect outliers upon.
     :param contamination: float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,
     i.e. the proportion of outliers in the data set.
     :param n_neighbors: int, (default = 5) Number of neighbors to use by default for k neighbors queries.
     :param method: str, (default='largest') {'largest', 'mean', 'median'}
     :param metric: string or callable, default 'minkowski' metric to use for distance computation. Any metric from
     scikit-learn or scipy.spatial.distance can be used.
-    :return:
+    :return: Dataframe containing information for each movement record whether outlier or not.
     """
     # you cant split up features to create a percent bar no?
     clf = KNN(contamination=contamination,

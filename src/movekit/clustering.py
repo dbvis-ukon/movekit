@@ -14,7 +14,7 @@ import st_clustering as stc
 from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 
-from .feature_extraction import *
+from src.movekit.feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
 
 
@@ -37,9 +37,9 @@ def get_trajectories(data_groups):
 def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
     """
     Obtain dynamic time warping amongst all trajectories from the grouped animal-records.
-    :param data_groups: Grouped dictionary by animal_id.
-    :param path: Boolean to specify if matrix of dtw-path gets returned as well
-    :param distance: Specify with distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
+    :param preprocessed_data: pandas Dataframe containing the movement records.
+    :param path: Boolean to specify if matrix of dtw-path gets returned as well.
+    :param distance: Specify which distance measure to use. Default: "euclidean". (ex. Alternatives: pdist, minkowski)
     :return: pandas Dataframe with distances between trajectories.
     """
     data_groups = grouping_data(preprocessed_data)
@@ -80,7 +80,8 @@ def compute_centroid_direction(data,
 
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
     :param colname: Name of the column. Default: centroid_direction.
-    :param group_output: Boolean, defines form of output. Default: Animal-Level
+    :param group_output: Boolean, defines form of output. Default: Animal-Level.
+    :param only_centroid: Boolean in case we just want to compute the centroids. Default: True.
     :return: pandas DF with centroid direction included
 
     """
@@ -116,7 +117,8 @@ def compute_centroid_direction(data,
 def get_heading_difference(preprocessed_data):
     """
     Calculate the difference in between the animal's direction and the centroid's direction for each timestep.
-    The difference is measured by the cosine similarity of the two direction vectors.
+    The difference is measured by the cosine similarity of the two direction vectors. The value range is from -1 to 1,
+    with 1 meaning animal and centroid having the same direction while -1 meaning they have opposite directions.
 
     :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
     :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
@@ -141,55 +143,88 @@ def get_heading_difference(preprocessed_data):
 
         directions = regrouping_data(cen_dir)
         # calculate cosine similarity of the centroids and the animals direction vector
-        directions['heading_difference'] = directions.apply(lambda row: cosine_similarity(np.array(row.direction), np.array(row.centroid_direction)), axis=1)
-
+        cos_similarities = [cosine_similarity(np.array([directions['direction'][i]]), np.array([directions['centroid_direction'][i]]))[0][0] for i in range(0, len(directions[\
+        'direction']))]  # cosine similarity for direction vectors of animal and centroid
+        directions['heading_difference'] = cos_similarities
     return directions
 
 
 def compute_polarization(preprocessed_data, group_output=False):
     """
     Compute the polarization of a group at all record timepoints.
+    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv. As the formula only takes angles as input,
+    the polarization is calculated for 2d - Data by first calculating the direction angles of the different movers and afterwards by calculating the polarization.
+    For 3-dimensional data for all two's-combinations of the three dimensions the polarization is calculated in the way described before for 2d-data,
+    afterwards the mean of the three results is taken as result for the polarization.
 
-    More info about the formula: Here: https://bit.ly/2xZ8uSI and Here: https://bit.ly/3aWfbDv.
     :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
     :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
     """
-    # Extract features if not done yet
-    if "direction" not in preprocessed_data.columns:
-        warnings.warn('calculating direction, since not found in input!')
-        preprocessed_data = extract_features(preprocessed_data)
 
-    # Group by 'time'-
-    data_time = preprocessed_data.groupby('time')
+    def polarization(preprocessed_data, group_output):
+        # convert to radians for polarization formula
+        preprocessed_data['direction_angle'] = preprocessed_data['direction_angle'].apply(lambda x: math.radians(x))
 
-    # Dictionary to hold grouped data by 'time' attribute-
-    data_groups_time = {}
+        # Group by 'time'-
+        data_time = preprocessed_data.groupby('time')
 
-    # Obtain polarization for each point in time
-    for aid in data_time.groups.keys():
-        data_groups_time[aid] = data_time.get_group(aid)
-        data_groups_time[aid].reset_index(drop=True, inplace=True)
-        data = (1 / len(data_groups_time[aid]["direction"])) * np.sqrt(
-            (sum(np.sin(data_groups_time[aid]["direction"].astype(np.float64)))
-             )**2 +
-            (sum(np.cos(data_groups_time[aid]["direction"].astype(np.float64)))
-             )**2)
+        # Dictionary to hold grouped data by 'time' attribute-
+        data_groups_time = {}
 
-        # Assign polarization to new variable
-        data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
+        # Obtain polarization for each point in time
+        for aid in data_time.groups.keys():
+            data_groups_time[aid] = data_time.get_group(aid)
+            data_groups_time[aid].reset_index(drop=True, inplace=True)
+            data = (1 / len(data_groups_time[aid]["direction_angle"])) * np.sqrt(
+                (sum(np.sin(data_groups_time[aid]["direction_angle"].astype(np.float64)))
+                 )**2 +
+                (sum(np.cos(data_groups_time[aid]["direction_angle"].astype(np.float64)))
+                 )**2)
 
-    # Regroup data into DataFrame
-    polarization_data = regrouping_data(data_groups_time)
+            data_groups_time[aid] = data_groups_time[aid].assign(polarization=data)
 
-    # If interested in fullstack output for each animal
-    if group_output == False:
+            # Regroup data into DataFrame
+        polarization_data = regrouping_data(data_groups_time)
+
+        # convert direction angle back to degrees
+        polarization_data['direction_angle'] = polarization_data['direction_angle'].apply(lambda x: math.degrees(x))
+
+        # If interested in fullstack output for each animal
+        if group_output == False:
+            return polarization_data
+
+        # If only interested in group level output, return one line per timeslot
+        else:
+            pol = polarization_data
+            return pol.loc[pol.animal_id == list(set(pol.animal_id))[0],
+                           ['time', 'polarization']].reset_index(drop=True)
+
+    # Check if 3d
+    if 'z' in preprocessed_data.columns:
+        # if 3d calculate direction angle for all three two's-combinations of the three dimensions
+        preprocessed_data = preprocessed_data.rename(columns={'z': 'zz'})
+        preprocessed_data_1 = compute_direction_angle(preprocessed_data)
+        preprocessed_data_2 = compute_direction_angle(preprocessed_data, param_x='x', param_y='zz')
+        preprocessed_data_3 = compute_direction_angle(preprocessed_data, param_x='y', param_y='zz')
+        polarizations = []
+        # then calculate the polarization for each combination and take the mean as the final result
+        for i in [preprocessed_data_1, preprocessed_data_2, preprocessed_data_3]:
+            polarizations.append(polarization(i, group_output=group_output))
+        data = [(polarizations[0]['polarization'][i] + polarizations[1]['polarization'][i] + polarizations[2]['polarization'][i])
+                / 3 for i in range(len(polarizations[0]['polarization']))]
+        polarization_data = polarizations[0]
+        polarization_data = polarization_data.assign(polarization=data)
         return polarization_data
 
-    # If only interested in group level output, return one line per timeslot
+    # if data is 2d check if it  already has direction angle calculated and afterwards calculate polarization
     else:
-        pol = polarization_data
-        return pol.loc[pol.animal_id == list(set(pol.animal_id))[0],
-                       ['time', 'polarization']].reset_index(drop=True)
+        if "direction_angle" not in preprocessed_data.columns:
+            warnings.warn('calculating direction angle for first two dimensions, since not found in input!')
+            preprocessed_data = compute_direction_angle(preprocessed_data)
+            return polarization(preprocessed_data, group_output)
+        else:
+            return polarization(preprocessed_data, group_output)
+
 
 
 def voronoi_volumes(points):
@@ -211,12 +246,12 @@ def voronoi_volumes(points):
 
 def get_spatial_objects(preprocessed_data, group_output=False):
     """
-    Function to calculate convex hull object, voronoi diagram and delaunay triangulation in one if no group output specified, we also obtain volumes of the first two objects.
+    Function to calculate convex hull, voronoi diagram and delaunay triangulation objects and also volumes of the first two objects.
     Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.
 
     :param preprocessed_data: Pandas Df, containing x and y coordinates.
     :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.
-    :return: DataFrame either for each animal or for group at each time, containing convex hull area as well as convex hull object.
+    :return: DataFrame either for each animal or for group at each time, containing convex hull and voronoi diagram area as well as convex hull, voronoi diagram and delaunay triangulation object.
     """
 
     data_time = preprocessed_data.groupby('time')
@@ -295,10 +330,10 @@ def get_group_data(preprocessed_data):
 
 def clustering(algorithm, data, **kwargs):
     """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
+    Clustering of spatio-temporal data.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param data: DataFrame to perform clustering on.
+    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
     """
     if algorithm == 'dbscan':
         clusterer = stc.ST_DBSCAN(**kwargs)
@@ -330,11 +365,11 @@ def clustering(algorithm, data, **kwargs):
 
 def clustering_with_splits(algorithm, data, frame_size, **kwargs):
     """
-    Clustering of spatio-temporal data
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch
-    :param data: DataFrame to perform clustering on
-    :param frame_size: the dataset is partitioned into frames and merged aferwards
-    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data
+    Clustering of spatio-temporal data.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param data: DataFrame to perform clustering on.
+    :param frame_size: the dataset is partitioned into frames and merged afterwards.
+    :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
     """
     if algorithm == 'dbscan':
         clusterer = stc.ST_DBSCAN(**kwargs)
