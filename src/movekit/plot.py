@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from .feature_extraction import *
+import seaborn as sns
 
 
 def plot_movement(data, frm, to):
@@ -15,9 +16,11 @@ def plot_movement(data, frm, to):
     :return: None.
     """
 
-    plt.scatter(x='x',
+    sns.relplot(x='x',
                 y='y',
-                data=data.loc[(data['time'] >= frm) & (data['time'] <= to), :])
+                data=data.loc[(data['time'] >= frm) & (data['time'] <= to), :],
+                hue='animal_id',
+                palette='tab10')
     plt.title("Plotting 'x' and 'y' coordinates")
     plt.xlabel("'x' coordinate")
     plt.ylabel("'y' coordinate")
