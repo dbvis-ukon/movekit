@@ -3,6 +3,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 import warnings
+from movekit.preprocess import convert_latlon
 
 def parse_csv(path_to_file):
     """
@@ -146,3 +147,45 @@ def read_data(path, sheet = 0):
         return parse_excel(path, sheet)
     else:
         raise ValueError(f'File extension {file_split[-1]} can not be imported. Imported file has to be of type ".csv" or ".xlsx" or ".xls".')
+
+
+def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
+    """
+    Function to import csv and excel files from the Movebank database.
+
+    :param path_to_file: Complete path/relative path to file along with file name
+    :param animal_id: Column name of the unique animal identifier (converted to be animal_id)
+
+    return: Data frame in a format required for using the movekit package.
+    """
+
+    # check file extension and import data as pandas df
+    file_split = path_to_file.split(".")
+    if file_split[-1] == 'csv':
+        data = pd.read_csv(path_to_file)
+    elif file_split[-1] == 'xlsx':
+        data = pd.read_excel(path_to_file)
+    elif file_split[-1] == 'xls':
+        data = pd.read_excel(path_to_file)
+    else:
+        raise ValueError(
+            f'File extension {file_split[-1]} can not be imported. Imported file has to be of type ".csv" or ".xlsx" or ".xls".')
+
+    # convert latitude and longitude  to xy coordinate system
+    data = convert_latlon(data, latitude='location-lat', longitude='location-long',replace=False)
+
+    # rename time, animal_id, x and y column and order them to beginning of df
+    data.rename({'timestamp': 'time', animal_id: 'animal_id'}, axis=1, inplace=True)
+    cols = data.columns.tolist()
+    for i in ['time','animal_id','x','y']:
+        cols.remove(i)
+    cols = ['time','animal_id','x','y'] + cols
+    data = data[cols]
+
+    # order observations by  time
+    data['time'] = pd.to_datetime(data['time'])
+    data.sort_values(['time', 'animal_id'],
+                     ascending=True,
+                     inplace=True)
+
+    return data
