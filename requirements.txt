@@ -20,3 +20,5 @@ st-clustering>=0.0.1
 scikit-learn>=0.22.0,<=0.24.2
 tqdm>=4.62.3
 numpy<1.21,>=1.17
+cython<=0.29.28,>=0.29.27
+folium>=0.12.1
