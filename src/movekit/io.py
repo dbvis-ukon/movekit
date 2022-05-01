@@ -3,7 +3,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 import warnings
-from movekit.preprocess import convert_latlon
+from .preprocess import convert_latlon
 
 def parse_csv(path_to_file):
     """
@@ -187,5 +187,4 @@ def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
     data.sort_values(['time', 'animal_id'],
                      ascending=True,
                      inplace=True)
-
     return data
