@@ -55,6 +55,16 @@ def parse_csv(path_to_file):
                     "\n'heading_angle' attribute is found and will be processed\n"
                 )
 
+            # Check if time contains duplicates and if so execute warning
+            grouped_df = data.groupby("animal_id")
+            for aid in grouped_df.groups.keys():
+                if(grouped_df.get_group(aid)["time"].duplicated().any()):
+                    warnings.warn(
+                        "For some animals there are duplicate values for time! This might indicate some error in the "
+                        "data and can lead to incorrect analysis."
+                    )
+                    break
+
             return data
         else:
             raise ValueError('Movekit requires columns to be named {} but was given {} instead'.format(format_col, data.columns))
@@ -117,6 +127,17 @@ def parse_excel(path_to_file, sheet):
                 print(
                     "\n'heading_angle' attribute is found and will be processed\n"
                 )
+
+            # Check if time contains duplicates and if so execute warning
+            grouped_df = data.groupby("animal_id")
+            for aid in grouped_df.groups.keys():
+                if(grouped_df.get_group(aid)["time"].duplicated().any()):
+                    warnings.warn(
+                        "For some animals there are duplicate values for time! This might indicate some error in the "
+                        "data and can lead to incorrect analysis."
+                    )
+                    break
+                    
             return data
         else:
             raise ValueError('Movekit requires columns to be named {} but was given {} instead'.format(format_col, data.columns))
