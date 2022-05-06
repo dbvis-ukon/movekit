@@ -256,3 +256,9 @@ def plot_geodata(data, latitude_colname = "location-lat", longitude_colname = "l
                     except:
                         pass
     return map
+
+def save_geodata_map(map, filename):
+    try:
+        map.save(filename)
+    except:
+        warnings.warn("Map could not be saved. Please try another file extension, f.e. '.html'")
