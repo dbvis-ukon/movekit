@@ -7,6 +7,7 @@ import seaborn as sns
 import folium
 from tqdm import tqdm
 import warnings
+import moviepy.editor as mp
 
 
 def plot_movement(data, frm, to):
@@ -258,7 +259,21 @@ def plot_geodata(data, latitude_colname = "location-lat", longitude_colname = "l
     return map
 
 def save_geodata_map(map, filename):
+    """save the creates geodata map as a file
+    :param map: map object to be saved.
+    :param filename: name of the new created file containing the map.
+    """
     try:
         map.save(filename)
     except:
         warnings.warn("Map could not be saved. Please try another file extension, f.e. '.html'")
+
+
+def save_animation_plot(animation_object, filename):
+    # save as gif
+    writergif = animation.PillowWriter(fps=30)
+    animation_object.save(f'{filename}.gif', writer=writergif)
+    # save as mp4
+    clip = mp.VideoFileClip(f'{filename}.gif')
+    clip.write_videofile(f'{filename}.mp4')
+

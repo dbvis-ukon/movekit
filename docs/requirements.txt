@@ -23,4 +23,5 @@ tqdm>=4.62.3
 numpy<1.21,>=1.17
 cython<=0.29.28,>=0.29.27
 folium>=0.12.1
+moviepy>=1.0.3
 # sphinx_rtd_theme
