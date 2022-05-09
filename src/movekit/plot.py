@@ -3,6 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from .feature_extraction import *
+import seaborn as sns
+import folium
+from tqdm import tqdm
+import warnings
+import moviepy.editor as mp
 
 
 def plot_movement(data, frm, to):
@@ -15,9 +20,11 @@ def plot_movement(data, frm, to):
     :return: None.
     """
 
-    plt.scatter(x='x',
+    sns.relplot(x='x',
                 y='y',
-                data=data.loc[(data['time'] >= frm) & (data['time'] <= to), :])
+                data=data.loc[(data['time'] >= frm) & (data['time'] <= to), :],
+                hue='animal_id',
+                palette='tab10')
     plt.title("Plotting 'x' and 'y' coordinates")
     plt.xlabel("'x' coordinate")
     plt.ylabel("'y' coordinate")
@@ -201,4 +208,72 @@ def plot_animal(inp_data, animal_id):
 
     return None
 
+
+
+def plot_geodata(data, latitude_colname = "location-lat", longitude_colname = "location-long", animal_list=[], movement_lines=False):
+    """
+    Function to plot geo data on an interactive map using Open Street Maps.
+    :param data: DataFrame containing the movement records
+    :param latitude_colname: name of the column containing the latitude of each movement record
+    :param longitude_colname: name of the column containing the longitude of each movement record
+    :param animal_list: list containing animal_id's of all animals to be plotted (Default: every animal in data is plotted)
+    :param movement_lines: Boolean whether movement lines between different location markers of animals are plotted
+    return: map Object containing markers for each tracked animal position
+    """
+    warnings.warn("As plotting the geodata on an interactive map is  very time-consuming, it is recommended to reduce the size of the data as much as possible.")
+    df = grouping_data(data)
+    if animal_list != []:
+        map = folium.Map(location=[df[animal_list[0]].loc[0, latitude_colname], data.loc[0, longitude_colname]],
+                         zoom_start=15)  # start location is determined by first animal in specified animal_list
+        for aid in tqdm(animal_list, position=0, desc="Plotting geo data for specified animals"):
+            animal_data = df[aid]
+            for i in range(len(animal_data)):
+                folium.Marker(location=[animal_data.loc[i,latitude_colname], animal_data.loc[i,longitude_colname]],
+                              tooltip=f'Animal ID: {animal_data.loc[i,"animal_id"]}',
+                              popup=f'Animal ID: {animal_data.loc[i,"animal_id"]}\nTime: {animal_data.loc[i,"time"]}',
+                              icon = folium.Icon(color="blue")).add_to(map)
+                if movement_lines:
+                    try:
+                        folium.PolyLine(locations=[[animal_data.loc[i-1,latitude_colname], animal_data.loc[i-1,longitude_colname]],
+                                               [animal_data.loc[i,latitude_colname], animal_data.loc[i,longitude_colname]]],
+                                    tooltip=i,popup=f'Time Range of movement: From {animal_data.loc[i-1,"time"]} to {animal_data.loc[i,"time"]}').add_to(map)
+                    except:
+                        pass
+    else:
+        map = folium.Map(location=[data.loc[0, latitude_colname], data.loc[0, longitude_colname]],
+                         zoom_start=15) # start location is determined by first observation
+        for aid in tqdm(df.keys(),position=0, desc="Plotting geo data for all animals"):
+            animal_data = df[aid]
+            for i in range(len(animal_data)):
+                folium.Marker(location=[animal_data.loc[i, latitude_colname], animal_data.loc[i, longitude_colname]],
+                              tooltip=f'Animal ID: {animal_data.loc[i, "animal_id"]}',
+                              popup=f'Animal ID: {animal_data.loc[i, "animal_id"]}\nTime: {animal_data.loc[i, "time"]}',
+                              icon=folium.Icon(color="blue")).add_to(map)
+                if movement_lines:
+                    try:
+                        folium.PolyLine(locations=[[animal_data.loc[i-1,latitude_colname], animal_data.loc[i-1,longitude_colname]],
+                                               [animal_data.loc[i,latitude_colname], animal_data.loc[i,longitude_colname]]],
+                                    tooltip=i,popup=f'Time Range of movement: From {animal_data.loc[i-1,"time"]} to {animal_data.loc[i,"time"]}').add_to(map)
+                    except:
+                        pass
+    return map
+
+def save_geodata_map(map, filename):
+    """save the creates geodata map as a file
+    :param map: map object to be saved.
+    :param filename: name of the new created file containing the map.
+    """
+    try:
+        map.save(filename)
+    except:
+        warnings.warn("Map could not be saved. Please try another file extension, f.e. '.html'")
+
+
+def save_animation_plot(animation_object, filename):
+    # save as gif
+    writergif = animation.PillowWriter(fps=30)
+    animation_object.save(f'{filename}.gif', writer=writergif)
+    # save as mp4
+    clip = mp.VideoFileClip(f'{filename}.gif')
+    clip.write_videofile(f'{filename}.mp4')
 

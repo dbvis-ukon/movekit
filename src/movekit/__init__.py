@@ -16,7 +16,7 @@ finally:
     del version, PackageNotFoundError
 
 
-from .io import read_data  # noqa: E402
+from .io import read_data, read_movebank  # noqa: E402
 from .utils import presence_3d, angle
 from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
     resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize, \
@@ -27,6 +27,6 @@ from .feature_extraction import ts_feature, ts_all_features, explore_features_ge
     outlier_detection, group_movement, explore_features, compute_direction_angle, compute_turning_angle
 from .clustering import dtw_matrix, get_heading_difference, compute_polarization, get_spatial_objects, compute_centroid_direction, clustering, clustering_with_splits
 # noqa: E402
-from .plot import plot_animal, plot_pace, plot_movement, animate_movement  # noqa: E402
+from .plot import plot_animal, plot_pace, plot_movement, animate_movement, plot_geodata, save_geodata_map, save_animation_plot  # noqa: E402
 
 from .network import network_time_graphlist
