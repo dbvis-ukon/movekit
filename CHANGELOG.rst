@@ -1,25 +1,13 @@
 =========
 Changelog
 =========
-
-Version 0.1.14
+Version 0.1.18
 =============
+    * Support for data from Movebase database
+    * Plotting of geodata on map
+    * Added functionality to existing plot functions and new plot functions
+    * Changes in direction and distance calculations in feature extraction functions
     * New documentation with examples
-    * Network analysis
-    * Clustering
-    * Spatial analysis
-
-Version 0.1.9
-=============
-    * Time series feature extraction and clustering
-    * Basic plot functionality
-    * Dynamic graph extraction already added
-    * Voronoi diagram
-
-Version 0.1
-===========
-    * 2019-09-11
-    * Updated Readme and setup.py
-    * Added Changelog
-    * Modified project structure
-    * Started with tests
+    * Percentage loading bars for computationally intensive functions
+    * Preprocessing methods input
+    * Changes in average acceleration calculation
