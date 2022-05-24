@@ -66,17 +66,18 @@ def animate_movement(data, viewsize):
     return anim # need to return anim otherwise it gets eaten by garbage collector and animation is not updated
 
 
-def plot_animal_timesteps(data_animal_id_groups):
+def plot_animal_timesteps(data):
     """
     Plot the number of time steps for each 'animal_id'
 
-    :param data_animal_id_groups: Dictionary containing grouping of data by 'animal_id'.
+    :param data_animal_id_groups: DataFrame containing movement records.
     :return: None
     """
     # Initialize Python 3.X dict to hold number of time steps
     # for each animals-
     animals_timesteps = {}
 
+    data_animal_id_groups = grouping_data(data)
     for aid in data_animal_id_groups.keys():
         animals_timesteps[aid] = data_animal_id_groups[aid]['time'].count()
 
