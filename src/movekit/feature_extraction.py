@@ -10,7 +10,7 @@ from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
-from src.movekit.utils import presence_3d, angle
+from .utils import presence_3d, angle
 from tqdm import tqdm
 import math
 from sklearn.metrics.pairwise import cosine_similarity
