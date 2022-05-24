@@ -24,9 +24,9 @@ from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movem
 # E402
 from .feature_extraction import extract_features, euclidean_dist, distance_by_time # noqa: E402
 from .feature_extraction import ts_feature, ts_all_features, explore_features_geospatial, centroid_medoid_computation, \
-    outlier_detection, group_movement, explore_features, compute_direction_angle, compute_turning_angle
+    outlier_detection, group_movement, explore_features, compute_direction_angle, compute_turning_angle, split_movement_trajectory, movement_stopping_durations
 from .clustering import dtw_matrix, get_heading_difference, compute_polarization, get_spatial_objects, compute_centroid_direction, clustering, clustering_with_splits
 # noqa: E402
-from .plot import plot_animal, plot_pace, plot_movement, animate_movement, plot_geodata, save_geodata_map, save_animation_plot  # noqa: E402
+from .plot import plot_animal, plot_pace, plot_movement, animate_movement, plot_geodata, save_geodata_map, save_animation_plot, plot_animal_timesteps  # noqa: E402
 
 from .network import network_time_graphlist
