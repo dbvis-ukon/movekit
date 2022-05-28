@@ -1,0 +1,150 @@
+{
+    "type":"FeatureCollection",
+    "features":[
+        {
+            "type":"Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates":[99.0, 0.0]
+                },
+                "properties":{
+                "name":"fish1",
+                "time": 1
+            }
+        },
+                {
+            "type":"Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [101.0, 1.0]
+                },
+                "properties":{
+                "name":"fish1",
+                "time": 2
+            }
+        },
+                {
+            "type":"Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [8.0, 8.0]
+                },
+                "properties":{
+                "name":"fish1",
+                "time": 3
+            }
+        },
+                {
+            "type":"Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [-44.0, -11.0]
+
+                },
+                "properties":{
+                "name":"fish1",
+                "time": 4
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [120.0, 4.0]
+                },
+            "properties": {
+                "name": "fish2",
+                "time": 1
+            }
+        },
+                {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [200.0, 5.0]
+                },
+            "properties": {
+                "name": "fish2",
+                "time": 2
+            }
+        },
+                {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [125.0, 43.0]
+                },
+            "properties": {
+                "name": "fish2",
+                "time": 3
+            }
+        },
+                {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [12.0, 5.0]
+                },
+            "properties": {
+                "name": "fish2",
+                "time": 4
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [120.0, 6.0]
+                },
+            "properties": {
+                "name": "fish3",
+                "time": 1
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [33.0, 5.0]
+                },
+            "properties": {
+                "name": "fish3",
+                "time": 2
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [45.0, 87.0]
+                },
+            "properties": {
+                "name": "fish3",
+                "time": 3
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry":
+                {
+                    "type": "Point",
+                    "coordinates": [11.0, -12.0]
+                },
+            "properties": {
+                "name": "fish3",
+                "time": 4
+            }
+        }
+    ]
+}
