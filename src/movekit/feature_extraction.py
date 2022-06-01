@@ -14,6 +14,7 @@ from .utils import presence_3d, angle
 from tqdm import tqdm
 import math
 from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial.distance import directed_hausdorff
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -1016,3 +1017,57 @@ def movement_stopping_durations(data, stop_threshold=0.5):
             time_df[f'Duration of phase {index+1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = time_diff
         df_dict[aid] = time_df
     return df_dict
+
+
+def hausdorff_distance(data, mover1=None, mover2=None):
+    """
+    Calculate the Hausdorff-Distance between trajectories of different movers.
+
+    :param data: pandas DataFrame containing movement records.
+    :param mover1: animal_id of the first mover if Hausdorff distance is just to be calculated between two movers.
+    :param mover2: animal_id of the second mover if Hausdorff distance is just to be calculated between two movers
+    :return: Hausdorff distance between two specified movers. If no movers are specified, Hausdorff distance between
+    all movers in the data to each other as a Pandas DataFrame.
+    """
+    presence3d = presence_3d(data)
+    data = grouping_data(data)
+
+    if mover1 is None and mover2 is None:
+
+        df = pd.DataFrame()
+        for aid1 in data.keys():
+            dict = {}
+            for aid2 in data.keys():
+                if (presence3d):
+                    hdf_distance1 = directed_hausdorff(data[aid1][["x", "y", "z"]].values,
+                                                       data[aid2][["x", "y", "z"]].values)[0]
+                    hdf_distance2 = directed_hausdorff(data[aid2][["x", "y", "z"]].values,
+                                                       data[aid1][["x", "y", "z"]].values)[0]
+                    hdf_distance = max(hdf_distance1, hdf_distance2)
+                else:
+                    hdf_distance1 = directed_hausdorff(data[aid1][["x", "y"]].values,
+                                                       data[aid2][["x", "y"]].values)[0]
+                    hdf_distance2 = directed_hausdorff(data[aid2][["x", "y"]].values,
+                                                       data[aid1][["x", "y"]].values)[0]
+                    hdf_distance = max(hdf_distance1, hdf_distance2)
+                dict[aid2] = hdf_distance
+            aid_df = pd.DataFrame(dict, index=[aid1])
+            df = df.append(aid_df)
+
+        return df
+
+    else:
+        if presence3d:
+            hdf_distance1 = directed_hausdorff(data[mover1][["x", "y", "z"]].values,
+                                               data[mover2][["x", "y", "z"]].values)[0]
+            hdf_distance2 = directed_hausdorff(data[mover2][["x", "y", "z"]].values,
+                                               data[mover1][["x", "y", "z"]].values)[0]
+            hdf_distance = max(hdf_distance1, hdf_distance2)
+        else:
+            hdf_distance1 = directed_hausdorff(data[mover1][["x", "y"]].values,
+                                               data[mover2][["x", "y"]].values)[0]
+            hdf_distance2 = directed_hausdorff(data[mover2][["x", "y"]].values,
+                                               data[mover1][["x", "y"]].values)[0]
+            hdf_distance = max(hdf_distance1, hdf_distance2)
+
+        return hdf_distance
