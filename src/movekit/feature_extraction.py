@@ -489,6 +489,15 @@ def extract_features(data, fps=10, stop_threshold=0.5):
         # Replace NA
         regrouped_data.fillna(0, inplace=True)
 
+        # Put extract features columns to the beginning of df
+        cols = regrouped_data.columns.tolist()
+        for i in ['time', 'animal_id', 'x', 'y', 'distance', 'direction', 'turning', 'average_speed',
+                  'average_acceleration', 'stopped']:
+            cols.remove(i)
+        cols = ['time', 'animal_id', 'x', 'y', 'distance', 'direction', 'turning', 'average_speed',
+                'average_acceleration', 'stopped'] + cols
+        regrouped_data = regrouped_data[cols]
+
         return regrouped_data
 
 
@@ -910,7 +919,7 @@ def explore_features_geospatial(preprocessed_data):
 
 
 def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration",
-                                         "stopped", "turning"], contamination=0.01, n_neighbors=5, method="mean", \
+                                         "stopped", "turning"], contamination=0.01, n_neighbors=5, method="mean",
                       metric="minkowski"):
     """
     Detect outliers based on pyod KNN.
