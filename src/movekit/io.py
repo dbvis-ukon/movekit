@@ -238,8 +238,19 @@ def read_geojson(path, animal_id="name", time="time"):
     y = []
     for i in range(len(data)):
         y.append(data['geometry'][i].y)
-    df = pd.DataFrame({'time': data[time],
-                       'animal_id': data[animal_id],
-                       'x': x,
-                       'y': y})
+    if len(list(data["geometry"][0].coords)[0]) == 3:  # check for 3d
+        z = []
+        for i in range(len(data)):
+            z.append(data['geometry'][i].z)
+
+        df = pd.DataFrame({'time': data[time],
+                           'animal_id': data[animal_id],
+                           'x': x,
+                           'y': y,
+                           'z': z})
+    else:
+        df = pd.DataFrame({'time': data[time],
+                           'animal_id': data[animal_id],
+                           'x': x,
+                           'y': y})
     return df
