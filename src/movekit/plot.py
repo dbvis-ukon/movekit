@@ -85,9 +85,7 @@ def plot_animal_timesteps(data):
     # sorted((val, key) for (key, val) in animals_timesteps.items())
     # [(43201, 312), (43201, 511), (43201, 607), (43201, 811), (43201, 905)]
 
-    plt.bar(range(len(animals_timesteps)),
-            list(animals_timesteps.values()),
-            align='center')
+    sns.barplot(x=list(animals_timesteps.keys()), y=list(animals_timesteps.values()))
 
     plt.xticks(range(len(animals_timesteps)), list(animals_timesteps.keys()))
     plt.title("Barchart: number of timesteps versus animals")
@@ -108,78 +106,31 @@ def plot_pace(avg_speed_data, feature="speed"):
     :return: None.
     """
 
-    # Group data into dictionary with animal_id as keys
-    data_animal_id_groups = grouping_data(avg_speed_data)
-
-    # Init dictionary to hold requested parameter
-    animals_vals = {}
-
     if feature == "speed":
 
-        # Fill dictionary with average speed feature
-        for aid in data_animal_id_groups.keys():
-            animals_vals[aid] = data_animal_id_groups[aid]['average_speed']
-            animals_vals[aid] = np.asarray(animals_vals[aid])
+        g = sns.FacetGrid(avg_speed_data, row="animal_id")
+        g.map(sns.lineplot, "time", "average_speed", alpha=.7)
+        g.add_legend()
+        g.set_titles("Average speed for each animal")
 
-        # List containing animal ids to be used within loop-
-        animal_ids = list(animals_vals.keys())
+        for x in g.axes_dict.keys():
+            g.axes_dict[x].set_title(f"Animal ID: {x}")
+            g.axes_dict[x].set(xlabel='number of time steps', ylabel='avg speed')
 
-        # Indices for stacking and making subplots in grid-
-        c = 0
-
-        fig, axs = plt.subplots(len(animal_ids),
-                                sharex=True,
-                                sharey=True,
-                                figsize=(10, 10))
-
-        fig.suptitle("Plot: Average Acceleration for each animal")
-
-        while c < len(animal_ids):
-            axs[c].plot(animals_vals[animal_ids[c]])
-            axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
-            c += 1
-
-        for ax in axs.flat:
-            ax.set(xlabel='number of time steps', ylabel='avg speed')
-
-        # Hide x labels and tick labels for top plots and y ticks
-        for ax in axs:
-            ax.label_outer()
+        plt.show()
 
     if feature == "acceleration":
 
-        # Fill dictionary with average acceleration feature
-        for aid in data_animal_id_groups.keys():
-            animals_vals[aid] = data_animal_id_groups[aid][
-                'average_acceleration']
-            animals_vals[aid] = np.asarray(animals_vals[aid])
+        g = sns.FacetGrid(avg_speed_data, row="animal_id")
+        g.map(sns.lineplot, "time", "average_acceleration", alpha=.7)
+        g.add_legend()
+        g.set_titles("Average acceleration for each animal")
 
-        # List containing animal ids to be used within loop-
-        animal_ids = list(animals_vals.keys())
+        for x in g.axes_dict.keys():
+            g.axes_dict[x].set_title(f"Animal ID: {x}")
+            g.axes_dict[x].set(xlabel='number of time steps', ylabel='avg acc')
 
-        # Indices for stacking and making subplots in grid-
-        c = 0
-
-        fig, axs = plt.subplots(len(animal_ids),
-                                sharex=True,
-                                sharey=True,
-                                figsize=(10, 10))
-
-        fig.suptitle("Plot: Average Acceleration for each animal")
-
-        while c < len(animal_ids):
-            axs[c].plot(animals_vals[animal_ids[c]])
-            axs[c].set_title("Animal ID: {0}".format(animal_ids[c]))
-            c += 1
-
-        for ax in axs.flat:
-            ax.set(xlabel='number of time steps', ylabel='avg acc')
-
-        # Hide x labels and tick labels for top plots and y ticks
-        for ax in axs:
-            ax.label_outer()
-
-    plt.show()
+        plt.show()
 
     return None
 
@@ -199,10 +150,10 @@ def plot_animal(inp_data, animal_id):
             format(animal_id))
         return None
 
-    plt.plot(data_animal_id_groups[animal_id]['x'],
-             data_animal_id_groups[animal_id]['y'])
+    sns.relplot(x=data_animal_id_groups[animal_id]['x'],
+             y=data_animal_id_groups[animal_id]['y'])
 
-    plt.title("Plotting animal id: {0}".format(animal_id))
+    plt.title("Plotting animal id: {0}".format(animal_id), y=0.985)
     plt.xlabel("x coordinates")
     plt.ylabel("y coordinates")
     plt.show()

@@ -4,6 +4,7 @@ from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.errors import EmptyDataError
 import warnings
 from .preprocess import convert_latlon
+import geopandas as gpd
 
 def parse_csv(path_to_file):
     """
@@ -209,3 +210,47 @@ def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
                      ascending=True,
                      inplace=True)
     return data
+
+
+def read_geojson(path, animal_id="name", time="time"):
+    """
+        Function to import geojson files.
+
+        :param path: Complete path/relative path to file along with file name
+        :param animal_id: Key name of the unique animal identifier (as defined as property value in the geojson object)
+        :param time: Key name of time (as defined as property value in the geojson object)
+
+        return: Data frame in a format required for using the movekit package.
+        """
+
+    # check extension
+    file_split = path.split(".")
+    if file_split[-1] != 'json' and file_split[-1] != 'geojson':
+        raise ValueError(
+            f'File extension {file_split[-1]} can not be imported with this function. Imported file has to be of type ".json" or ".geojson".')
+
+    # extract and convert data
+    data = gpd.read_file(path)
+    # get coordinates from points
+    x = []
+    for i in range(len(data)):
+        x.append(data['geometry'][i].x)
+    y = []
+    for i in range(len(data)):
+        y.append(data['geometry'][i].y)
+    if len(list(data["geometry"][0].coords)[0]) == 3:  # check for 3d
+        z = []
+        for i in range(len(data)):
+            z.append(data['geometry'][i].z)
+
+        df = pd.DataFrame({'time': data[time],
+                           'animal_id': data[animal_id],
+                           'x': x,
+                           'y': y,
+                           'z': z})
+    else:
+        df = pd.DataFrame({'time': data[time],
+                           'animal_id': data[animal_id],
+                           'x': x,
+                           'y': y})
+    return df

@@ -1,7 +1,7 @@
 # Requirements file for ReadTheDocs, check .readthedocs.yml.
 # To build the module reference correctly, make sure every external package
 # under `install_requires` in `setup.cfg` is also listed here!
-sphinx>=3.2.1 #die ersten drei sind nicht im setup.cfg und nicht in movekit/src
+sphinx>=3.2.1
 nbsphinx
 pandoc
 importlib-metadata; python_version<"3.10"
@@ -25,4 +25,5 @@ numpy<1.21,>=1.17
 cython>=0.29.27
 folium>=0.12.1
 moviepy>=1.0.3
+geopandas>=0.10.0
 # sphinx_rtd_theme

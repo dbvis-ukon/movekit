@@ -24,3 +24,4 @@ numpy<1.21,>=1.17
 cython>=0.29.27
 folium>=0.12.1
 moviepy>=1.0.3
+geopandas>=0.10.0
