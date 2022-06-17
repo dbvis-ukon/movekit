@@ -6,11 +6,12 @@ import warnings
 from .preprocess import convert_latlon
 import geopandas as gpd
 
-def parse_csv(path_to_file):
+def parse_csv(path_to_file, time_format):
     """
     Read CSV file into Pandas DataFrame.
 
     :param path_to_file: Complete path/relative path to CSV file along with file name.
+    :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
     :return: Pandas DataFrame containing imported data.
     """
     try:
@@ -34,7 +35,11 @@ def parse_csv(path_to_file):
                                  inplace=True)
                 # Check if 'time' attribute is string-
             elif is_string_dtype(data['time']):
-                data['time'] = pd.to_datetime(data['time'])
+                if time_format == "undefined":
+                    data['time'] = pd.to_datetime(data['time'])
+                    warnings.warn('As time was converted and no format was given as parameter, please check if the time conversion is correct.')
+                else:
+                    data['time'] = pd.to_datetime(data['time'], format=time_format)
                 data.sort_values(['time', 'animal_id'],
                                  ascending=True,
                                  inplace=True)
@@ -76,12 +81,13 @@ def parse_csv(path_to_file):
 
 
 
-def parse_excel(path_to_file, sheet):
+def parse_excel(path_to_file, sheet, time_format):
     """
     Read Excel file into Pandas DataFrame
 
     :param path_to_file: Complete path/relative path to Excel file along with file name
     :param sheet: name of specific sheet given, by default first sheet of the excel workbook
+    :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
     :return: Pandas DataFrame containing imported data.
     """
     try:
@@ -108,7 +114,11 @@ def parse_excel(path_to_file, sheet):
                                  inplace=True)
                 # Check if 'time' attribute is string-
             elif is_string_dtype(data['time']):
-                data['time'] = pd.to_datetime(data['time'])
+                if time_format == "undefined":
+                    data['time'] = pd.to_datetime(data['time'])
+                    warnings.warn('As time was converted and no format was given as parameter, please check if the time conversion is correct.')
+                else:
+                    data['time'] = pd.to_datetime(data['time'], format=time_format)
                 data.sort_values(['time', 'animal_id'],
                                  ascending=True,
                                  inplace=True)
@@ -148,12 +158,13 @@ def parse_excel(path_to_file, sheet):
             path_to_file))
 
 
-def read_data(path, sheet = 0):
+def read_data(path, sheet=0, time_format="undefined"):
     """
     Function to import data from 'csv', 'xlsx' and 'xls' files.
 
     :param path: Complete path/relative path to Excel file along with file name
     :param sheet: name of specific sheet given, by default first sheet of the excel workbook
+    :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
     :return: Pandas DataFrame containing imported data.
     """
     # Call appropriate IO function based on file extension
@@ -162,11 +173,11 @@ def read_data(path, sheet = 0):
 
     if file_split[-1] == 'csv':
 
-        return parse_csv(path)
+        return parse_csv(path, time_format)
     elif file_split[-1] == 'xlsx':
-        return parse_excel(path, sheet)
+        return parse_excel(path, sheet, time_format)
     elif file_split[-1] == 'xls':
-        return parse_excel(path, sheet)
+        return parse_excel(path, sheet, time_format)
     else:
         raise ValueError(f'File extension {file_split[-1]} can not be imported. Imported file has to be of type ".csv" or ".xlsx" or ".xls".')
 
