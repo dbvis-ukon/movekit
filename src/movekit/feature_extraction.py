@@ -696,7 +696,7 @@ def distance_euclidean_matrix(data):
 def euclidean_dist(data):
     """
     Compute the euclidean distance between movers for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods.
-    :param data: pandas DataFrame with positional record data.
+    :param data: Preprocessed pandas DataFrame with positional record data containing no duplicates.
     :return: pandas DataFrame, including computed euclidean distances.
     """
     if presence_3d(data):
