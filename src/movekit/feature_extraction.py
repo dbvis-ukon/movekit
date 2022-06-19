@@ -768,8 +768,12 @@ def ts_all_features(data):
     :return: pandas DataFrame, containing extracted time series features for each id for each feature.
     """
 
-    # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
-    rm_colm = ['stopped', 'direction']
+    # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector and additional columns from Movebank data.
+    rm_colm = ['stopped', 'direction','event-id', 'visible', 'location-long',
+       'location-lat', 'behavioural-classification', 'comments',
+       'study-specific-measurement', 'sensor-type',
+       'individual-taxon-canonical-name', 'tag-local-identifier',
+       'study-name']
     df = data[data.columns.difference(rm_colm)]
 
     time_series_features = tsfresh.extract_features(df,
@@ -793,8 +797,12 @@ def ts_feature(data, feature):
         settings = {}
         settings[feature] = fc_parameters[feature]
 
-        # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
-        rm_colm = ['stopped', 'direction']
+        # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector and additional columns from Movebank data.
+        rm_colm = ['stopped', 'direction','event-id', 'visible', 'location-long',
+       'location-lat', 'behavioural-classification', 'comments',
+       'study-specific-measurement', 'sensor-type',
+       'individual-taxon-canonical-name', 'tag-local-identifier',
+       'study-name']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
             df,
