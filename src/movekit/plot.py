@@ -8,6 +8,8 @@ import folium
 from tqdm import tqdm
 import warnings
 import moviepy.editor as mp
+from pandas.api.types import is_numeric_dtype, is_string_dtype
+
 
 
 def plot_movement(data, frm, to):
@@ -15,7 +17,7 @@ def plot_movement(data, frm, to):
     Plot 'x' and 'y' attributes for given Pandas DataFrame in specified time frame.
 
     :param data: Pandas DataFrame (should be sorted by 'time' attribute).
-    :param frm: Starting from time step. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.plot_movement(data, 2008-01-01, 2010-10-01)
+    :param frm: Starting from time step. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.plot_movement(data, "2008-01-01", "2010-10-01")
     :param to: Ending to time step.
     :return: None.
     """
@@ -50,7 +52,17 @@ def animate_movement(data, viewsize):
     fig = plt.figure()
     ax = plt.axes(xlim=(xmin, xmax), ylim=(ymin, ymax))
 
-    scat = ax.scatter(x='x', y='y', data=data.loc[(data['time'] >= 0) & (data['time'] <= viewsize), :]) # first frame 
+    # check if time format has to be converted
+    if not is_numeric_dtype(data['time']):
+        time_values = np.array(data['time'])
+        time_values = np.unique(time_values)
+        indices = np.sort(time_values)
+        converter = {}
+        for i in range(len(time_values)):
+            converter[indices[i]] = i
+        data = data.replace({'time': converter})
+
+    scat = ax.scatter(x='x', y='y', data=data.loc[(data['time'] >= 0) & (data['time'] <= viewsize), :]) # first frame
     
     def animate(i): # update frame sequentially
         subset = data.loc[(data['time'] >= i) & (data['time'] <= i+viewsize), :]

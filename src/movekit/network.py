@@ -44,6 +44,8 @@ def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
     # Create a new graph for each time step, compute edges, add them to graph and
     # finally, add graph to Python3 list-
     for item in tqdm(range(0, len(del_dict[object_type])),position=0, desc="Calculating network list"):
+        key = list(grp.keys())[item]
+
         # Create an empty graph with no nodes and no edges.
         G = nx.Graph()
 
@@ -52,23 +54,23 @@ def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
             nx.add_path(G, path)
 
         # Append graph attributes
-        G.graph = grp[item + 1].to_dict('records')[0]
+        G.graph = grp[key].to_dict('records')[0]
 
         # Append node attributes
-        nx.set_node_attributes(G, data_groups_time[item + 1].to_dict('index'))
+        nx.set_node_attributes(G, data_groups_time[key].to_dict('index'))
         #G.nodes = data_groups_time[item+1]
 
         # Relabel nodes
         G = nx.relabel_nodes(G, id_dictionary)
 
-        dists = dists_time[item + 1].drop(['time', 'animal_id', 'x', 'y'],
+        dists = dists_time[key].drop(['time', 'animal_id', 'x', 'y'],
                                           axis=1).to_dict()
 
         values = list(
             itertools.chain.from_iterable(pd.DataFrame(dists).values.tolist()))
 
         keys = list(
-            itertools.product(list(dists_time[item + 1]['animal_id']),
+            itertools.product(list(dists_time[key]['animal_id']),
                               list(dists.keys())))
 
         edgelabs = dict(zip(keys, values))

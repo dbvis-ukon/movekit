@@ -522,7 +522,7 @@ def distance_by_time(data, frm, to):
     """
     Computes the distance between positions for a particular time window for all movers.
     :param data: pandas DataFrame with all records of movements.
-    :param frm: int defining the start of the time window. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.distance_by_time(data, 2008-01-01, 2010-10-01)
+    :param frm: int defining the start of the time window. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.distance_by_time(data, "2008-01-01", "2010-10-01")
     :param to: Int, defining end point up to where to extract records.
     :param to: int defining the end of the time window (inclusive)
     :return: pandas DataFrame with animal_id and distance
@@ -696,7 +696,7 @@ def distance_euclidean_matrix(data):
 def euclidean_dist(data):
     """
     Compute the euclidean distance between movers for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods.
-    :param data: pandas DataFrame with positional record data.
+    :param data: Preprocessed pandas DataFrame with positional record data containing no duplicates.
     :return: pandas DataFrame, including computed euclidean distances.
     """
     if presence_3d(data):
@@ -768,8 +768,12 @@ def ts_all_features(data):
     :return: pandas DataFrame, containing extracted time series features for each id for each feature.
     """
 
-    # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector
-    rm_colm = ['stopped', 'direction']
+    # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector and additional columns from Movebank data.
+    rm_colm = ['stopped', 'direction','event-id', 'visible', 'location-long',
+       'location-lat', 'behavioural-classification', 'comments',
+       'study-specific-measurement', 'sensor-type',
+       'individual-taxon-canonical-name', 'tag-local-identifier',
+       'study-name']
     df = data[data.columns.difference(rm_colm)]
 
     time_series_features = tsfresh.extract_features(df,
@@ -793,8 +797,12 @@ def ts_feature(data, feature):
         settings = {}
         settings[feature] = fc_parameters[feature]
 
-        # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector.
-        rm_colm = ['stopped', 'direction']
+        # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector and additional columns from Movebank data.
+        rm_colm = ['stopped', 'direction','event-id', 'visible', 'location-long',
+       'location-lat', 'behavioural-classification', 'comments',
+       'study-specific-measurement', 'sensor-type',
+       'individual-taxon-canonical-name', 'tag-local-identifier',
+       'study-name']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
             df,

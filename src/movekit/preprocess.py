@@ -176,7 +176,7 @@ def filter_dataframe(data, frm, to):
     Extract records of assigned time frame from preprocessed movement record data.
 
     :param data: Pandas DataFrame, containing preprocessed movement record data.
-    :param frm: Int, defining starting point from where to extract records.Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.filter_dataframe(data, 2008-01-01, 2010-10-01)
+    :param frm: Int, defining starting point from where to extract records.Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.filter_dataframe(data, "2008-01-01", "2010-10-01")
     :param to: Int, defining end point up to where to extract records.
     :return: Pandas DataFrame, filtered by records matching the defined frame in 'from'-'to'.
     """
@@ -205,10 +205,10 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
     # Grouping DataFrame
     data_groups = grouping_data(data_groups, preprocessedMethod=True)
 
-    data_groups[animal_id].loc[time_array, 'x'] = replacement_value_x
-    data_groups[animal_id].loc[time_array, 'y'] = replacement_value_y
+    data_groups[animal_id].loc[data_groups[animal_id]["time"].isin(time_array), 'x'] = replacement_value_x
+    data_groups[animal_id].loc[data_groups[animal_id]["time"].isin(time_array), 'y'] = replacement_value_y
     if presence_3d(data_groups[animal_id]):
-        data_groups[animal_id].loc[time_array, 'z'] = replacement_value_z
+        data_groups[animal_id].loc[data_groups[animal_id]["time"].isin(time_array), 'z'] = replacement_value_z
 
     return regrouping_data(data_groups)
 
