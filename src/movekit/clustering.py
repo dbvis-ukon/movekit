@@ -13,6 +13,7 @@ from functools import reduce
 import st_clustering as stc
 from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
+from pandas.api.types import is_numeric_dtype
 
 from .feature_extraction import *
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull, convex_hull_plot_2d, Delaunay, delaunay_plot_2d
@@ -354,11 +355,33 @@ def clustering(algorithm, data, **kwargs):
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
 
+    if not is_numeric_dtype(data['time'][0]):  # if time format not integer
+        grouped_data = data.groupby('time')
+        keys = []
+        for key in grouped_data.groups.keys():
+            keys.append(key)
+        time_distance = keys[1] - keys[0]
+
+        for i in range(1, len(keys)):  # check if time is equidistant
+            if keys[i] - keys[i - 1] != time_distance:
+                warnings.warn('As difference between timestamps is not equidistant, clustering of this data is not supported by movekit at the moment.')
+                return
+
+        # convert time to integer
+        time_values = np.array(data['time'])
+        time_values = np.unique(time_values)
+        indices = np.sort(time_values)
+        converter = {}
+        for i in range(len(time_values)):
+            converter[indices[i]] = i
+        data = data.replace({'time': converter})
+
     if presence_3d(data):
         data = data.loc[:, ['time','x','y','z']].values
     else:
         data = data.loc[:, ['time','x','y']].values
-    clusterer.st_fit(data)  # percentage bar not possible
+
+    clusterer.st_fit(data)
     return clusterer.labels
     
     
@@ -389,6 +412,28 @@ def clustering_with_splits(algorithm, data, frame_size, **kwargs):
         clusterer = stc.ST_BIRCH(**kwargs)   
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
+
+    if not is_numeric_dtype(data['time'][0]):  # if time format not integer
+        grouped_data = data.groupby('time')
+        keys = []
+        for key in grouped_data.groups.keys():
+            keys.append(key)
+        time_distance = keys[1] - keys[0]
+
+        for i in range(1, len(keys)):  # check if time is equidistant
+            if keys[i] - keys[i - 1] != time_distance:
+                warnings.warn(
+                    'As difference between timestamps is not equidistant, clustering of this data is not supported by movekit at the moment.')
+                return
+
+        # convert time to integer
+        time_values = np.array(data['time'])
+        time_values = np.unique(time_values)
+        indices = np.sort(time_values)
+        converter = {}
+        for i in range(len(time_values)):
+            converter[indices[i]] = i
+        data = data.replace({'time': converter})
 
     if presence_3d(data):
         data = data.loc[:, ['time','x','y','z']].values
