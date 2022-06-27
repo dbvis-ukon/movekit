@@ -484,14 +484,14 @@ def extract_features(data, fps=10, stop_threshold=0.5):
         if __name__ == "src.movekit.feature_extraction":
             pool = multiprocessing.Pool()
             func = partial(extract_features_multiproccessing, fps=fps, stop_threshold=stop_threshold)
-            #result = pool.map(func, df_list)
-            results = []
-            for result in tqdm(pool.imap(func, df_list), total=len(df_list), desc='Extracting all absolute features'):
-                results.append(result)
+            result = pool.map(func, df_list)
+            #results = []
+            #for result in tqdm(pool.imap(func, df_list), total=len(df_list), desc='Extracting all absolute features'):
+            #    results.append(result)
 
         # regroup in one big data frame and return
         big_df = pd.DataFrame()
-        for df in results:
+        for df in result:
             big_df = big_df.append(df, ignore_index=True)
         big_df = big_df.sort_values(by=['time','animal_id'])
         big_df = big_df.reset_index(drop=True)
@@ -737,14 +737,14 @@ def euclidean_dist(data):
         # use multiprocessing to call extract_features for each animal with different process
         if __name__ == "src.movekit.feature_extraction":
             pool = multiprocessing.Pool()
-            #result = pool.map(func, df_list)
-            results = []
-            for result in tqdm(pool.imap(euclidean_dist_multiproccessing, df_list), total=len(df_list), desc='Calculating euclidean distance'):
-                results.append(result)
+            result = pool.map(euclidean_dist_multiproccessing, df_list)
+            #results = []
+            #for result in tqdm(pool.imap(euclidean_dist_multiproccessing, df_list), total=len(df_list), desc='Calculating euclidean distance'):
+            #    results.append(result)
 
         # regroup in one big data frame and return
         big_df = pd.DataFrame()
-        for df in results:
+        for df in result:
             big_df = big_df.append(df, ignore_index=True)
         big_df = big_df.sort_values(by=['time','animal_id'])
         big_df = big_df.reset_index(drop=True)
@@ -770,7 +770,7 @@ def euclidean_dist_multiproccessing(data):
         weights = {'x': 1, 'y': 1, 'z': 1}
     else:
         weights = {'x': 1, 'y': 1}
-    out = compute_similarity(data, weights)
+    out = compute_similarity_multiproccessing(data, weights)
     return out
 
 
@@ -809,6 +809,45 @@ def compute_similarity(data, weights, p=2):
     # combine the distance matrix with the data and return
     return pd.merge(data, df3, left_index=True,
                     right_index=True).sort_values(by=['time', 'animal_id'])
+
+
+def compute_similarity_multiproccessing(data, weights, p=2):
+    """
+    Compute positional similarity between animals.
+    Computing the positional similarity in a distance matrix according to animal_id for each time step.
+    :param data: pandas DataFrame, containing preprocessed movement records.
+    :param weights: dictionary, giving variable's weights in weighted distance calculation.
+    :param p: integer, giving p-norm for Minkowski, weighted and unweighted. Default: 2.
+    :return: pandas DataFrame, including computed similarities.
+    """
+    w = []  # weight vector
+    not_allowed_keys = ['time', 'animal_id']
+    df = pd.DataFrame()
+    for key in weights:
+        if key in data.columns:
+            df[key] = data[key]
+            w.append(weights[key])
+
+    # normalize the data frame
+    # normalized_df = (df - df.min()) / (df.max() - df.min())
+
+    # add the columns time and animal id to the window needed for group by and the column generation
+    # normalized_df[not_allowed_keys] = data[not_allowed_keys]
+
+    # compute the distance for each time moment
+    # df2 = normalized_df.groupby('time')
+    df2 = data.groupby('time')
+    df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
+    for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance", disable=True):
+        groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w,
+                                                               p=p)  # calculate distance for each time period
+        df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
+
+    # combine the distance matrix with the data and return
+    return pd.merge(data, df3, left_index=True,
+                    right_index=True).sort_values(by=['time', 'animal_id'])
+
+
 
 
 def similarity_computation(group, w, p):
