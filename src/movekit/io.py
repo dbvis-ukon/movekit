@@ -220,6 +220,7 @@ def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
     data.sort_values(['time', 'animal_id'],
                      ascending=True,
                      inplace=True)
+    data = data.reset_index(drop=True)
     return data
 
 

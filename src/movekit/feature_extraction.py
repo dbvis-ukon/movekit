@@ -15,6 +15,8 @@ from tqdm import tqdm
 import math
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial.distance import directed_hausdorff
+import multiprocessing
+from functools import partial
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -471,6 +473,32 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
 
+    if len(data) >= 200000:  # then multiproccessing
+        # creating list of different animals df's to split them in pool
+        data = grouping_data(data)
+        df_list = []
+        for aid in data.keys():
+            df_list.append(data[aid])
+
+        # use multiprocessing to call extract_features for each animal with different process
+        if __name__ == "src.movekit.feature_extraction":
+            pool = multiprocessing.Pool()
+            func = partial(extract_features_multiproccessing, fps=fps, stop_threshold=stop_threshold)
+            result = pool.map(func, df_list)
+            #results = []
+            #for result in tqdm(pool.imap(func, df_list), total=len(df_list), desc='Extracting all absolute features'):
+            #    results.append(result)
+
+        # regroup in one big data frame and return
+        big_df = pd.DataFrame()
+        for df in result:
+            big_df = big_df.append(df, ignore_index=True)
+        big_df = big_df.sort_values(by=['time','animal_id'])
+        big_df = big_df.reset_index(drop=True)
+
+        return big_df
+
+
     with tqdm(total=100, position=0,
               desc="Extracting all absolute features") as pbar:  # to implement percentage loading bar
         tmp_data = grouping_data(data)
@@ -699,11 +727,50 @@ def euclidean_dist(data):
     :param data: Preprocessed pandas DataFrame with positional record data containing no duplicates.
     :return: pandas DataFrame, including computed euclidean distances.
     """
+    if len(data) >= 200000:  # then multiproccessing
+        # creating list of different animals df's to split them in pool
+        data = timewise_dict(data)
+        df_list = []
+        for aid in data.keys():
+            df_list.append(data[aid])
+
+        # use multiprocessing to call extract_features for each animal with different process
+        if __name__ == "src.movekit.feature_extraction":
+            pool = multiprocessing.Pool()
+            result = pool.map(euclidean_dist_multiproccessing, df_list)
+            #results = []
+            #for result in tqdm(pool.imap(euclidean_dist_multiproccessing, df_list), total=len(df_list), desc='Calculating euclidean distance'):
+            #    results.append(result)
+
+        # regroup in one big data frame and return
+        big_df = pd.DataFrame()
+        for df in result:
+            big_df = big_df.append(df, ignore_index=True)
+        big_df = big_df.sort_values(by=['time','animal_id'])
+        big_df = big_df.reset_index(drop=True)
+
+        return big_df
+
+
     if presence_3d(data):
         weights = {'x': 1, 'y': 1, 'z': 1}
     else:
         weights = {'x': 1, 'y': 1}
     out = compute_similarity(data, weights)
+    return out
+
+
+def euclidean_dist_multiproccessing(data):
+    """
+    Compute the euclidean distance between movers for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods.
+    :param data: Preprocessed pandas DataFrame with positional record data containing no duplicates.
+    :return: pandas DataFrame, including computed euclidean distances.
+    """
+    if presence_3d(data):
+        weights = {'x': 1, 'y': 1, 'z': 1}
+    else:
+        weights = {'x': 1, 'y': 1}
+    out = compute_similarity_multiproccessing(data, weights)
     return out
 
 
@@ -742,6 +809,45 @@ def compute_similarity(data, weights, p=2):
     # combine the distance matrix with the data and return
     return pd.merge(data, df3, left_index=True,
                     right_index=True).sort_values(by=['time', 'animal_id'])
+
+
+def compute_similarity_multiproccessing(data, weights, p=2):
+    """
+    Compute positional similarity between animals.
+    Computing the positional similarity in a distance matrix according to animal_id for each time step.
+    :param data: pandas DataFrame, containing preprocessed movement records.
+    :param weights: dictionary, giving variable's weights in weighted distance calculation.
+    :param p: integer, giving p-norm for Minkowski, weighted and unweighted. Default: 2.
+    :return: pandas DataFrame, including computed similarities.
+    """
+    w = []  # weight vector
+    not_allowed_keys = ['time', 'animal_id']
+    df = pd.DataFrame()
+    for key in weights:
+        if key in data.columns:
+            df[key] = data[key]
+            w.append(weights[key])
+
+    # normalize the data frame
+    # normalized_df = (df - df.min()) / (df.max() - df.min())
+
+    # add the columns time and animal id to the window needed for group by and the column generation
+    # normalized_df[not_allowed_keys] = data[not_allowed_keys]
+
+    # compute the distance for each time moment
+    # df2 = normalized_df.groupby('time')
+    df2 = data.groupby('time')
+    df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
+    for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance", disable=True):
+        groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w,
+                                                               p=p)  # calculate distance for each time period
+        df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
+
+    # combine the distance matrix with the data and return
+    return pd.merge(data, df3, left_index=True,
+                    right_index=True).sort_values(by=['time', 'animal_id'])
+
+
 
 
 def similarity_computation(group, w, p):
@@ -1088,3 +1194,44 @@ def hausdorff_distance(data, mover1=None, mover2=None):
             hdf_distance = max(hdf_distance1, hdf_distance2)
 
         return hdf_distance
+
+
+def extract_features_multiproccessing(data, fps=10, stop_threshold=0.5):
+    """
+    Calculate and return all absolute features for input animal group.
+    Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
+    compute_average_acceleration(), computing_stops()
+    :param data: pandas DataFrame with all records of movements.
+    :param fps: integer to specify the size of the window examined for calculating average speed and average acceleration.
+    :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
+    :return: pandas DataFrame with additional variables consisting of all relevant features.
+    """
+
+    with tqdm(total=100, position=0,
+              desc="Extracting all absolute features", disable=True) as pbar:  # percentage loading bar silenced in multiproccessing
+        tmp_data = grouping_data(data)
+        pbar.update(10)  # first part takes about 10 % of the time
+        tmp_data = compute_distance(tmp_data)
+        tmp_data = compute_direction(tmp_data,
+                                     pbar)  # as computing the direction takes most of the time, the percentage bar is given as a parameter
+        tmp_data = compute_turning(tmp_data)
+        tmp_data = compute_average_speed(tmp_data, fps)
+        tmp_data = compute_average_acceleration(tmp_data, fps)
+        tmp_data = computing_stops(tmp_data, stop_threshold)
+
+        # Regroup dictionary into pd DataFrame
+        regrouped_data = regrouping_data(tmp_data)
+
+        # Replace NA
+        regrouped_data.fillna(0, inplace=True)
+
+        # Put extract features columns to the beginning of df
+        cols = regrouped_data.columns.tolist()
+        for i in ['time', 'animal_id', 'x', 'y', 'distance', 'direction', 'turning', 'average_speed',
+                  'average_acceleration', 'stopped']:
+            cols.remove(i)
+        cols = ['time', 'animal_id', 'x', 'y', 'distance', 'direction', 'turning', 'average_speed',
+                'average_acceleration', 'stopped'] + cols
+        regrouped_data = regrouped_data[cols]
+
+        return regrouped_data
