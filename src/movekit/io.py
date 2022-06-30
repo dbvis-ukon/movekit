@@ -265,4 +265,8 @@ def read_geojson(path, animal_id="name", time="time"):
                            'animal_id': data[animal_id],
                            'x': x,
                            'y': y})
-    return df
+
+    df.sort_values(['time', 'animal_id'],
+                     ascending=True,
+                     inplace=True)
+    return df.reset_index(drop=True)
