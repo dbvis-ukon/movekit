@@ -126,4 +126,14 @@ Additionally movekit is able to project data from GPS coordinates in the latitud
     mkit.convert_latlon(data, latitude='latitude', longitude='longitude', replace=True)
 
 
+*****
+Support for data stored as GeoJSON and JSON
+*****
+Additionally movekit is able to read data stored as GeoJSON (.geojson) or JSON (.json) file.
+
+.. code-block:: python
+
+    mkit.read_geojson('file_path')
+
+
 
