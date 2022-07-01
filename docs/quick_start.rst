@@ -26,6 +26,13 @@ Read in data. Supported formats include `csv` and `xlsx` and `xls`. The function
    path = 'path/to/your/data'
    data = mkit.read_data(path)
 
+Additionally movekit is able to read data stored as `geojson` or `json`.
+
+.. code-block:: python
+
+    data = mkit.read_geojson('file_path')
+
+
 *****
 Preprocessing general method
 *****
@@ -124,6 +131,4 @@ Additionally movekit is able to project data from GPS coordinates in the latitud
 .. code-block:: python
 
     mkit.convert_latlon(data, latitude='latitude', longitude='longitude', replace=True)
-
-
 

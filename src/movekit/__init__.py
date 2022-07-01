@@ -16,7 +16,7 @@ finally:
     del version, PackageNotFoundError
 
 
-from .io import read_data, read_movebank  # noqa: E402
+from .io import read_data, read_movebank, read_geojson  # noqa: E402
 from .utils import presence_3d, angle
 from .preprocess import preprocess, filter_dataframe, replace_parts_animal_movement, resample_systematic, \
     resample_random,split_trajectories,convert_measueres, interpolate, print_missing, print_duplicate, plot_missing_values, normalize, \

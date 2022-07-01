@@ -481,7 +481,7 @@ def extract_features(data, fps=10, stop_threshold=0.5):
             df_list.append(data[aid])
 
         # use multiprocessing to call extract_features for each animal with different process
-        if __name__ == "src.movekit.feature_extraction":
+        if __name__ == "movekit.feature_extraction":
             pool = multiprocessing.Pool()
             func = partial(extract_features_multiproccessing, fps=fps, stop_threshold=stop_threshold)
             result = pool.map(func, df_list)
@@ -735,7 +735,7 @@ def euclidean_dist(data):
             df_list.append(data[aid])
 
         # use multiprocessing to call extract_features for each animal with different process
-        if __name__ == "src.movekit.feature_extraction":
+        if __name__ == "movekit.feature_extraction":
             pool = multiprocessing.Pool()
             result = pool.map(euclidean_dist_multiproccessing, df_list)
             #results = []

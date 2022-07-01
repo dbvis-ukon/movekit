@@ -22,6 +22,12 @@ Also one can analyze the distance between the different positions of each mover 
 
    distances = mkit.distance_by_time(data, frm, to)
 
+Additionally one can obtain a matrix of the trajectory similarities, based on the Hausdorff distance of trajectories of the animals with the function `hausdorff_distance`.
+
+.. code-block:: python
+
+   mkit.hausdorff_distance(data)
+
 *****
 Computing centroids and medoids for each time stamp
 *****
@@ -41,12 +47,12 @@ Furthermore plots can easily be created, such as the movement from all movers in
     mkit.plot_movement(data, frm, to)
     mkit.plot_animal(inp_data, animal_id)
 
-Also animations of the movements from the different movers can be displayed.
+Also animations of the movements from the different movers can be displayed and saved as gif and mp4.
 
 .. code-block:: python
 
     anim = mkit.animate_movement(data, 100)
-    writergif = animation.PillowWriter(fps=30)
+    mkit.save_animation_plot(anim, 'filename')
 
 One can also plot either the average acceleration or the average speed for each individual mover/animal over time.
 
@@ -61,6 +67,17 @@ One can additionally check the geospatial distribution of the different movers. 
     mkit.explore_features_geospatial(data)
 
 *****
+Splitting the trajectory of each animal in stopping and moving phases
+*****
+Movekit has a function to split the trajectories for each animal into moving and stopping phases according to a given stop threshold.
+Additionally the durations of these individual phases can be examined. Both functions return a dictionary with animal ID as key.
+
+.. code-block:: python
+
+    mkit.split_movement_trajectory(data, stop_threshold = 0.5)
+    mkit.movement_stopping_durations(data_features, stop_threshold = 0.5)
+
+*****
 Time series analysis
 *****
 Movekit also allows to extract many time series features by defining the required feature as parameter of the `ts_feature`. For a full list of all the features that can be extracted refer to https://tsfresh.readthedocs.io/en/latest/text/list_of_features.html.
@@ -68,6 +85,5 @@ Movekit also allows to extract many time series features by defining the require
 .. code-block:: python
 
     mkit.ts_feature(data, feature)
-    #to extract all possible time series features
     mkit.ts_all_feature(data)
 
