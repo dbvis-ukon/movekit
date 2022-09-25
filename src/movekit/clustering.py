@@ -342,18 +342,18 @@ def clustering(algorithm, data, **kwargs):
         clusterer = stc.ST_HDBSCAN(**kwargs)
     elif algorithm == 'agglomerative':
         clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
+    #elif algorithm == 'kmeans':
+    #    clusterer = stc.ST_KMeans(**kwargs)
     elif algorithm == 'optics':
         clusterer = stc.ST_OPTICS(**kwargs)
     elif algorithm == 'spectral':
         clusterer = stc.ST_SpectralClustering(**kwargs)
     elif algorithm == 'affinitypropagation':
         clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
+    #elif algorithm == 'birch':
+    #    clusterer = stc.ST_BIRCH(**kwargs)
     else:
-        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
+        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.')
 
     if not is_numeric_dtype(data['time'][0]):  # if time format not integer
         grouped_data = data.groupby('time')
@@ -389,7 +389,7 @@ def clustering(algorithm, data, **kwargs):
 def clustering_with_splits(algorithm, data, frame_size, **kwargs):
     """
     Clustering of spatio-temporal data.
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.
     :param data: DataFrame to perform clustering on.
     :param frame_size: the dataset is partitioned into frames and merged afterwards.
     :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
@@ -400,16 +400,16 @@ def clustering_with_splits(algorithm, data, frame_size, **kwargs):
         clusterer = stc.ST_HDBSCAN(**kwargs)
     elif algorithm == 'agglomerative':
         clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
+    #elif algorithm == 'kmeans':
+    #    clusterer = stc.ST_KMeans(**kwargs)
     elif algorithm == 'optics':
         clusterer = stc.ST_OPTICS(**kwargs)
     elif algorithm == 'spectral':
         clusterer = stc.ST_SpectralClustering(**kwargs)
     elif algorithm == 'affinitypropagation':
         clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
+    #elif algorithm == 'birch':
+    #    clusterer = stc.ST_BIRCH(**kwargs)
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
 
