@@ -17,6 +17,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial.distance import directed_hausdorff
 import multiprocessing
 from functools import partial
+import re
+from pandas.api.types import is_numeric_dtype
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -422,42 +424,130 @@ def compute_distance_and_direction(data_animal_id_groups):  # TODO deprecate
 
 def compute_average_speed(data_animal_id_groups, fps):
     """
-    Compute average speed of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
-    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
-    Formula used Average Speed = Total Distance Travelled / Total Time taken;
-    Use output of compute_distance_and_direction() function to this function.
-    :param data_animal_id_groups: dictionary with 'animal_id' as keys
-    :param fps: integer to specify frames per second
-    :return: dictionary, including measure for 'average_speed'
+    Compute average speed of mover based on fps parameter. The formula used for calculating average speed is: (Total Distance traveled) / (Total time taken).
+    Size of traveling window is determined by fps parameter:
+    By choosing f.e. fps=4 at timestamp 5: (distance covered from timestamp 3 to timestamp 7) / 4.
+    By choosing f.e. fps=3 at timestamp 5: (distance covered from timestamp 3.5 to timestamp 6.5) / 3. (in this case use of interpolation if timestamps 3.5 and 6.5 do not exist.)
+    :param data_animal_id_groups: dictionary with 'animal_id' as keys.
+    :param fps: integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
+    :return: dictionary, including measure for 'average_speed'.
     """
+    if (isinstance(fps, int) or isinstance(fps, float)):
+        fps = str(fps) + 'us'  # as integer time is converted to time for flexible windows so is fps
     for aid in data_animal_id_groups.keys():
+        # set index as time to have flexible sized windows
+        if is_numeric_dtype(data_animal_id_groups[aid]['time']):
+            data_animal_id_groups[aid].index = pd.to_datetime(data_animal_id_groups[aid]['time'], unit='us')
+        else:
+            data_animal_id_groups[aid].set_index('time', drop=False, inplace=True)
+
+        # add distances of window (will later be divided by time)
         data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[
             aid]['distance'].rolling(min_periods=1, window=fps,
-                                     center=True).mean().fillna(0)
-    return data_animal_id_groups
+                                     center=True, closed='both').sum().fillna(0)
 
+        timedelta = pd.to_timedelta(fps)  # size time window
+        timedelta_left = timedelta / 2  # size window left of observation
+        timedelta_right = timedelta / 2  # size window right of observation
+
+        # adjust first term of sum (as not entire distance of first entry in window was moved in time window)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index - timedelta_left, side='left')  # find index of first element in window
+        out_of_range = (ind <= 0)
+        ind[out_of_range] = 1  # otherwise key error
+        lag = data_animal_id_groups[aid]['distance'].values[ind]
+        lag[out_of_range] = 0  # set to 0 such that no distance is reduced from sum
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored distance of its windows first entry (which is then partially reduced)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] - \
+                                                      ((((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                                                      (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag)
+
+
+        # add last term of sum (as some distance is covered in the time window which is recorded in first observation which is not in window
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index + timedelta_right, side='right')  # find index of first element not in window
+        out_of_range = (ind >= data_animal_id_groups[aid].shape[0])
+        ind[out_of_range] = 0  # otherwise key error
+        lag = data_animal_id_groups[aid]['distance'].values[ind]
+        lag[out_of_range] = 0  # set to 0 such that no distance is added to sum
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored distance of first observation not in window (which is then partially added)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] + \
+                                                      ((((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                                                        (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag)
+
+        data_animal_id_groups[aid].drop(['lag'], axis=1, inplace=True)
+
+        # divide sum of distances by time (here unit of fps is used)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] / float(re.search(r'(\d+)', fps).group(0))
+
+        # reset index
+        data_animal_id_groups[aid].reset_index(drop=True, inplace=True)
+
+    return data_animal_id_groups
 
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
-    Compute average acceleration of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
-    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
-    Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
-    Use output of compute_average_speed() function to this function.
-    :param data_animal_id_groups: dictionary with 'animal_id' as keys
-    :param fps: integer to specify frames per second
-    :return: dictionary, including measure for 'average_acceleration'
+    Compute average acceleration of mover based on fps parameter. The formula used for calculating average acceleration is: (Final Speed - Initial Speed) / (Total Time Taken).
+    Size of traveling window is determined by fps parameter:
+    By choosing f.e. fps=4 at timestamp 5: (speed at timestamp 7 - speed at timestamp 3) / 4.
+    By choosing f.e. fps=3 at timestamp 5: (speed at timestamp 6.5 - speed at timestamp 3.5) / 3. (in this case use of interpolation if timestamps 3.5 and 6.5 do not exist.)
+    :param data_animal_id_groups: dictionary with 'animal_id' as keys.
+    :param fps: integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
+    :return: dictionary, including measure for 'average_acceleration'.
     """
+    if (isinstance(fps, int) or isinstance(fps, float)):
+        fps = str(fps) + 'us'  # as integer time is converted to time for flexible windows so is fps
     for aid in data_animal_id_groups.keys():
+        # set index as time to have flexible sized windows
+        if is_numeric_dtype(data_animal_id_groups[aid]['time']):
+            data_animal_id_groups[aid].index = pd.to_datetime(data_animal_id_groups[aid]['time'], unit='us')
+        else:
+            data_animal_id_groups[aid].set_index('time', drop=False, inplace=True)
 
-        # rename into shortcut
-        speed = data_animal_id_groups[aid]['average_speed']
-        # b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
-        try:
-            data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
-                min_periods=1, window=fps,
-                center=True).apply(lambda x: (x[-1] - x[0]) / (fps - 1), raw=True).fillna(0)
-        except:
-            data_animal_id_groups[aid]['average_acceleration'] = 0
+        # add speed of first and last observation in window
+        data_animal_id_groups[aid]['start_speed'] = data_animal_id_groups[
+            aid]['average_speed'].rolling(min_periods=1, window=fps,
+                center=True, closed='both').apply(lambda x: x[0], raw=True).fillna(0)
+        data_animal_id_groups[aid]['end_speed'] = data_animal_id_groups[
+            aid]['average_speed'].rolling(min_periods=1, window=fps,
+                                          center=True, closed='both').apply(lambda x: x[-1], raw=True).fillna(0)
+
+        timedelta = pd.to_timedelta(fps)  # size time window
+        timedelta_left = timedelta / 2  # size window left of observation
+        timedelta_right = timedelta / 2  # size window right of observation
+
+        # adjust start speed (as first observation prior to first observation in window is taken into account)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index - timedelta_left, side='left')  # find index of first element in window
+        out_of_range = (ind <= 0)
+        lag = data_animal_id_groups[aid]['average_speed'].values[ind-1]  # store respective value of first observation prior to window
+        lag[out_of_range] = data_animal_id_groups[aid]['average_speed'][0]  # set to speed of first observation
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored speed of first element prior to window
+        # start speed is calculated as weighted sum of speed from first observation prior to window and from first observation in window
+        data_animal_id_groups[aid]['start_speed'] = ((((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * data_animal_id_groups[aid]['start_speed']) \
+                    +((1-(((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1]))) * lag)
+
+
+        # adjust end speed (as first observation after window is taken into account)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index + timedelta_right, side='right')  # find index of first element not in window
+        out_of_range = (ind >= data_animal_id_groups[aid].shape[0])
+        ind[out_of_range] = 0  # otherwise key error
+        lag = data_animal_id_groups[aid]['average_speed'].values[ind]  # store respective value of first observation not in window
+        lag[out_of_range] = data_animal_id_groups[aid]['average_speed'][data_animal_id_groups[aid].shape[0] - 1]  # set to speed of last observation
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored speed of first observation not in window
+        # end speed is calculated as weighted sum of speed from last observation in window and from first observation after window
+        data_animal_id_groups[aid]['end_speed'] = ((((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag) + \
+                    ((1-(((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1]))) * data_animal_id_groups[aid]['end_speed'])
+
+
+        # calculate average acceleration by dividing difference by time (here unit of fps is used)
+        data_animal_id_groups[aid]['average_acceleration'] = (data_animal_id_groups[aid]['end_speed'] - data_animal_id_groups[aid]['start_speed'])\
+                                                      / float(re.search(r'(\d+)', fps).group(0))
+
+        # reset index and drop columns
+        data_animal_id_groups[aid].reset_index(drop=True, inplace=True)
+        data_animal_id_groups[aid].drop(['lag', 'start_speed', 'end_speed'], axis=1, inplace=True)
 
     return data_animal_id_groups
 
