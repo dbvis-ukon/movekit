@@ -264,25 +264,26 @@ def get_spatial_objects(preprocessed_data, group_output=False):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
-        # Obtain shape objects
-        conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
-        voronoi_obj = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
-        delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
+        if len(data_groups_time[aid]) >= 3:  # spatial objects need minimum 3 points in timestamp
+            # Obtain shape objects
+            conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
+            voronoi_obj = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
+            delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
 
-        # Calculate area based on objects right above
-        conv_hull_vol = conv_hull_obj.volume
-        voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
+            # Calculate area based on objects right above
+            conv_hull_vol = conv_hull_obj.volume
+            voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
 
-        # Assign shapes to dataframe
-        data_groups_time[aid] = data_groups_time[aid].assign(
-            convex_hull_object=conv_hull_obj,
-            voronoi_object=voronoi_obj,
-            delaunay_object=delaunay_obj)
+            # Assign shapes to dataframe
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                convex_hull_object=conv_hull_obj,
+                voronoi_object=voronoi_obj,
+                delaunay_object=delaunay_obj)
 
-        data_groups_time[aid] = data_groups_time[aid].assign(
-            convex_hull_volume=conv_hull_vol,
-            voronoi_volume=voronoi_vol,
-        )
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                convex_hull_volume=conv_hull_vol,
+                voronoi_volume=voronoi_vol,
+            )
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
