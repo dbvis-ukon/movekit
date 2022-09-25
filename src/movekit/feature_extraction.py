@@ -558,7 +558,8 @@ def extract_features(data, fps=10, stop_threshold=0.5):
     Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
     compute_average_acceleration(), computing_stops()
     :param data: pandas DataFrame with all records of movements.
-    :param fps: integer to specify the size of the window examined for calculating average speed and average acceleration.
+    :param fps: size of window used to calculate average speed and average acceleration:
+    integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
     :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
@@ -1175,7 +1176,9 @@ def split_movement_trajectory(data, stop_threshold=0.5, csv=False):
     """
     if not (set(['distance', 'average_speed', 'average_acceleration', 'direction', 'stopped', 'turning']).issubset(
             data.columns)):
-        warnings.warn('Some features are missing and thus will be extracted first.')
+        warnings.warn('Some features are missing and thus will be extracted first. Note that is recommended to use function '
+                      'extract_features prior to this function to define values for calculation of average speed and stopping criteria.'
+                      'The returned Data Frame should afterwards be used as input for this function.')
         data = extract_features(data, stop_threshold=stop_threshold)
     data_groups = grouping_data(data)
     df_dict = {}
