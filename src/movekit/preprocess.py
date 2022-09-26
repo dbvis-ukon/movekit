@@ -38,7 +38,6 @@ def interpolate(data,
     Interpolate over missing values in pandas Dataframe of movement records.
     Interpolation methods consist of "linear", "polynomial, "time", "index", "pad".
     (see  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.interpolate.html)
-
     :param data: Pandas DataFrame of movement records
     :param limit: Maximum number of consecutive NANs to fill
     :param limit_direction: If limit is specified, consecutive NaNs will be filled in this direction.
@@ -82,7 +81,6 @@ def interpolate(data,
 def plot_missing_values(data):
     """
     Plot the missing values of an animal-ID against time.
-
     :param data: Pandas DataFrame containing records of movement.
     :return: None.
     """
@@ -106,7 +104,6 @@ def preprocess(data,
                date_format = False):
     """
     Function to perform data preprocessing.
-
     Print the number of missing values per column; Drop columns with missing values for 'time' and 'animal_id';
     Remove the duplicated rows found.
     :param data: DataFrame to perform preprocessing on
@@ -147,7 +144,6 @@ def preprocess(data,
 def print_missing(df):
     """
     Print the missing values for each column.
-
     :param df: Pandas DataFrame of movement records.
     :return: None.
     """
@@ -160,7 +156,6 @@ def print_missing(df):
 def print_duplicate(df):
     """
     Print rows, which are duplicates.
-
     :param df: Pandas DataFrame of movement records.
     :return: None.
     """
@@ -174,7 +169,6 @@ def print_duplicate(df):
 def filter_dataframe(data, frm, to):
     """
     Extract records of assigned time frame from preprocessed movement record data.
-
     :param data: Pandas DataFrame, containing preprocessed movement record data.
     :param frm: Int, defining starting point from where to extract records.Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.filter_dataframe(data, "2008-01-01", "2010-10-01")
     :param to: Int, defining end point up to where to extract records.
@@ -196,7 +190,7 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
 
     :param data_groups: DataFrame containing the movement records.
     :param animal_id: Int defining 'animal_id' whose movements have to be replaced.
-    :param time_array: Array defining time indices whose movements have to replaced
+    :param time_array: Array defining time indices whose movements have to replaced (array of integers if time has integer format, array of strings with datetime if time is datetime format)
     :param replacement_value_x: Int value that will replace all 'x' attribute values in 'time_array'.
     :param replacement_value_y: Int value that will replace all 'y' attribute values in 'time_array'.
     :param replacement_value_z: Int value that will replace all 'z' attribute values in 'time_array'. (optional)
@@ -216,10 +210,8 @@ def replace_parts_animal_movement(data_groups, animal_id, time_array,
 def resample_systematic(data_groups, downsample_size):
     """
     Resample the movement data of each animal - by downsampling at fixed time intervals.
-
     This is done to reduce the resolution of the dataset. This function does this by systematically choosing
     samples from each animal.
-
     :param data_groups: DataFrame containing the movement records.
     :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
     :return: DataFrame, modified from original size 'data_groups' to 'downsample_size'.
@@ -234,9 +226,6 @@ def resample_systematic(data_groups, downsample_size):
     size = data_groups[first].shape[0]
 
     step_size = math.floor(size / downsample_size)
-
-    # DEAD LIST?
-    arr_index = []
 
     l = list(range(size))
     arr_index = l[0:(step_size * downsample_size):step_size]
@@ -258,10 +247,8 @@ def resample_systematic(data_groups, downsample_size):
 def resample_random(data_groups, downsample_size):
     """
     Resample the movement data of each animal - by downsampling at random time intervals.
-
     This is done to reduce resolution of the dataset. This function does this by randomly choosing
-    samples from each animal
-
+    samples from each animal.
     :param data_groups: DataFrame containing the movement records.
     :param downsample_size: Int sample size to which each animal has to be reduced by downsampling.
     :return: DataFrame, modified from original size 'data_groups' to 'downsample_size'.

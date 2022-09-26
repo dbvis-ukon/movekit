@@ -15,7 +15,6 @@ from pandas.api.types import is_numeric_dtype, is_string_dtype
 def plot_movement(data, frm, to):
     """
     Plot 'x' and 'y' attributes for given Pandas DataFrame in specified time frame.
-
     :param data: Pandas DataFrame (should be sorted by 'time' attribute).
     :param frm: Starting from time step. Note that if time is stored as a date (if input data has time not stored as numeric type it is automatically converted to datetime) parameter has to be set using an datetime format: mkit.plot_movement(data, "2008-01-01", "2010-10-01")
     :param to: Ending to time step.
@@ -81,7 +80,6 @@ def animate_movement(data, viewsize):
 def plot_animal_timesteps(data):
     """
     Plot the number of time steps for each 'animal_id'
-
     :param data_animal_id_groups: DataFrame containing movement records.
     :return: None
     """
@@ -113,7 +111,6 @@ def plot_animal_timesteps(data):
 def plot_pace(avg_speed_data, feature="speed"):
     """
     Plot average speed extracted feature for each animal.
-
     :param avg_speed_data: pandas Dataframe including average speed feature.
     :return: None.
     """
@@ -150,7 +147,6 @@ def plot_pace(avg_speed_data, feature="speed"):
 def plot_animal(inp_data, animal_id):
     """
     Plot individual animal's 'x' and 'y' coordinates.
-
     :param inp_data: DataFrame containing 'x' & 'y' attributes.
     :param animal_id: ID of animal to be plotted.
     :return: None.
@@ -223,7 +219,8 @@ def plot_geodata(data, latitude_colname = "location-lat", longitude_colname = "l
     return map
 
 def save_geodata_map(map, filename):
-    """save the creates geodata map as a file
+    """
+    save the created geodata map as a file
     :param map: map object to be saved.
     :param filename: name of the new created file containing the map.
     """
@@ -234,6 +231,11 @@ def save_geodata_map(map, filename):
 
 
 def save_animation_plot(animation_object, filename):
+    """
+    save animation as gif and mp4 file in working directory.
+    :param animation_object: created animation object
+    :param filename: name of the two files which are created
+    """
     # save as gif
     writergif = animation.PillowWriter(fps=30)
     animation_object.save(f'{filename}.gif', writer=writergif)
