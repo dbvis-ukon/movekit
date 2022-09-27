@@ -6,6 +6,7 @@ import numpy as np
 import math
 import pickle
 from pandas.testing import assert_frame_equal
+from tqdm import tqdm
 
 
 from src.movekit.feature_extraction import *
@@ -145,35 +146,35 @@ avspeed = {
 			312: pd.DataFrame({'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 312, 1: 312, 2: 312},
 							'x': {0: 405.29, 1: 405.31, 2: 405.31}, 'y': {0: 417.76, 1: 417.37, 2: 417.07},
 							'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
-							'average_speed': {0: 0.0, 1: 0.39051248379531817, 2: 0.3000000000000114},
+							'average_speed': {0: 0.195256, 1: 0.345256, 2: 0.150000},
 							'average_acceleration': {0: None, 1: None, 2: None},
 							'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
 							'stopped': {0: None, 1: None, 2: None}}),
 			511: pd.DataFrame({'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 511, 1: 511, 2: 511},
 							   'x': {0: 369.99, 1: 370.01, 2: 370.01}, 'y': {0: 428.78, 1: 428.82, 2: 428.85},
 							   'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-							   'average_speed': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
+							   'average_speed': {0: 0.022361, 1: 0.037361, 2: 0.015000},
 							   'average_acceleration': {0: None, 1: None, 2: None},
 							   'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
 							   'stopped': {0: None, 1: None, 2: None}}),
 			607: pd.DataFrame({'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 607, 1: 607, 2: 607},
 							   'x': {0: 390.33, 1: 390.25, 2: 390.17}, 'y': {0: 405.89, 1: 405.89, 2: 405.88},
 							   'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-							   'average_speed': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
+							   'average_speed': {0: 0.040000, 1: 0.080311, 2: 0.040311},
 							   'average_acceleration': {0: None, 1: None, 2: None},
 							   'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
 							   'stopped': {0: None, 1: None, 2: None}}),
 			811: pd.DataFrame({'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 811, 1: 811, 2: 811},
 							   'x': {0: 445.15, 1: 445.48, 2: 445.77}, 'y': {0: 411.94, 1: 412.26, 2: 412.61},
 							   'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
-							   'average_speed': {0: 0.0, 1: 0.45967379738247277, 2: 0.4545327270945347},
+							   'average_speed': {0: 0.229837, 1: 0.457103, 2: 0.227266},
 							   'average_acceleration': {0: None, 1: None, 2: None},
 							   'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
 							   'stopped': {0: None, 1: None, 2: None}}),
 			905: pd.DataFrame({'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 905, 1: 905, 2: 905},
 							   'x': {0: 366.06, 1: 365.86, 2: 365.7}, 'y': {0: 451.76, 1: 451.76, 2: 451.76},
 							   'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-							   'average_speed': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
+							   'average_speed': {0: 0.10, 1: 0.18, 2: 0.08},
 							   'average_acceleration': {0: None, 1: None, 2: None},
 							   'direction': {0: None, 1: 180.0, 2: 180.0}, 'stopped': {0: None, 1: None, 2: None}})}
 
@@ -183,8 +184,8 @@ avaccel = {
 					   			'x': {0: 405.29, 1: 405.31, 2: 405.31},
 								'y': {0: 417.76, 1: 417.37, 2: 417.07},
 								'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
-								'average_speed': {0: 0.0, 1: 0.39051248379531817, 2: 0.3000000000000114},
-								'average_acceleration': {0:  0.195256, 1: 0.150000, 2: -0.045256},
+								'average_speed': {0: 0.195256, 1: 0.345256, 2: 0.150000},
+								'average_acceleration': {0:  0.075000, 1: -0.022628, 2: -0.097628},
 								'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
 								'stopped': {0: None, 1: None, 2: None}} ),
 			511 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3},
@@ -192,8 +193,8 @@ avaccel = {
 																			  1: 370.01, 2: 370.01},
 								 'y': {0: 428.78, 1: 428.82, 2: 428.85},
 								 'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								 'average_speed': {0: 0.0,1: 0.04472135955000596, 2: 0.03000000000002956},
-								 'average_acceleration': {0: 0.02236067977500298, 1: 0.01500000000001478, 2: -0.0073606797749882005},
+								 'average_speed': {0: 0.022361,1: 0.037361, 2: 0.015000},
+								 'average_acceleration': {0: 0.007499999999999998, 1: -0.0036804999999999997, 2: -0.0111805},
 								 'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
 								 'stopped': {0: None, 1: None, 2: None}} ),
 			607 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
@@ -201,8 +202,8 @@ avaccel = {
 								'x': {0: 390.33, 1: 390.25, 2: 390.17},
 								'y': {0: 405.89, 1: 405.89, 2: 405.88},
 								'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								'average_speed': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								'average_acceleration': {0: 0.03999999999999204, 1: 0.04031128874148429, 2: 0.0003112887414922494},
+								'average_speed': {0: 0.040000, 1: 0.080311, 2: 0.040311},
+								'average_acceleration': {0: 0.0201555, 1: 0.0001554999999999994, 2: -0.019999999999999997},
 								'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
 								'stopped': {0: None, 1: None, 2: None}} ),
 			811 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
@@ -210,8 +211,8 @@ avaccel = {
 								'x': {0: 445.15, 1: 445.48, 2: 445.77},
 								'y': {0: 411.94, 1: 412.26, 2: 412.61},
 								'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
-								'average_speed': {0: 0.0, 1: 0.45967379738247277, 2: 0.4545327270945347},
-								'average_acceleration': {0: 0.22983689869123639, 1: 0.22726636354726734, 2: -0.002570535143969044},
+								'average_speed': {0: 0.229837, 1: 0.457103, 2: 0.227266},
+								'average_acceleration': {0: 0.113633, 1: -0.0012855000000000089, 2: -0.11491849999999998},
 								'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
 								'stopped': {0: None, 1: None, 2: None}} ),
 			905 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
@@ -219,47 +220,58 @@ avaccel = {
 								'x': {0: 366.06, 1: 365.86, 2: 365.7},
 								'y': {0: 451.76, 1: 451.76, 2: 451.76},
 								'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								'average_speed': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								'average_acceleration': {0: 0.10, 1: 0.08, 2: -0.02},
+								'average_speed': {0: 0.10, 1: 0.18, 2: 0.08},
+								'average_acceleration': {0: 0.04, 1: -0.01, 2: -0.05},
 								'direction': {0: None, 1: 180.0, 2: 180.0},
 								'stopped': {0: None, 1: None, 2: None}})}
 
 stops = {
 			312 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3},
 								'animal_id': {0: 312, 1: 312, 2: 312},
-								'x': {0: 405.29, 1: 405.31,	2: 405.31}, 'y': {0: 417.76, 1: 417.37, 2: 417.07},
-								  'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
-								  'average_speed': {0: 0.0, 1: 0.39051248379531817, 2: 0.3000000000000114},
-								  'average_acceleration': {0:  0.195256, 1: 0.150000, 2: -0.045256},
-								  'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
-								  'stopped': {0: 1, 1: 1, 2: 1}} ),
-			511 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 511, 1: 511, 2: 511},
-								 'x': {0: 369.99, 1: 370.01, 2: 370.01}, 'y': {0: 428.78, 1: 428.82, 2: 428.85},
+					   			'x': {0: 405.29, 1: 405.31, 2: 405.31},
+								'y': {0: 417.76, 1: 417.37, 2: 417.07},
+								'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
+								'average_speed': {0: 0.195256, 1: 0.345256, 2: 0.150000},
+								'average_acceleration': {0:  0.075000, 1: -0.022628, 2: -0.097628},
+								'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
+								'stopped': {0: 0, 1: 0, 2: 0}} ),
+			511 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3},
+								 'animal_id': {0: 511, 1: 511, 2: 511}, 'x': {0: 369.99,
+																			  1: 370.01, 2: 370.01},
+								 'y': {0: 428.78, 1: 428.82, 2: 428.85},
 								 'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								 'average_speed': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								 'average_acceleration': {0: 0.02236067977500298, 1: 0.01500000000001478, 2: -0.0073606797749882005},
+								 'average_speed': {0: 0.022361,1: 0.037361, 2: 0.015000},
+								 'average_acceleration': {0: 0.007499999999999998, 1: -0.0036804999999999997, 2: -0.0111805},
 								 'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
 								 'stopped': {0: 1, 1: 1, 2: 1}} ),
-			607 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 607, 1: 607, 2: 607},
-								 'x': {0: 390.33, 1: 390.25, 2: 390.17}, 'y': {0: 405.89, 1: 405.89, 2: 405.88},
-								 'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								 'average_speed': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								 'average_acceleration': {0: 0.03999999999999204, 1: 0.04031128874148429, 2: 0.0003112887414922494},
-								 'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
-								 'stopped': {0: 1, 1: 1, 2: 1}} ),
-			811 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 811, 1: 811, 2: 811},
-								 'x': {0: 445.15, 1: 445.48, 2: 445.77}, 'y': {0: 411.94, 1: 412.26, 2: 412.61},
-								 'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
-								 'average_speed': {0: 0.0, 1: 0.45967379738247277, 2: 0.4545327270945347},
-								 'average_acceleration': {0: 0.22983689869123639, 1: 0.22726636354726734, 2: -0.002570535143969044},
-								 'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
-								 'stopped': {0: 1, 1: 1, 2: 1}} ),
-			905 : pd.DataFrame( {'time': {0: 1, 1: 2, 2: 3}, 'animal_id': {0: 905, 1: 905, 2: 905},
-								 'x': {0: 366.06, 1: 365.86, 2: 365.7}, 'y': {0: 451.76, 1: 451.76, 2: 451.76},
-								 'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								 'average_speed': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								 'average_acceleration': {0: 0.10, 1: 0.08, 2: -0.02},
-								 'direction': {0: None, 1: 180.0, 2: 180.0}, 'stopped': {0: 1, 1: 1, 2: 1}} )}
+			607 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
+								'animal_id': {0: 607, 1: 607, 2: 607},
+								'x': {0: 390.33, 1: 390.25, 2: 390.17},
+								'y': {0: 405.89, 1: 405.89, 2: 405.88},
+								'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
+								'average_speed': {0: 0.040000, 1: 0.080311, 2: 0.040311},
+								'average_acceleration': {0: 0.0201555, 1: 0.0001554999999999994, 2: -0.019999999999999997},
+								'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
+								'stopped': {0: 1, 1: 1, 2: 1}} ),
+			811 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
+								'animal_id': {0: 811, 1: 811, 2: 811},
+								'x': {0: 445.15, 1: 445.48, 2: 445.77},
+								'y': {0: 411.94, 1: 412.26, 2: 412.61},
+								'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
+								'average_speed': {0: 0.229837, 1: 0.457103, 2: 0.227266},
+								'average_acceleration': {0: 0.113633, 1: -0.0012855000000000089, 2: -0.11491849999999998},
+								'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
+								'stopped': {0: 0, 1: 0, 2: 0}} ),
+			905 : pd.DataFrame({'time': {0: 1, 1: 2, 2: 3},
+								'animal_id': {0: 905, 1: 905, 2: 905},
+								'x': {0: 366.06, 1: 365.86, 2: 365.7},
+								'y': {0: 451.76, 1: 451.76, 2: 451.76},
+								'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
+								'average_speed': {0: 0.10, 1: 0.18, 2: 0.08},
+								'average_acceleration': {0: 0.04, 1: -0.01, 2: -0.05},
+								'direction': {0: None, 1: 180.0, 2: 180.0},
+								'stopped': {0: 1, 1: 0, 2: 1}})}
+
 
 feats = {'time': {0: 1, 1: 2, 2: 3, 3: 1, 4: 2, 5: 3, 6: 1, 7: 2, 8: 3, 9: 1, 10: 2, 11: 3, 12: 1, 13: 2, 14: 3},
 		 'animal_id': {0: 312, 1: 312, 2: 312, 3: 511, 4: 511, 5: 511, 6: 607, 7: 607, 8: 607, 9: 811, 10: 811, 11: 811,
@@ -270,15 +282,15 @@ feats = {'time': {0: 1, 1: 2, 2: 3, 3: 1, 4: 2, 5: 3, 6: 1, 7: 2, 8: 3, 9: 1, 10
 			   9: 411.94, 10: 412.26, 11: 412.61, 12: 451.76, 13: 451.76, 14: 451.76},
 		 'distance': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0, 7: 0.08, 8: 0.0806, 9: 0.0,
 					  10: 0.4597, 11: 0.4545, 12: 0.0, 13: 0.2, 14: 0.16},
-		 'average_speed': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0, 7: 0.08, 8: 0.0806,
-						   9: 0.0, 10: 0.4597, 11: 0.4545, 12: 0.0, 13: 0.2, 14: 0.16},
-		 'average_acceleration': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0,
-								  8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0, 12: 0.0, 13: 0.0, 14: 0.0},
-		 'direction': {0: (0.0, 0.0), 1: (0.02, -0.39), 2: (0.0, -0.3), 3: (0.0, 0.0), 4: (0.02, 0.04), 5: (0.0, 0.03), 6: (0.0, 0.0), 7: (-0.08, 0.0), 8: (-0.08, -0.01),
+		'direction': {0: (0.0, 0.0), 1: (0.02, -0.39), 2: (0.0, -0.3), 3: (0.0, 0.0), 4: (0.02, 0.04), 5: (0.0, 0.03), 6: (0.0, 0.0), 7: (-0.08, 0.0), 8: (-0.08, -0.01),
 					   9: (0.0, 0.0), 10: (0.33, 0.32), 11: (0.29, 0.35), 12: (0.0, 0.0), 13: (-0.2, 0.0), 14: (-0.16, 0.0)},
-		 'stopped': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1},
 		'turning': {0: 0.000000, 1: 0.0, 2: 0.9987, 3: 0.000000, 4: 0.0, 5: 0.8944, 6: 0.000000, 7: 0.000000, 8: 0.9923, 9: 0.000000,
-							   10: 0.0, 11: 0.9941, 12: 0.000000, 13: 0.000000, 14: 1.000000}}
+							   10: 0.0, 11: 0.9941, 12: 0.000000, 13: 0.000000, 14: 1.000000},
+		 'average_speed': {0: 0.1953, 1: 0.3453, 2: 0.1500, 3: 0.0224, 4: 0.0374, 5: 0.0150, 6: 0.0400, 7: 0.0803, 8: 0.0403,
+						   9: 0.2298, 10: 0.4571, 11: 0.2273, 12: 0.10, 13: 0.18, 14: 0.08},
+		 'average_acceleration': {0: 0.0750, 1: -0.0226, 2: -0.0976, 3: 0.0075, 4: -0.0037, 5: -0.0112, 6: 0.0202, 7: 0.0002,
+								  8: -0.0200, 9: 0.1136, 10: -0.0013, 11: -0.1149, 12: 0.04, 13: -0.01, 14: -0.05},
+		 'stopped': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1}}
 
 timestamp_feats = {'time': {0: Timestamp('2020-03-27 11:57:07'), 1: Timestamp('2020-03-27 11:57:09'),
 							2: Timestamp('2020-03-27 11:57:11'), 3: Timestamp('2020-03-27 11:57:07'),
@@ -288,107 +300,35 @@ timestamp_feats = {'time': {0: Timestamp('2020-03-27 11:57:07'), 1: Timestamp('2
 							10: Timestamp('2020-03-27 11:57:09'), 11: Timestamp('2020-03-27 11:57:11'),
 							12: Timestamp('2020-03-27 11:57:07'), 13: Timestamp('2020-03-27 11:57:09'),
 							14: Timestamp('2020-03-27 11:57:11')},
-				   'animal_id': {0: 312, 1: 312, 2: 312, 3: 511, 4: 511, 5: 511, 6: 607, 7: 607,
-								 8: 607, 9: 811, 10: 811, 11: 811, 12: 905, 13: 905, 14: 905},
-				   'x': {0: 405.29, 1: 405.31, 2: 405.31, 3: 369.99, 4: 370.01, 5: 370.01, 6: 390.33,
-						 7: 390.25, 8: 390.17, 9: 445.15, 10: 445.48, 11: 445.77, 12: 366.06,
-						 13: 365.86, 14: 365.7}, 'y': {0: 417.76, 1: 417.37, 2: 417.07, 3: 428.78,
-													   4: 428.82, 5: 428.85, 6: 405.89, 7: 405.89,
-													   8: 405.88, 9: 411.94, 10: 412.26, 11: 412.61,
-													   12: 451.76, 13: 451.76, 14: 451.76},
-				   'distance': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0,
-								7: 0.08, 8: 0.0806, 9: 0.0, 10: 0.4597, 11: 0.4545, 12: 0.0,
-								13: 0.2, 14: 0.16},
-				   'average_speed': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0,
-									 7: 0.08, 8: 0.0806, 9: 0.0, 10: 0.4597, 11: 0.4545, 12: 0.0,
-									 13: 0.2, 14: 0.16},
-				   'average_acceleration': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0,
-											5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0, 9: 0.0,
-											10: 0.0, 11: 0.0, 12: 0.0, 13: 0.0, 14: 0.0},
-				   'direction': {0: (0.0, 0.0), 1: (0.02, -0.39), 2: (0.0, -0.3), 3: (0.0, 0.0), 4: (0.02, 0.04),
-								 5: (0.0, 0.03), 6: (0.0, 0.0), 7: (-0.08, 0.0), 8: (-0.08, -0.01),
-								 9: (0.0, 0.0), 10: (0.33, 0.32), 11: (0.29, 0.35), 12: (0.0, 0.0), 13: (-0.2, 0.0),
-								 14: (-0.16, 0.0)},
-				   'stopped': {0: 1, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1,
-							   10: 0, 11: 0, 12: 1, 13: 0, 14: 0},
-				   'turning': {0: 0.000000, 1: 0.0, 2: 0.9987, 3: 0.000000, 4: 0.0, 5: 0.8944, 6: 0.000000, 7: 0.000000, 8: 0.9923, 9: 0.000000,
-							   10: 0.0, 11: 0.9941, 12: 0.000000, 13: 0.000000, 14: 1.000000}}
+		 'animal_id': {0: 312, 1: 312, 2: 312, 3: 511, 4: 511, 5: 511, 6: 607, 7: 607, 8: 607, 9: 811, 10: 811, 11: 811,
+					   12: 905, 13: 905, 14: 905},
+		 'x': {0: 405.29, 1: 405.31, 2: 405.31, 3: 369.99, 4: 370.01, 5: 370.01, 6: 390.33, 7: 390.25, 8: 390.17,
+			   9: 445.15, 10: 445.48, 11: 445.77, 12: 366.06, 13: 365.86, 14: 365.7},
+		 'y': {0: 417.76, 1: 417.37, 2: 417.07, 3: 428.78, 4: 428.82, 5: 428.85, 6: 405.89, 7: 405.89, 8: 405.88,
+			   9: 411.94, 10: 412.26, 11: 412.61, 12: 451.76, 13: 451.76, 14: 451.76},
+		 'distance': {0: 0.0, 1: 0.3905, 2: 0.3, 3: 0.0, 4: 0.0447, 5: 0.03, 6: 0.0, 7: 0.08, 8: 0.0806, 9: 0.0,
+					  10: 0.4597, 11: 0.4545, 12: 0.0, 13: 0.2, 14: 0.16},
+		'direction': {0: (0.0, 0.0), 1: (0.02, -0.39), 2: (0.0, -0.3), 3: (0.0, 0.0), 4: (0.02, 0.04), 5: (0.0, 0.03), 6: (0.0, 0.0), 7: (-0.08, 0.0), 8: (-0.08, -0.01),
+					   9: (0.0, 0.0), 10: (0.33, 0.32), 11: (0.29, 0.35), 12: (0.0, 0.0), 13: (-0.2, 0.0), 14: (-0.16, 0.0)},
+		'turning': {0: 0.000000, 1: 0.0, 2: 0.9987, 3: 0.000000, 4: 0.0, 5: 0.8944, 6: 0.000000, 7: 0.000000, 8: 0.9923, 9: 0.000000,
+							   10: 0.0, 11: 0.9941, 12: 0.000000, 13: 0.000000, 14: 1.000000},
+		 'average_speed': {0: 0.0976, 1: 0.1726, 2: 0.0750, 3: 0.0112, 4: 0.0187, 5: 0.0075, 6: 0.0200, 7: 0.0402, 8: 0.0202,
+						   9: 0.1149, 10: 0.2286, 11: 0.1136, 12: 0.05, 13: 0.09, 14: 0.04},
+		 'average_acceleration': {0: 0.0188, 1: -0.0057, 2: -0.0244, 3: 0.0019, 4: -0.0009, 5: -0.0028, 6: 0.005, 7: 0.000,
+								  8: -0.005, 9: 0.0284, 10: -0.0003, 11: -0.0287, 12: 0.0100, 13: -0.0025, 14: -0.0125},
+		 'stopped': {0: 1, 1: 0, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 0, 10: 0, 11: 0, 12: 1, 13: 1, 14: 1}}
 
-ts_feat = {'average_acceleration__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-		   'average_acceleration__autocorrelation__lag_1': {312: -0.9687, 511: -0.9436, 607: -1.0, 811: -0.9999,
-															905: -0.9758},
-		   'average_acceleration__autocorrelation__lag_2': {312: 0.4373, 511: 0.3871, 607: 0.4999, 811: 0.4998,
-															905: 0.4516},
-		   'average_acceleration__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_acceleration__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-		   'average_speed__autocorrelation__lag_1': {312: -0.4615, 511: -0.5665, 607: -0.2444, 811: -0.2586,
-													 905: -0.4286},
-		   'average_speed__autocorrelation__lag_2': {312: -0.5771, 511: -0.367, 607: -1.0112, 811: -0.9828,
-													 905: -0.6429},
-		   'average_speed__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'average_speed__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-		   'direction__autocorrelation__lag_1': {312: -0.2256, 511: -0.053, 607: -0.76, 811: -0.1587, 905: -0.25},
-		   'direction__autocorrelation__lag_2': {312: -1.0489, 511: -1.394, 607: 0.0201, 811: -1.1826, 905: -1.0},
-		   'direction__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'direction__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-		   'distance__autocorrelation__lag_1': {312: -0.4615, 511: -0.5665, 607: -0.2444, 811: -0.2586, 905: -0.4286},
-		   'distance__autocorrelation__lag_2': {312: -0.5771, 511: -0.367, 607: -1.0112, 811: -0.9828, 905: -0.6429},
-		   'distance__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'distance__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
-		   'x__autocorrelation__lag_1': {312: -0.25, 511: -0.25, 607: 0.0, 811: -0.0014, 905: -0.0041},
-		   'x__autocorrelation__lag_2': {312: -1.0, 511: -1.0, 607: -1.5, 811: -1.4972, 905: -1.4918},
-		   'x__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'x__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: None},
-		   'y__autocorrelation__lag_1': {312: -0.0056, 511: -0.0068, 607: -0.25, 811: -0.0007, 905: None},
-		   'y__autocorrelation__lag_2': {312: -1.4887, 511: -1.4865, 607: -1.0, 811: -1.4987, 905: None},
-		   'y__autocorrelation__lag_3': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_4': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_5': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_6': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_7': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_8': {312: None, 511: None, 607: None, 811: None, 905: None},
-		   'y__autocorrelation__lag_9': {312: None, 511: None, 607: None, 811: None, 905: None}}
 
-ts_feats = {'average_speed__mean_abs_change':
-				{312: 0.2405, 511: 0.0297, 607: 0.0403, 811: 0.2324, 905: 0.1200},
-			'average_speed__mean_change':
-				{312: 0.1500, 511: 0.0150, 607: 0.0403, 811: 0.2272, 905: 0.0800},
-			'average_speed__mean_second_derivative_central':
-				{312: -0.2405, 511: -0.0297, 607: -0.0397, 811: -0.2324, 905: -0.1200},
-			'average_speed__median':
-				{312: 0.3000, 511: 0.0300, 607: 0.0800, 811: 0.4545, 905: 0.1600},
-			'average_speed__mean':
-				{312: 0.2302, 511: 0.0249, 607: 0.0535, 811: 0.3047, 905: 0.1200}}
+ts_feat = {'average_speed__autocorrelation__lag_0': {312: 1.0, 511: 1.0, 607: 1.0, 811: 1.0, 905: 1.0},
+		   'average_speed__autocorrelation__lag_1': {312: -0.9509, 511: -0.8949, 607: -1.0, 811: -0.9999, 905: -0.9643},
+		   'average_speed__autocorrelation__lag_2': {312: 0.4018, 511: 0.2898, 607: 0.4999, 811: 0.4998, 905: 0.4286}}
+
+ts_feats = {'x__mean_second_derivative_central':
+				{312: -0.01, 511: -0.01, 607: 0.0, 811: -0.02, 905: 0.02},
+			'x__median':
+				{312: 405.31, 511: 370.01, 607: 390.25, 811: 445.48, 905: 365.86},
+			'x__mean':
+				{312: 405.3033, 511: 370.0033, 607: 390.25, 811: 445.4667, 905: 365.8733}}
 
 
 class Test_Feature_Extraction(unittest.TestCase):
@@ -570,7 +510,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
 
-	def test_compute_distance_and_direction(self):
+	def test_compute_distance(self):
 		distdic = {
 			312: pd.DataFrame({
 				'time': {0: 1, 1: 2, 2: 3},
@@ -580,7 +520,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 				'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
 				'average_speed': {0: None, 1: None, 2: None},
 				'average_acceleration': {0: None, 1: None, 2: None},
-				'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
+				'direction': {0: None, 1: None, 2: None},
 				'stopped': {0: None, 1: None, 2: None}}),
 			511: pd.DataFrame({
 				'time': {0: 1, 1: 2, 2: 3},
@@ -590,7 +530,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 				'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
 				'average_speed': {0: None, 1: None, 2: None},
 				'average_acceleration': {0: None, 1: None, 2: None},
-				'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
+				'direction': {0: None, 1: None, 2: None},
 				'stopped': {0: None, 1: None, 2: None}}),
 			607: pd.DataFrame({
 				'time': {0: 1, 1: 2, 2: 3},
@@ -600,7 +540,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 				'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
 				'average_speed': {0: None, 1: None, 2: None},
 				'average_acceleration': {0: None, 1: None, 2: None},
-				'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
+				'direction': {0: None, 1: None, 2: None},
 				'stopped': {0: None, 1: None, 2: None}}),
 			811: pd.DataFrame({
 				'time': {0: 1, 1: 2, 2: 3},
@@ -610,7 +550,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 				'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
 				'average_speed': {0: None, 1: None, 2: None},
 				'average_acceleration': {0: None, 1: None, 2: None},
-				'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
+				'direction': {0: None, 1: None, 2: None},
 				'stopped': {0: None, 1: None, 2: None}}),
 			905: pd.DataFrame({
 				'time': {0: 1, 1: 2, 2: 3},
@@ -620,7 +560,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 				'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
 				'average_speed': {0: None, 1: None, 2: None},
 				'average_acceleration': {0: None, 1: None, 2: None},
-				'direction': {0: None, 1: 180.0, 2: 180.0},
+				'direction': {0: None, 1: None, 2: None},
 				'stopped': {0: None, 1: None, 2: None}})}
 		dict_groups = {
 			312: pd.DataFrame({
@@ -676,7 +616,120 @@ class Test_Feature_Extraction(unittest.TestCase):
 
 		inp = dict_groups
 		ref = distdic
-		case = compute_distance_and_direction(inp)
+		case = compute_distance(inp)
+
+		for i in ref.keys():
+			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
+
+	def test_compute_direction(self):
+		dirdic = {
+			312: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 312, 1: 312, 2: 312},
+				'x': {0: 405.29, 1: 405.31, 2: 405.31},
+				'y': {0: 417.76, 1: 417.37, 2: 417.07},
+				'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: (0.0, 0.0), 1: (0.02, -0.39), 2: (0.0, -0.3)},
+				'stopped': {0: None, 1: None, 2: None}}),
+			511: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 511, 1: 511, 2: 511},
+				'x': {0: 369.99, 1: 370.01, 2: 370.01},
+				'y': {0: 428.78, 1: 428.82, 2: 428.85},
+				'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: (0.0, 0.0), 1: (0.02, 0.04), 2: (0.0, 0.03)},
+				'stopped': {0: None, 1: None, 2: None}}),
+			607: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 607, 1: 607, 2: 607},
+				'x': {0: 390.33, 1: 390.25, 2: 390.17},
+				'y': {0: 405.89, 1: 405.89, 2: 405.88},
+				'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: (0.0, 0.0), 1: (-0.08, 0.0), 2: (-0.08, -0.01)},
+				'stopped': {0: None, 1: None, 2: None}}),
+			811: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 811, 1: 811, 2: 811},
+				'x': {0: 445.15, 1: 445.48, 2: 445.77},
+				'y': {0: 411.94, 1: 412.26, 2: 412.61},
+				'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: (0.0, 0.0), 1: (0.33, 0.32), 2: (0.29, 0.35)},
+				'stopped': {0: None, 1: None, 2: None}}),
+			905: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 905, 1: 905, 2: 905},
+				'x': {0: 366.06, 1: 365.86, 2: 365.7},
+				'y': {0: 451.76, 1: 451.76, 2: 451.76},
+				'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: (0.0, 0.0), 1: (-0.2, 0.0), 2: (-0.16, 0.0)},
+				'stopped': {0: None, 1: None, 2: None}})}
+
+		dict_groups = {
+			312: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 312, 1: 312, 2: 312},
+				'x': {0: 405.29, 1: 405.31, 2: 405.31},
+				'y': {0: 417.76, 1: 417.37, 2: 417.07},
+				'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: None, 1: None, 2: None},
+				'stopped': {0: None, 1: None, 2: None}}),
+			511: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 511, 1: 511, 2: 511},
+				'x': {0: 369.99, 1: 370.01, 2: 370.01},
+				'y': {0: 428.78, 1: 428.82, 2: 428.85},
+				'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: None, 1: None, 2: None},
+				'stopped': {0: None, 1: None, 2: None}}),
+			607: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 607, 1: 607, 2: 607},
+				'x': {0: 390.33, 1: 390.25, 2: 390.17},
+				'y': {0: 405.89, 1: 405.89, 2: 405.88},
+				'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: None, 1: None, 2: None},
+				'stopped': {0: None, 1: None, 2: None}}),
+			811: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 811, 1: 811, 2: 811},
+				'x': {0: 445.15, 1: 445.48, 2: 445.77},
+				'y': {0: 411.94, 1: 412.26, 2: 412.61},
+				'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: None, 1: None, 2: None},
+				'stopped': {0: None, 1: None, 2: None}}),
+			905: pd.DataFrame({
+				'time': {0: 1, 1: 2, 2: 3},
+				'animal_id': {0: 905, 1: 905, 2: 905},
+				'x': {0: 366.06, 1: 365.86, 2: 365.7},
+				'y': {0: 451.76, 1: 451.76, 2: 451.76},
+				'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
+				'average_speed': {0: None, 1: None, 2: None},
+				'average_acceleration': {0: None, 1: None, 2: None},
+				'direction': {0: None, 1: None, 2: None},
+				'stopped': {0: None, 1: None, 2: None}})}
+
+		inp = dict_groups
+		ref = dirdic
+		pbar = tqdm()  # as function is always called from extract_features with percentage bar as parameter
+		case = compute_direction(inp, pbar)
 
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
@@ -689,7 +742,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 								  'x': {0: 405.29, 1: 405.31, 2: 405.31},
 								  'y': {0: 417.76, 1: 417.37, 2: 417.07},
 								  'distance': {0: 0.0, 1: 0.39051248379531817, 2: 0.30000000000001137},
-								  'average_speed': {0: 0.0, 1: 0.39051248379531817, 2: 0.3000000000000114},
+								  'average_speed': {0: 0.195256, 1: 0.345256, 2: 0.150000},
 								  'average_acceleration': {0: None, 1: None, 2: None},
 								  'direction': {0: None, 1: -87.0643265535814, 2: -90.0},
 								  'stopped': {0: None, 1: None, 2: None}}),
@@ -699,7 +752,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 								  'x': {0: 369.99, 1: 370.01, 2: 370.01},
 								  'y': {0: 428.78, 1: 428.82, 2: 428.85},
 								  'distance': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
-								  'average_speed': {0: 0.0, 1: 0.04472135955000596, 2: 0.03000000000002956},
+								  'average_speed': {0: 0.02236067977500298, 1: 0.03736067977501776, 2: 0.01500000000001478},
 								  'average_acceleration': {0: None, 1: None, 2: None},
 								  'direction': {0: None, 1: 63.434948822954574, 2: 90.0},
 								  'stopped': {0: None, 1: None, 2: None}}),
@@ -709,7 +762,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 								  'x': {0: 390.33, 1: 390.25, 2: 390.17},
 								  'y': {0: 405.89, 1: 405.89, 2: 405.88},
 								  'distance': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
-								  'average_speed': {0: 0.0, 1: 0.07999999999998408, 2: 0.08062257748296858},
+								  'average_speed': {0: 0.040000, 1: 0.080311, 2: 0.040311},
 								  'average_acceleration': {0: None, 1: None, 2: None},
 								  'direction': {0: None, 1: 180.0, 2: -172.87498365110324},
 								  'stopped': {0: None, 1: None, 2: None}}),
@@ -719,7 +772,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 								  'x': {0: 445.15, 1: 445.48, 2: 445.77},
 								  'y': {0: 411.94, 1: 412.26, 2: 412.61},
 								  'distance': {0: 0.0, 1: 0.45967379738247277, 2: 0.45453272709453474},
-								  'average_speed': {0: 0.0, 1: 0.45967379738247277, 2: 0.4545327270945347},
+								  'average_speed': {0: 0.229837, 1: 0.457103, 2: 0.227266},
 								  'average_acceleration': {0: None, 1: None, 2: None},
 								  'direction': {0: None, 1: 44.1185960034137, 2: 50.35582504286055},
 								  'stopped': {0: None, 1: None, 2: None}}),
@@ -729,7 +782,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 								  'x': {0: 366.06, 1: 365.86, 2: 365.7},
 								  'y': {0: 451.76, 1: 451.76, 2: 451.76},
 								  'distance': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
-								  'average_speed': {0: 0.0, 1: 0.19999999999998863, 2: 0.160000000000025},
+								  'average_speed': {0: 0.10, 1: 0.18, 2: 0.08},
 								  'average_acceleration': {0: None, 1: None, 2: None},
 								  'direction': {0: None, 1: 180.0, 2: 180.0},
 								  'stopped': {0: None, 1: None, 2: None}})}
@@ -787,21 +840,21 @@ class Test_Feature_Extraction(unittest.TestCase):
 
 		ref = avspeed
 		inp = distdic
-		case = compute_average_speed(inp, fps = 1)
+		case = compute_average_speed(inp, fps = 2)
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
 	def test_average_acceleration(self):  # test fails because we define average_acc[0] = average_acc[1] but in test as na.
 		ref = avaccel
 		inp = avspeed
-		case = compute_average_acceleration(inp, fps = 3) # minimum value for fps is three, otherwise column = 0
+		case = compute_average_acceleration(inp, fps = 2)
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
 	def test_computing_stops(self):
 		ref = stops
 		inp = avaccel
-		case = computing_stops(inp, threshold_speed = 0.5)
+		case = computing_stops(inp, threshold_speed = 0.1)
 		for i in ref.keys():
 			pd.testing.assert_frame_equal(ref[i], case[i], check_dtype=False)
 
@@ -838,7 +891,7 @@ class Test_Feature_Extraction(unittest.TestCase):
 		ref_time.reset_index(drop=True, inplace=True)
 		inp_time = pd.DataFrame(records_timestring)
 		inp_time["time"] = pd.to_datetime(inp_time["time"])
-		case_time = extract_features(inp_time, fps=1, stop_threshold=0.1).round(4)
+		case_time = extract_features(inp_time, fps='1s', stop_threshold=0.1).round(4)
 
 		# Testing function on numeric "time" datatype
 		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
@@ -853,16 +906,14 @@ class Test_Feature_Extraction(unittest.TestCase):
 		case = ts_feature(inp, "autocorrelation").round(4)
 		ref = ref.rename_axis('variable', axis=1)
 		ref = ref.rename_axis("id", axis=0)
-		ref, case = ref.iloc[:,10:20], case.iloc[:,10:20]
+		ref, case = ref, case.iloc[:,10:13]
 		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
 	def test_all_ts_features(self):
 		ref = pd.DataFrame(ts_feats).round(4)
 		inp = pd.DataFrame(feats)
-		case = ts_all_features(inp).round(4).iloc[:,795:800]
-		#ref = ref.rename_axis('variable', axis=1)
-		#ref = ref.rename_axis("id", axis=0)
-		pd.testing.assert_frame_equal(ref,case, check_dtype=False)
+		case = ts_all_features(inp).round(4).iloc[:, 797:800]
+		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
 
 	def test_outlier_detection(self):
 		ref = pd.DataFrame({'time': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 3, 11: 3},

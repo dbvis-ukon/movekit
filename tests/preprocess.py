@@ -301,7 +301,7 @@ class TestPreprocess(unittest.TestCase):
         ref.sort_values(['time', 'animal_id'], ascending=True, inplace=True)
         ref.reset_index(drop=True, inplace=True)
 
-        arr_index = np.array([0,1,2])
+        arr_index = np.array([1,2,3])
         case = replace_parts_animal_movement(inp, 811, arr_index, replacement_value_x = 100, replacement_value_y = 90)
         pd.testing.assert_frame_equal(ref,case, check_dtype=False)
 
