@@ -10,11 +10,15 @@ from .feature_extraction import *
 import math
 
 
-def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
+def network_time_graphlist(preprocessed_data, object_type='delaunay_object', fps=10, stop_threshold=0.5):
     """
     Calculates a network list for each timestep based on delaunay triangulation (currently only one available).
     :param preprocessed_data: Pandas DataFrame containing movement records.
     :param object_type: delaunay_object - currently the only one available.
+    :param fps: as the returned network graph contains features such as average speed and average acceleration, the fps parameter defines the size of the travel window used to calculate these features.
+    (refer to extract_features for a more detailed description of the parameter)
+    :param stop_threshold: as the returned network graph contains a feature defining whether a timestamp is a stop, this parameter defines the average speed threshold for a timestamp to be a stop.
+    (refer to extract_features for a more detailed description of the parameter)
     :return: List of nx graphs based on delaunay triangulation, containing singular, group and relational attributes on nodes, graph and edges.
     """
     # Get spatial objects
@@ -33,7 +37,7 @@ def network_time_graphlist(preprocessed_data, object_type='delaunay_object'):
 
     # Pointwise features grouped into time
     data_groups_time = timewise_dict(
-        centroid_medoid_computation(extract_features(preprocessed_data)))
+        centroid_medoid_computation(extract_features(preprocessed_data, fps=fps, stop_threshold=stop_threshold)))
 
     # Groupwise features
     grp = timewise_dict(get_group_data(preprocessed_data))
