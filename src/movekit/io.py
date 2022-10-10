@@ -9,7 +9,6 @@ import geopandas as gpd
 def parse_csv(path_to_file, time_format):
     """
     Read CSV file into Pandas DataFrame.
-
     :param path_to_file: Complete path/relative path to CSV file along with file name.
     :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
     :return: Pandas DataFrame containing imported data.
@@ -84,7 +83,6 @@ def parse_csv(path_to_file, time_format):
 def parse_excel(path_to_file, sheet, time_format):
     """
     Read Excel file into Pandas DataFrame
-
     :param path_to_file: Complete path/relative path to Excel file along with file name
     :param sheet: name of specific sheet given, by default first sheet of the excel workbook
     :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
@@ -161,7 +159,6 @@ def parse_excel(path_to_file, sheet, time_format):
 def read_data(path, sheet=0, time_format="undefined"):
     """
     Function to import data from 'csv', 'xlsx' and 'xls' files.
-
     :param path: Complete path/relative path to Excel file along with file name
     :param sheet: name of specific sheet given, by default first sheet of the excel workbook
     :param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
@@ -185,10 +182,8 @@ def read_data(path, sheet=0, time_format="undefined"):
 def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
     """
     Function to import csv and excel files from the Movebank database.
-
     :param path_to_file: Complete path/relative path to file along with file name
     :param animal_id: Column name of the unique animal identifier (converted to be animal_id)
-
     return: Data frame in a format required for using the movekit package.
     """
 
@@ -226,14 +221,12 @@ def read_movebank(path_to_file, animal_id = 'individual-local-identifier'):
 
 def read_geojson(path, animal_id="name", time="time"):
     """
-        Function to import geojson files.
-
-        :param path: Complete path/relative path to file along with file name
-        :param animal_id: Key name of the unique animal identifier (as defined as property value in the geojson object)
-        :param time: Key name of time (as defined as property value in the geojson object)
-
-        return: Data frame in a format required for using the movekit package.
-        """
+    Function to import geojson files.
+    :param path: Complete path/relative path to file along with file name
+    :param animal_id: Key name of the unique animal identifier (as defined as property value in the geojson object)
+    :param time: Key name of time (as defined as property value in the geojson object)
+    return: Data frame in a format required for using the movekit package.
+    """
 
     # check extension
     file_split = path.split(".")

@@ -18,8 +18,8 @@ class Test_network(unittest.TestCase):
          'medoid': 312,
          'polarization': 0.341926206925558,
          'total_dist': 0.9189596262265768,
-         'mean_speed': 0.15595112857659577,
-         'mean_acceleration': 0.0,
+         'mean_speed': 0.06238045143063832,
+         'mean_acceleration': 2.0122792321330965e-18,
          'mean_distance_centroid': 29.7782,
          'centroid_direction': (0.004, 0.038)}
         node = {'time': 4,
@@ -27,8 +27,8 @@ class Test_network(unittest.TestCase):
          'x': 405.3,
          'y': 416.86,
          'distance': 0.2102379604162655,
-         'average_speed': 0.22518761105289875,
-         'average_acceleration': 0.0,
+         'average_speed': 0.1051189802081327,
+         'average_acceleration': -0.07500000000000284,
          'direction': (-0.01, -0.21),
          'turning': 0.9988681377244376,
          'stopped': 1,
@@ -39,7 +39,7 @@ class Test_network(unittest.TestCase):
 
         edge = {'distance': 40.91249809043683}
 
-        lst = network_time_graphlist(data)
+        lst = network_time_graphlist(data, fps=2)
         outgraph= lst[3].graph
         outnode = lst[3].nodes[312]
         outedge = lst[3].edges[312, 811]

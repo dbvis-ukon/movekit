@@ -73,18 +73,14 @@ def dtw_matrix(preprocessed_data, path=False, distance=euclidean):
     else:
         return distance_df
 
-def compute_centroid_direction(data,
-                               colname="centroid_direction",
-                               group_output=False,
-                               only_centroid=True):
-    """Calculate the direction of the centroid. Calculates centroid, if not in input data.
-
+def compute_centroid_direction(data, colname="centroid_direction", group_output=False, only_centroid=True):
+    """
+    Calculate the direction of the centroid. Calculates centroid, if not in input data.
     :param pd DataFrame: DataFrame with x/y positional data and animal_ids, optionally include centroid
     :param colname: Name of the column. Default: centroid_direction.
     :param group_output: Boolean, defines form of output. Default: Animal-Level.
     :param only_centroid: Boolean in case we just want to compute the centroids. Default: True.
-    :return: pandas DF with centroid direction included
-
+    :return: pandas DataFrame with centroid direction included
     """
     # Handle centroid not in data
     if "x_centroid" not in data.columns or "y_centroid" not in data.columns:
@@ -120,7 +116,6 @@ def get_heading_difference(preprocessed_data):
     Calculate the difference in between the animal's direction and the centroid's direction for each timestep.
     The difference is measured by the cosine similarity of the two direction vectors. The value range is from -1 to 1,
     with 1 meaning animal and centroid having the same direction while -1 meaning they have opposite directions.
-
     :param preprocessed_data: Pandas Dataframe containing preprocessed animal records.
     :return: Pandas Dataframe containing animal and centroid directions as well as the heading difference.
     """
@@ -157,7 +152,6 @@ def compute_polarization(preprocessed_data, group_output=False):
     the polarization is calculated for 2d - Data by first calculating the direction angles of the different movers and afterwards by calculating the polarization.
     For 3-dimensional data for all two's-combinations of the three dimensions the polarization is calculated in the way described before for 2d-data,
     afterwards the mean of the three results is taken as result for the polarization.
-
     :param preprocessed_data: Pandas Dataframe with or without previously extracted features.
     :return: Pandas Dataframe, with extracted features along with a new "polarization" variable.
     """
@@ -249,7 +243,6 @@ def get_spatial_objects(preprocessed_data, group_output=False):
     """
     Function to calculate convex hull, voronoi diagram and delaunay triangulation objects and also volumes of the first two objects.
     Please visit https://docs.scipy.org/doc/scipy-0.14.0/reference/tutorial/spatial.html for detailed documentation of spatial attributes.
-
     :param preprocessed_data: Pandas Df, containing x and y coordinates.
     :param group_output: Boolean, default: False, If true, one line per time capture for entire animal group.
     :return: DataFrame either for each animal or for group at each time, containing convex hull and voronoi diagram area as well as convex hull, voronoi diagram and delaunay triangulation object.
@@ -264,25 +257,26 @@ def get_spatial_objects(preprocessed_data, group_output=False):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
 
-        # Obtain shape objects
-        conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
-        voronoi_obj = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
-        delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
+        if len(data_groups_time[aid]) >= 3:  # spatial objects need minimum 3 points in timestamp
+            # Obtain shape objects
+            conv_hull_obj = ConvexHull(data_groups_time[aid].loc[:, ["x", "y"]])
+            voronoi_obj = Voronoi(data_groups_time[aid].loc[:, ["x", "y"]])
+            delaunay_obj = Delaunay(data_groups_time[aid].loc[:, ["x", "y"]])
 
-        # Calculate area based on objects right above
-        conv_hull_vol = conv_hull_obj.volume
-        voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
+            # Calculate area based on objects right above
+            conv_hull_vol = conv_hull_obj.volume
+            voronoi_vol = voronoi_volumes(data_groups_time[aid].loc[:, ["x", "y"]])
 
-        # Assign shapes to dataframe
-        data_groups_time[aid] = data_groups_time[aid].assign(
-            convex_hull_object=conv_hull_obj,
-            voronoi_object=voronoi_obj,
-            delaunay_object=delaunay_obj)
+            # Assign shapes to dataframe
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                convex_hull_object=conv_hull_obj,
+                voronoi_object=voronoi_obj,
+                delaunay_object=delaunay_obj)
 
-        data_groups_time[aid] = data_groups_time[aid].assign(
-            convex_hull_volume=conv_hull_vol,
-            voronoi_volume=voronoi_vol,
-        )
+            data_groups_time[aid] = data_groups_time[aid].assign(
+                convex_hull_volume=conv_hull_vol,
+                voronoi_volume=voronoi_vol,
+            )
 
     # Regroup data into DataFrame
     out_data = regrouping_data(data_groups_time)
@@ -342,18 +336,18 @@ def clustering(algorithm, data, **kwargs):
         clusterer = stc.ST_HDBSCAN(**kwargs)
     elif algorithm == 'agglomerative':
         clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
+    #elif algorithm == 'kmeans':
+    #    clusterer = stc.ST_KMeans(**kwargs)
     elif algorithm == 'optics':
         clusterer = stc.ST_OPTICS(**kwargs)
     elif algorithm == 'spectral':
         clusterer = stc.ST_SpectralClustering(**kwargs)
     elif algorithm == 'affinitypropagation':
         clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
+    #elif algorithm == 'birch':
+    #    clusterer = stc.ST_BIRCH(**kwargs)
     else:
-        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
+        raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.')
 
     if not is_numeric_dtype(data['time'][0]):  # if time format not integer
         grouped_data = data.groupby('time')
@@ -389,7 +383,7 @@ def clustering(algorithm, data, **kwargs):
 def clustering_with_splits(algorithm, data, frame_size, **kwargs):
     """
     Clustering of spatio-temporal data.
-    :param algorithm: Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.
+    :param algorithm: Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.
     :param data: DataFrame to perform clustering on.
     :param frame_size: the dataset is partitioned into frames and merged afterwards.
     :return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
@@ -400,16 +394,16 @@ def clustering_with_splits(algorithm, data, frame_size, **kwargs):
         clusterer = stc.ST_HDBSCAN(**kwargs)
     elif algorithm == 'agglomerative':
         clusterer = stc.ST_Agglomerative(**kwargs)
-    elif algorithm == 'kmeans':
-        clusterer = stc.ST_KMeans(**kwargs)
+    #elif algorithm == 'kmeans':
+    #    clusterer = stc.ST_KMeans(**kwargs)
     elif algorithm == 'optics':
         clusterer = stc.ST_OPTICS(**kwargs)
     elif algorithm == 'spectral':
         clusterer = stc.ST_SpectralClustering(**kwargs)
     elif algorithm == 'affinitypropagation':
         clusterer = stc.ST_AffinityPropagation(**kwargs)   
-    elif algorithm == 'birch':
-        clusterer = stc.ST_BIRCH(**kwargs)   
+    #elif algorithm == 'birch':
+    #    clusterer = stc.ST_BIRCH(**kwargs)
     else:
         raise ValueError('Unknown algorithm. Choose between dbscan, hdbscan, agglomerative, kmeans, optics, spectral, affinitypropagation, birch.')
 

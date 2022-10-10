@@ -17,6 +17,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial.distance import directed_hausdorff
 import multiprocessing
 from functools import partial
+import re
+from pandas.api.types import is_numeric_dtype
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -102,74 +104,14 @@ def regrouping_data(data_animal_id_groups):
     return result
 
 
-# def compute_direction(data_animal_id_groups,
-#                       param_x="x",
-#                       param_y="y",
-#                       colname="direction"):
-#     """
-#     Calculate angle of degrees, an animal is heading in between two timesteps.
-#     :param data_animal_id_groups: dictionary ordered by 'animal_id'.
-#     :param param_x: Column name to be recognized as x. Default "x".
-#     :param param_y: Column name to be recognized as y. Default "y".
-#     :return: dictionary containing computed 'distance' attribute.
-#     """
-#     # Compute 'direction' for 'animal_id' groups-
-#     for aid in data_animal_id_groups.keys():
-#         data = np.rad2deg(
-#             np.arctan2((data_animal_id_groups[aid][param_y] -
-#                         data_animal_id_groups[aid][param_y].shift(periods=1)),
-#                        (data_animal_id_groups[aid][param_x] -
-#                         data_animal_id_groups[aid][param_x].shift(periods=1))))
-#         data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-#             inp=data)
-#         data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
-#             columns={'inp': colname})
-#     return data_animal_id_groups
-
-"""
-def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', param_z='z', colname='direction'):
-    Computes the angle of rotation of an animal between two timesteps
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'
-    :param pbar: percentage bar filled with 10% already
-    :param colname: the name to appear in the new DataFrame
-    :return: dictionary containing computed 'distance' attribute
-
-    percent_update = 90 / len(data_animal_id_groups.keys())  # how much the pb is updated after each animal
-
-    # take the first dataframe to check the 3d presence
-    if presence_3d(data_animal_id_groups[next(iter(data_animal_id_groups))]):
-        is_3d = True
-    else:
-        is_3d = False
-
-    # iterate over movers
-    for aid in data_animal_id_groups.keys():
-        if is_3d:
-            coord = data_animal_id_groups[aid][[param_x, param_z, param_z]].to_numpy()
-        else:
-            coord = data_animal_id_groups[aid][[param_x, param_y]].to_numpy()
-
-        # compute the angles for two subsequent positions
-        angles = [angle(coord[i], coord[i - 1]) for i in range(1, len(coord))]
-
-        # we dont have an angle for the first observation
-        angles.insert(0, 0)
-
-        data_animal_id_groups[aid][colname] = angles
-        pbar.update(percent_update)
-
-    return data_animal_id_groups
-"""
-
-
 def compute_direction_angle(data, param_x='x', param_y='y', colname='direction_angle'):
     """
-        Computes the angle of rotation of an animal between two timesteps. Only possible if coordinates are 2D only.
-        :param data: dataframe containing the movement records
-        :param param_x: column name of the x coordinate
-        :param param_y: column name of the y coordinate
-        :param colname: the name to appear in the new DataFrame for the direction angle computed.
-        :return: dataframe containing computed 'direction_angle' as angle from 0-360 degrees (x-axis to the right is 0 degrees)
+    Computes the angle of rotation of an animal between two timesteps. Only possible if coordinates are 2D only.
+    :param data: dataframe containing the movement records
+    :param param_x: column name of the x coordinate
+    :param param_y: column name of the y coordinate
+    :param colname: the name to appear in the new DataFrame for the direction angle computed.
+    :return: dataframe containing computed 'direction_angle' as angle from 0-360 degrees (x-axis to the right is 0 degrees)
     """
 
     data_animal_id_groups = grouping_data(data)
@@ -289,34 +231,6 @@ def compute_direction(data_animal_id_groups, pbar, param_x='x', param_y='y', par
     return data_animal_id_groups
 
 
-"""
-def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
-
-    Computes the turning angle for a mover between two timesteps as the difference of its direction
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
-    :param param_direction: Column name to be recognized as direction. Default "direction".
-    :param colname: the new column to be added
-    :return: data_animal_id_groups
-
-
-    # when differences exceed |180| convert values so that they stay in the domain -180 +180
-    boundary = lambda data: 360 - data if data > 180 else -360 - data if data < -180 else data
-    vboundary = np.vectorize(boundary)
-
-    # Compute 'turning' for 'animal_id' groups
-    for aid in data_animal_id_groups.keys():
-        # for all timesteps
-        data = data_animal_id_groups[aid][param_direction] - data_animal_id_groups[aid][param_direction].shift(
-            periods=1)
-        data = vboundary(data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            inp=data)
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].rename(
-            columns={'inp': colname})
-    return data_animal_id_groups
-"""
-
-
 def compute_turning(data_animal_id_groups, param_direction="direction", colname="turning"):
     """
     Computes the turning for a mover between two timesteps as the cosine similarity between its direction vectors.
@@ -373,91 +287,132 @@ def compute_distance(data_animal_id_groups, param_x="x", param_y="y", param_z="z
     return data_animal_id_groups
 
 
-def compute_distance_and_direction(data_animal_id_groups):  # TODO deprecate
-    """
-    Function to calculate metric distance and direction attributes.
-    Calculates the metric distance between two consecutive time frames/time stamps
-    for each moving entity (in this case, fish).
-    :param data_animal_id_groups: dictionary ordered by 'animal_id'.
-    :return: dictionary containing computed 'distance' and 'direction' attributes.
-    """
-
-    # Compute 'direction' for 'animal_id' groups-
-    for aid in data_animal_id_groups.keys():
-        data = []
-        try:
-            data = np.rad2deg(
-                np.arctan2((data_animal_id_groups[aid]['y'] -
-                            data_animal_id_groups[aid]['y'].shift(periods=1)),
-                           (data_animal_id_groups[aid]['x'] -
-                            data_animal_id_groups[aid]['x'].shift(periods=1))))
-        except TypeError:
-            data = 0
-
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            direction=data)
-
-    # Compute 'distance' for 'animal_id' groups-
-    for aid in data_animal_id_groups.keys():
-        data = []
-        try:
-            p1 = data_animal_id_groups[aid].loc[:, ['x', 'y']]
-            p2 = data_animal_id_groups[aid].loc[:, ['x', 'y']].shift(periods=1)
-            p2.iloc[0, :] = [0.0, 0.0]
-
-            data = ((p1 - p2) ** 2).sum(axis=1) ** 0.5
-
-        except TypeError:
-            data = 0
-
-        data_animal_id_groups[aid] = data_animal_id_groups[aid].assign(
-            distance=data)
-
-    # Reset first entry for each 'animal_id' to zero-
-    for aid in data_animal_id_groups.keys():
-        data_animal_id_groups[aid].loc[0, 'distance'] = 0.0
-
-    return data_animal_id_groups
-
-
 def compute_average_speed(data_animal_id_groups, fps):
     """
-    Compute average speed of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
-    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
-    Formula used Average Speed = Total Distance Travelled / Total Time taken;
-    Use output of compute_distance_and_direction() function to this function.
-    :param data_animal_id_groups: dictionary with 'animal_id' as keys
-    :param fps: integer to specify frames per second
-    :return: dictionary, including measure for 'average_speed'
+    Compute average speed of mover based on fps parameter. The formula used for calculating average speed is: (Total Distance traveled) / (Total time taken).
+    Size of traveling window is determined by fps parameter:
+    By choosing f.e. fps=4 at timestamp 5: (distance covered from timestamp 3 to timestamp 7) / 4.
+    By choosing f.e. fps=3 at timestamp 5: (distance covered from timestamp 3.5 to timestamp 6.5) / 3. (in this case use of interpolation if timestamps 3.5 and 6.5 do not exist.)
+    :param data_animal_id_groups: dictionary with 'animal_id' as keys.
+    :param fps: integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
+    :return: dictionary, including measure for 'average_speed'.
     """
+    if (isinstance(fps, int) or isinstance(fps, float)):
+        fps = str(fps) + 'us'  # as integer time is converted to time for flexible windows so is fps
     for aid in data_animal_id_groups.keys():
+        # set index as time to have flexible sized windows
+        if is_numeric_dtype(data_animal_id_groups[aid]['time']):
+            data_animal_id_groups[aid].index = pd.to_datetime(data_animal_id_groups[aid]['time'], unit='us')
+        else:
+            data_animal_id_groups[aid].set_index('time', drop=False, inplace=True)
+
+        # add distances of window (will later be divided by time)
         data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[
             aid]['distance'].rolling(min_periods=1, window=fps,
-                                     center=True).mean().fillna(0)
-    return data_animal_id_groups
+                                     center=True, closed='both').sum().fillna(0)
 
+        timedelta = pd.to_timedelta(fps)  # size time window
+        timedelta_left = timedelta / 2  # size window left of observation
+        timedelta_right = timedelta / 2  # size window right of observation
+
+        # adjust first term of sum (as not entire distance of first entry in window was moved in time window)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index - timedelta_left, side='left')  # find index of first element in window
+        out_of_range = (ind <= 0)
+        ind[out_of_range] = 1  # otherwise key error
+        lag = data_animal_id_groups[aid]['distance'].values[ind]
+        lag[out_of_range] = 0  # set to 0 such that no distance is reduced from sum
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored distance of its windows first entry (which is then partially reduced)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] - \
+                                                      ((((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                                                      (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag)
+
+
+        # add last term of sum (as some distance is covered in the time window which is recorded in first observation which is not in window
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index + timedelta_right, side='right')  # find index of first element not in window
+        out_of_range = (ind >= data_animal_id_groups[aid].shape[0])
+        ind[out_of_range] = 0  # otherwise key error
+        lag = data_animal_id_groups[aid]['distance'].values[ind]
+        lag[out_of_range] = 0  # set to 0 such that no distance is added to sum
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored distance of first observation not in window (which is then partially added)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] + \
+                                                      ((((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                                                        (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag)
+
+        data_animal_id_groups[aid].drop(['lag'], axis=1, inplace=True)
+
+        # divide sum of distances by time (here unit of fps is used)
+        data_animal_id_groups[aid]['average_speed'] = data_animal_id_groups[aid]['average_speed'] / float(re.search(r'(\d+)', fps).group(0))
+
+        # reset index
+        data_animal_id_groups[aid].reset_index(drop=True, inplace=True)
+
+    return data_animal_id_groups
 
 def compute_average_acceleration(data_animal_id_groups, fps):
     """
-    Compute average acceleration of an animal based on fps (frames per second) parameter. By choosing fps = 5 the current
-    and the 2 previous and the 2 following timestamps are used. By choosing fps = 4 the current, 2 previous and 1 following is used.
-    Formulas used are- Average Acceleration = (Final Speed - Initial Speed) / Total Time Taken;
-    Use output of compute_average_speed() function to this function.
-    :param data_animal_id_groups: dictionary with 'animal_id' as keys
-    :param fps: integer to specify frames per second
-    :return: dictionary, including measure for 'average_acceleration'
+    Compute average acceleration of mover based on fps parameter. The formula used for calculating average acceleration is: (Final Speed - Initial Speed) / (Total Time Taken).
+    Size of traveling window is determined by fps parameter:
+    By choosing f.e. fps=4 at timestamp 5: (speed at timestamp 7 - speed at timestamp 3) / 4.
+    By choosing f.e. fps=3 at timestamp 5: (speed at timestamp 6.5 - speed at timestamp 3.5) / 3. (in this case use of interpolation if timestamps 3.5 and 6.5 do not exist.)
+    :param data_animal_id_groups: dictionary with 'animal_id' as keys.
+    :param fps: integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
+    :return: dictionary, including measure for 'average_acceleration'.
     """
+    if (isinstance(fps, int) or isinstance(fps, float)):
+        fps = str(fps) + 'us'  # as integer time is converted to time for flexible windows so is fps
     for aid in data_animal_id_groups.keys():
+        # set index as time to have flexible sized windows
+        if is_numeric_dtype(data_animal_id_groups[aid]['time']):
+            data_animal_id_groups[aid].index = pd.to_datetime(data_animal_id_groups[aid]['time'], unit='us')
+        else:
+            data_animal_id_groups[aid].set_index('time', drop=False, inplace=True)
 
-        # rename into shortcut
-        speed = data_animal_id_groups[aid]['average_speed']
-        # b = data_animal_id_groups[aid]['average_speed'].shift(periods=1)
-        try:
-            data_animal_id_groups[aid]['average_acceleration'] = speed.rolling(
-                min_periods=1, window=fps,
-                center=True).apply(lambda x: (x[-1] - x[0]) / (fps - 1), raw=True).fillna(0)
-        except:
-            data_animal_id_groups[aid]['average_acceleration'] = 0
+        # add speed of first and last observation in window
+        data_animal_id_groups[aid]['start_speed'] = data_animal_id_groups[
+            aid]['average_speed'].rolling(min_periods=1, window=fps,
+                center=True, closed='both').apply(lambda x: x[0], raw=True).fillna(0)
+        data_animal_id_groups[aid]['end_speed'] = data_animal_id_groups[
+            aid]['average_speed'].rolling(min_periods=1, window=fps,
+                                          center=True, closed='both').apply(lambda x: x[-1], raw=True).fillna(0)
+
+        timedelta = pd.to_timedelta(fps)  # size time window
+        timedelta_left = timedelta / 2  # size window left of observation
+        timedelta_right = timedelta / 2  # size window right of observation
+
+        # adjust start speed (as first observation prior to first observation in window is taken into account)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index - timedelta_left, side='left')  # find index of first element in window
+        out_of_range = (ind <= 0)
+        lag = data_animal_id_groups[aid]['average_speed'].values[ind-1]  # store respective value of first observation prior to window
+        lag[out_of_range] = data_animal_id_groups[aid]['average_speed'][0]  # set to speed of first observation
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored speed of first element prior to window
+        # start speed is calculated as weighted sum of speed from first observation prior to window and from first observation in window
+        data_animal_id_groups[aid]['start_speed'] = ((((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * data_animal_id_groups[aid]['start_speed']) \
+                    +((1-(((data_animal_id_groups[aid].index - timedelta_left) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1]))) * lag)
+
+
+        # adjust end speed (as first observation after window is taken into account)
+        ind = data_animal_id_groups[aid].index.searchsorted(data_animal_id_groups[aid].index + timedelta_right, side='right')  # find index of first element not in window
+        out_of_range = (ind >= data_animal_id_groups[aid].shape[0])
+        ind[out_of_range] = 0  # otherwise key error
+        lag = data_animal_id_groups[aid]['average_speed'].values[ind]  # store respective value of first observation not in window
+        lag[out_of_range] = data_animal_id_groups[aid]['average_speed'][data_animal_id_groups[aid].shape[0] - 1]  # set to speed of last observation
+        data_animal_id_groups[aid]['lag'] = lag  # each observation has stored speed of first observation not in window
+        # end speed is calculated as weighted sum of speed from last observation in window and from first observation after window
+        data_animal_id_groups[aid]['end_speed'] = ((((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1])) * lag) + \
+                    ((1-(((data_animal_id_groups[aid].index + timedelta_right) - (data_animal_id_groups[aid].index[ind - 1])) /
+                    (data_animal_id_groups[aid].index[ind] - data_animal_id_groups[aid].index[ind - 1]))) * data_animal_id_groups[aid]['end_speed'])
+
+
+        # calculate average acceleration by dividing difference by time (here unit of fps is used)
+        data_animal_id_groups[aid]['average_acceleration'] = (data_animal_id_groups[aid]['end_speed'] - data_animal_id_groups[aid]['start_speed'])\
+                                                      / float(re.search(r'(\d+)', fps).group(0))
+
+        # reset index and drop columns
+        data_animal_id_groups[aid].reset_index(drop=True, inplace=True)
+        data_animal_id_groups[aid].drop(['lag', 'start_speed', 'end_speed'], axis=1, inplace=True)
 
     return data_animal_id_groups
 
@@ -465,10 +420,11 @@ def compute_average_acceleration(data_animal_id_groups, fps):
 def extract_features(data, fps=10, stop_threshold=0.5):
     """
     Calculate and return all absolute features for input animal group.
-    Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
+    Combined usage of the functions on DataFrame grouping_data(), compute_distance(), compute_direction(), compute_average_speed(),
     compute_average_acceleration(), computing_stops()
     :param data: pandas DataFrame with all records of movements.
-    :param fps: integer to specify the size of the window examined for calculating average speed and average acceleration.
+    :param fps: size of window used to calculate average speed and average acceleration:
+    integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
     :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
     :return: pandas DataFrame with additional variables consisting of all relevant features.
     """
@@ -577,7 +533,6 @@ def distance_by_time(data, frm, to):
 def group_movement(feats):
     """
     Returns aggregated movement data, such as distance, mean speed, mean acceleration and mean distance to centroid for the entire group at each time capture.
-
     :param feats: pd DataFrame with animal-specific data - if no features contained, they will be extracted.
     :return: pd DataFrame with group-specific values for each time-capture
 
@@ -640,10 +595,6 @@ def centroid_medoid_computation(data,
     for aid in tqdm(data_time.groups.keys(), position=0, desc="Calculating centroid distances"):
         data_groups_time[aid] = data_time.get_group(aid)
         data_groups_time[aid].reset_index(drop=True, inplace=True)
-
-        # NOTE:
-        # Each group has only five entries
-        # Each group has dimension- (5, 4)
 
         # Add 3 additional columns to each group-
         data_l = [0 for x in range(data_groups_time[aid].shape[0])]
@@ -708,19 +659,6 @@ def centroid_medoid_computation(data,
     return medoid_data
 
 
-# DEAD below? - gives almost exact result as euclidean_dist() function.
-def distance_euclidean_matrix(data):
-    """
-    Calculates record's euclidean distances.
-    Displays euclidean distances as a distance matrix of each animal at a given point in time to each other animal at
-    the same point in time, sorted by 'time' and 'animal_id'.
-    :param data: pandas DataFrame, containing preprocessed movement records.
-    :return: pandas DataFrame with euclidean distances to each other 'animal_id' at a given time.
-    """
-    return data.groupby('time').apply(euclidean_dist).sort_values(
-        by=['time', 'animal_id'])
-
-
 def euclidean_dist(data):
     """
     Compute the euclidean distance between movers for one individual grouped time step using the Scipy 'pdist' and 'squareform' methods.
@@ -738,9 +676,6 @@ def euclidean_dist(data):
         if __name__ == "movekit.feature_extraction":
             pool = multiprocessing.Pool()
             result = pool.map(euclidean_dist_multiproccessing, df_list)
-            #results = []
-            #for result in tqdm(pool.imap(euclidean_dist_multiproccessing, df_list), total=len(df_list), desc='Calculating euclidean distance'):
-            #    results.append(result)
 
         # regroup in one big data frame and return
         big_df = pd.DataFrame()
@@ -791,14 +726,8 @@ def compute_similarity(data, weights, p=2):
             df[key] = data[key]
             w.append(weights[key])
 
-    # normalize the data frame
-    # normalized_df = (df - df.min()) / (df.max() - df.min())
-
-    # add the columns time and animal id to the window needed for group by and the column generation
-    # normalized_df[not_allowed_keys] = data[not_allowed_keys]
 
     # compute the distance for each time moment
-    # df2 = normalized_df.groupby('time')
     df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance"):
@@ -828,14 +757,6 @@ def compute_similarity_multiproccessing(data, weights, p=2):
             df[key] = data[key]
             w.append(weights[key])
 
-    # normalize the data frame
-    # normalized_df = (df - df.min()) / (df.max() - df.min())
-
-    # add the columns time and animal id to the window needed for group by and the column generation
-    # normalized_df[not_allowed_keys] = data[not_allowed_keys]
-
-    # compute the distance for each time moment
-    # df2 = normalized_df.groupby('time')
     df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance", disable=True):
@@ -906,9 +827,8 @@ def ts_feature(data, feature):
         # Remove the column 'stopped' as it has nominal values and 'direction' as it is a vector and additional columns from Movebank data.
         rm_colm = ['stopped', 'direction','event-id', 'visible', 'location-long',
        'location-lat', 'behavioural-classification', 'comments',
-       'study-specific-measurement', 'sensor-type',
-       'individual-taxon-canonical-name', 'tag-local-identifier',
-       'study-name']
+       'study-specific-measurement', 'sensor-type','individual-taxon-canonical-name',
+        'tag-local-identifier', 'study-name']
         df = data[data.columns.difference(rm_colm)]
         time_series_features = tsfresh.extract_features(
             df,
@@ -1037,13 +957,11 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
                       metric="minkowski"):
     """
     Detect outliers based on pyod KNN.
-
     Note: User may decide upon contamination threshold, number of neighbors, method and metric.
     For method three kNN detectors are supported:
         -largest: use the distance to the kth neighbor as the outlier score
         -mean(default): use the average of all k neighbors as the outlier score
         -median: use the median of the distance to k neighbors as the outlier score
-
     :param dataset: Dataframe containing the movement records.
     :param features: list of features to detect outliers upon.
     :param contamination: float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,
@@ -1077,7 +995,6 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
 def split_movement_trajectory(data, stop_threshold=0.5, csv=False):
     """
     Split trajectories of movers in stopping and moving phases.
-
     :param data: pandas DataFrame containing preprocessed movement records.
     :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
     :param csv: Boolean, defining if each phase shall be exported locally as singular csv.
@@ -1085,7 +1002,9 @@ def split_movement_trajectory(data, stop_threshold=0.5, csv=False):
     """
     if not (set(['distance', 'average_speed', 'average_acceleration', 'direction', 'stopped', 'turning']).issubset(
             data.columns)):
-        warnings.warn('Some features are missing and thus will be extracted first.')
+        warnings.warn('Some features are missing and thus will be extracted first. Note that is recommended to use function '
+                      'extract_features prior to this function to define values for calculation of average speed and stopping criteria.'
+                      'The returned Data Frame should afterwards be used as input for this function.')
         data = extract_features(data, stop_threshold=stop_threshold)
     data_groups = grouping_data(data)
     df_dict = {}
@@ -1122,7 +1041,6 @@ def split_movement_trajectory(data, stop_threshold=0.5, csv=False):
 def movement_stopping_durations(data, stop_threshold=0.5):
     """
     Split trajectories of movers in stopping and moving phases and return the duration of each phase.
-
     :param data: pandas DataFrame containing preprocessed movement records.
     :param stop_threshold: integer to specify threshold for average speed, such that we consider timestamp a "stop".
     :return: dictionary with animal_id as key and DataFrame with the different phases and their durations as value.
@@ -1145,7 +1063,6 @@ def movement_stopping_durations(data, stop_threshold=0.5):
 def hausdorff_distance(data, mover1=None, mover2=None):
     """
     Calculate the Hausdorff-Distance between trajectories of different movers.
-
     :param data: pandas DataFrame containing movement records.
     :param mover1: animal_id of the first mover if Hausdorff distance is just to be calculated between two movers.
     :param mover2: animal_id of the second mover if Hausdorff distance is just to be calculated between two movers
@@ -1199,7 +1116,7 @@ def hausdorff_distance(data, mover1=None, mover2=None):
 def extract_features_multiproccessing(data, fps=10, stop_threshold=0.5):
     """
     Calculate and return all absolute features for input animal group.
-    Combined usage of the functions on DataFrame grouping_data(), compute_distance_and_direction(), compute_average_speed(),
+    Combined usage of the functions on DataFrame grouping_data(), compute_distance(), compute_direction(), compute_average_speed(),
     compute_average_acceleration(), computing_stops()
     :param data: pandas DataFrame with all records of movements.
     :param fps: integer to specify the size of the window examined for calculating average speed and average acceleration.
