@@ -10,8 +10,8 @@ pandas>=1.4.1
 scipy>=1.8.0
 tsfresh>=0.19.0
 xlrd>=2.0.1
-shapely>=1.8.1
-matplotlib>=3.5.1
+shapely>=1.8.1,<2
+matplotlib>=3.5.1,!=3.6.1
 pyod>=0.9.7
 fastdtw>=0.3.4
 h5py>=3.6.0
@@ -21,9 +21,11 @@ utm>=0.7.0
 st-clustering>=0.0.1
 scikit-learn>=0.22.0
 tqdm>=4.62.3
-numpy<1.21,>=1.17
+numpy>=1.17
 cython>=0.29.27
 folium>=0.12.1
 moviepy>=1.0.3
 geopandas>=0.10.0
+joblib<=1.1.0
+ffmpeg
 # sphinx_rtd_theme
