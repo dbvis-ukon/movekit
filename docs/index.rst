@@ -13,15 +13,24 @@ This is the documentation of **movekit**.
 .. image:: ../media/network.png
    :width: 250px
    :height: 200px
+.. image:: ../media/movement.png
+   :width: 250px
+   :height: 200px
+.. image:: ../media/movebank.png
+   :width: 250px
+   :height: 200px
+.. image:: ../media/clustering.png
+   :width: 250px
+   :height: 200px
 
 movekit is an open-source software package for the processing and analysis of movement data. It has several selling points, for example
 
-* Data pre-processing (e.g. data checks, smoothing, duplicate removal, interpolation, outlier detection)
-* Feature extraction (e.g. speed, acceleration, heading)
-* Individual-level movement analysis (e.g. autocorrelation, speed distribution, environment exploration)
-* Group-level analysis (e.g. cohesion, polarisation, coordination, leadership, clustering)
-* Spatial data analysis (Voronoi, delaunay triangulation)
-* Network analysis with networkX
+* Data pre-processing (e.g. data checks, smoothing, duplicate removal, interpolation, ...)
+* Feature extraction (e.g. speed, acceleration, heading, distance, environment exploration, outlier detection, ...)
+* Group-level analysis (e.g. centroid/medoid computations, polarization, coordination, leadership, clustering, ...)
+* Spatial data analysis (Compute Convex hull, voronoi diagram and delaunay triangulation objects)
+* Network analysis with networkX (e.g. analyze network graphs over time, individual nodes, individual edges, ...)
+* Various plots (e.g.plots of features, static/animated plots of movement, interactive maps for geo data, ...)
 
 
 Contents
@@ -42,6 +51,7 @@ Contents
    Network Analysis Notebook <examples/05_network_analysis>
    Spatio-Temporal Clustering <clustering.rst>
    Cluster Analysis Notebook <examples/06_clustering>
+   Movebank Notebook <examples/07_movebank>
    License <license>
    Authors <authors> 
    Changelog <changelog>
