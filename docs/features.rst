@@ -133,7 +133,7 @@ Furthermore plots can easily be created, such as the movement from all movers in
     mkit.plot_movement(data, frm, to)
     mkit.plot_animal(inp_data, animal_id)
 
-Also animations of the movements from the different movers can be displayed and saved as gif and mp4.
+Also animations of the movements from the different movers can be displayed and saved as gif.
 
 **animate_movement(data, viewsize)**:
     |Animated version of plot_movement function.
@@ -142,9 +142,9 @@ Also animations of the movements from the different movers can be displayed and 
     |param viewsize: Int. Define how many time steps/frames should be visible in the animation.
 
 **save_animation_plot(animation_object, filename)**:
-    |save animation as gif and mp4 file in working directory.
+    |save animation as gif file in working directory.
     |param animation_object: created animation object
-    |param filename: name of the two files which are created
+    |param filename: name of the file which is created
 
 .. code-block:: python
 
