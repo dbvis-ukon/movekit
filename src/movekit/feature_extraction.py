@@ -1025,7 +1025,7 @@ def split_movement_trajectory(data, stop_threshold=0.5, csv=False):
             phase_df = phase_df.reset_index(drop=True)
             df_dict[aid].append(phase_df)
         else:
-            phase_df = data_groups[aid].iloc[len(df) - 1, :]
+            phase_df = data_groups[aid].iloc[(len(df) - 1):, :]
             phase_df = phase_df.reset_index(drop=True)
             df_dict[aid].append(phase_df)
         print(f' For animal {aid} the trajectory was split in {len(df_dict[aid])} phases of moving and stopping.')

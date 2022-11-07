@@ -7,7 +7,7 @@ import seaborn as sns
 import folium
 from tqdm import tqdm
 import warnings
-import moviepy.editor as mp
+# import moviepy.editor as mp
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 
 
@@ -232,14 +232,15 @@ def save_geodata_map(map, filename):
 
 def save_animation_plot(animation_object, filename):
     """
-    save animation as gif and mp4 file in working directory.
+    save animation as gif in working directory. (mp4 file is not working at the moment as moviepy import error)
     :param animation_object: created animation object
     :param filename: name of the two files which are created
     """
     # save as gif
     writergif = animation.PillowWriter(fps=30)
     animation_object.save(f'{filename}.gif', writer=writergif)
+    """
     # save as mp4
     clip = mp.VideoFileClip(f'{filename}.gif')
     clip.write_videofile(f'{filename}.mp4')
-
+    """
