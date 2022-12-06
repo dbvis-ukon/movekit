@@ -954,9 +954,124 @@ class Test_Feature_Extraction(unittest.TestCase):
 							'turning': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.000000, 6: 0.000000,
 										  7: 0.000000, 8: 0.000000, 9: 0.000000, 10: 0.998688, 11: 0.894427},
 							'stopped': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1}})
-		case = outlier_detection(inp.round(4))
+		case = outlier_detection(inp.round(4), algorithm="KNN", contamination=0.01, n_neighbors=5, method="mean",
+                      metric="minkowski")
 
 		pd.testing.assert_frame_equal(ref, case, check_dtype=False)
+
+	def test_split_movement_trajectory(self):
+		inp = pd.DataFrame({'time': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 3, 11: 3},
+							'animal_id': {0: 312, 1: 511, 2: 607, 3: 811, 4: 905, 5: 312, 6: 511, 7: 607, 8: 811,
+										  9: 905, 10: 312, 11: 511},
+							'x': {0: 405.29, 1: 369.99, 2: 390.33, 3: 445.15, 4: 366.06, 5: 405.31, 6: 370.01,
+								  7: 390.25, 8: 445.48, 9: 365.86, 10: 405.31, 11: 370.01},
+							'y': {0: 417.76, 1: 428.78, 2: 405.89, 3: 411.94, 4: 451.76, 5: 417.37, 6: 428.82,
+								  7: 405.89, 8: 412.26, 9: 451.76, 10: 417.07, 11: 428.85},
+							'distance': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.3905, 6: 0.0447,
+										 7: 0.08, 8: 0.4597, 9: 0.2, 10: 0.3, 11: 0.03},
+							'average_speed': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.3905, 6: 0.0447,
+											  7: 0.08, 8: 0.4597, 9: 0.2, 10: 0.3, 11: 0.03},
+							'average_acceleration': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.3905, 6: 0.0447,
+													 7: 0.08, 8: 0.4597, 9: 0.2, 10: -0.0905, 11: -0.0147},
+							'direction': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: -87.0643, 6: 63.4349,
+										  7: 180.0, 8: 44.1186, 9: 180.0, 10: -90.0, 11: 90.0},
+							'turning': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.000000, 6: 0.000000,
+										7: 0.000000, 8: 0.000000, 9: 0.000000, 10: 0.998688, 11: 0.894427},
+							'stopped': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1, 7: 1, 8: 0, 9: 1, 10: 0, 11: 1}})
+		ref = {
+			312: [
+				pd.DataFrame({'time': {0: 1},
+							  'animal_id': {0: 312},
+							  'x': {0: 405.29},
+							  'y': {0: 417.76},
+							  'distance': {0: 0.0},
+							  'average_speed': {0: 0.0},
+							  'average_acceleration': {0: 0.0},
+							  'direction': {0: 0.0},
+							  'turning': {0: 0.0},
+							  'stopped': {0: 1}}),
+				pd.DataFrame({'time': {5: 2, 10: 3},
+							  'animal_id': {5: 312, 10: 312},
+							  'x': {5: 405.31, 10: 405.31},
+							  'y': {5: 417.37, 10: 417.07},
+							  'distance': {5: 0.3905, 10: 0.3},
+							  'average_speed': {5: 0.3905, 10: 0.3},
+							  'average_acceleration': {5: 0.3905, 10: -0.0905},
+							  'direction': {5: -87.0643, 10: -90.0},
+							  'turning': {5: 0.000000, 10: 0.998688},
+							  'stopped': {5: 0, 10: 0}})
+			],
+			511:[
+				pd.DataFrame({'time': {1: 1, 6: 2, 11: 3},
+							  'animal_id': {1: 511, 6: 511, 11: 511},
+							  'x': {1: 369.99, 6: 370.01, 11: 370.01},
+							  'y': {1: 428.78, 6: 428.82, 11: 428.85},
+							  'distance': {1: 0.0, 6: 0.0447, 11: 0.03},
+							  'average_speed': {1: 0.0, 6: 0.0447, 11: 0.03},
+							  'average_acceleration': {1: 0.0, 6: 0.0447, 11: -0.0147},
+							  'direction': {1: 0.0, 6: 63.4349, 11: 90.0},
+							  'turning': {1: 0.0, 6: 0.000000, 11: 0.894427},
+							  'stopped': {1: 1, 6: 1, 11: 1}})
+			],
+			607:[
+				pd.DataFrame({'time': {2: 1, 7: 2},
+							  'animal_id': {2: 607, 7: 607},
+							  'x': {2: 390.33, 7: 390.25},
+							  'y': {2: 405.89,7: 405.89},
+							  'distance': {2: 0.0, 7: 0.08},
+							  'average_speed': {2: 0.0, 7: 0.08},
+							  'average_acceleration': {2: 0.0, 7: 0.08},
+							  'direction': {2: 0.0, 7: 180.0},
+							  'turning': {2: 0.0, 7: 0.000000},
+							  'stopped': {2: 1, 7: 1}})
+			],
+			811:[
+				pd.DataFrame({'time': {3: 1},
+							  'animal_id': {3: 811},
+							  'x': {3: 445.15},
+							  'y': {3: 411.94},
+							  'distance': {3: 0.0},
+							  'average_speed': {3: 0.0},
+							  'average_acceleration': {3: 0.0},
+							  'direction': {3: 0.0},
+							  'turning': {3: 0.0},
+							  'stopped': {3: 1}}),
+				pd.DataFrame({'time': {8: 2},
+							  'animal_id': {8: 811},
+							  'x': {8: 445.48},
+							  'y': {8: 412.26},
+							  'distance': {8: 0.4597},
+							  'average_speed': {8: 0.4597},
+							  'average_acceleration': {8: 0.4597},
+							  'direction': {8: 44.1186},
+							  'turning': {8: 0.000000},
+							  'stopped': {8: 0}})
+			],
+			905:[
+				pd.DataFrame({'time': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 3, 11: 3},
+							  'animal_id': {4: 905,	9: 905},
+							  'x': {4: 366.06, 9: 365.86},
+							  'y': {4: 451.76, 9: 451.76},
+							  'distance': {4: 0.0, 9: 0.2},
+							  'average_speed': {4: 0.0, 9: 0.2},
+							  'average_acceleration': {4: 0.0, 9: 0.2},
+							  'direction': {4: 0.0, 9: 180.0},
+							  'turning': {4: 0.0, 9: 0.000000},
+							  'stopped': {4: 1, 9: 1}})
+			]
+		}
+
+		case = split_movement_trajectory(inp, stop_threshold=0.25)
+		pd.testing.assert_frame_equal(ref[312][0].reset_index(drop=True), case[312][0], check_dtype=False)
+		pd.testing.assert_frame_equal(ref[312][1].reset_index(drop=True), case[312][1], check_dtype=False)
+		pd.testing.assert_frame_equal(ref[511][0].reset_index(drop=True), case[511][0], check_dtype=False)
+		pd.testing.assert_frame_equal(ref[811][0].reset_index(drop=True), case[811][0], check_dtype=False)
+		pd.testing.assert_frame_equal(ref[811][1].reset_index(drop=True), case[811][1], check_dtype=False)
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
