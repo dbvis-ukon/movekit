@@ -6,17 +6,17 @@ This is done by calling the function `clustering` with the required algorithm. D
 Additionally there is the function `clustering_with_splits` which uses a splitting-and-merging method (data is partitioned into frames and merged afterwards) to increase performance for large datasets.
 
 **clustering(algorithm, data, **kwargs)**:
-    |Clustering of spatio-temporal data.
-    |param algorithm: Choose between 'dbscan', 'hdbscan', 'agglomerative', 'optics', 'spectral', 'affinitypropagation'.
-    |param data: DataFrame to perform clustering on.
-    |return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
+    | Clustering of spatio-temporal data.
+    | param algorithm: Choose between 'dbscan', 'hdbscan', 'agglomerative', 'optics', 'spectral', 'affinitypropagation'.
+    | param data: DataFrame to perform clustering on.
+    | return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
 
 **clustering_with_splits(algorithm, data, frame_size, **kwargs)**:
-    |Clustering of spatio-temporal data.
-    |param algorithm: Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.
-    |param data: DataFrame to perform clustering on.
-    |param frame_size: the dataset is partitioned into frames and merged afterwards.
-    |return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
+    | Clustering of spatio-temporal data.
+    | param algorithm: Choose between dbscan, hdbscan, agglomerative, optics, spectral, affinitypropagation.
+    | param data: DataFrame to perform clustering on.
+    | param frame_size: the dataset is partitioned into frames and merged afterwards.
+    | return: labels as numpy array where the label in the first position corresponds to the first row of the input data.
 
 .. code-block:: python
 
