@@ -18,44 +18,6 @@ import multiprocessing
 from functools import partial
 import re
 from pandas.api.types import is_numeric_dtype
-from pyod.models.ecod import ECOD
-from pyod.models.copod import COPOD
-from pyod.models.abod import ABOD
-from pyod.models.mad import MAD
-from pyod.models.sos import SOS
-from pyod.models.kde import KDE
-from pyod.models.sampling import Sampling
-from pyod.models.gmm import GMM
-from pyod.models.pca import PCA
-from pyod.models.kpca import KPCA
-from pyod.models.mcd import MCD
-from pyod.models.cd import CD
-from pyod.models.ocsvm import OCSVM
-from pyod.models.lmdd import LMDD
-from pyod.models.lof import LOF
-from pyod.models.cof import COF
-from pyod.models.cblof import CBLOF
-from pyod.models.loci import LOCI
-from pyod.models.hbos import HBOS
-from pyod.models.knn import KNN
-from pyod.models.sod import SOD
-from pyod.models.rod import ROD
-from pyod.models.iforest import IForest
-from pyod.models.inne import INNE
-from pyod.models.feature_bagging import FeatureBagging
-from pyod.models.lscp import LSCP
-from pyod.models.xgbod import XGBOD
-from pyod.models.loda import LODA
-from pyod.models.suod import SUOD
-from pyod.models.auto_encoder import AutoEncoder
-from pyod.models.vae import VAE
-from pyod.models.so_gaal import SO_GAAL
-from pyod.models.mo_gaal import MO_GAAL
-from pyod.models.deep_svdd import DeepSVDD
-from pyod.models.anogan import AnoGAN
-from pyod.models.alad import ALAD
-from pyod.models.rgraph import RGraph
-#from pyod.models.lunar import LUNAR
 
 
 
@@ -1002,8 +964,7 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     :param algorithm: String defining which algorithm to use for finding the outliers. The following algorithms are available:
                                         "KNN", "ECOD", "COPOD", "ABOD", "MAD", "SOS", "KDE", "Sampling", "GMM", "PCA", "KPCA",
                                          "MCD", "CD", "OCSVM", "LMDD", "LOF", "COF", "CBLOF", "LOCI", "HBOS", "SOD", "ROD",
-                                         "IForest", "INNE", "FB", "LSCP", "XGBOD", "LODA", "SUOD", "AutoEncoder", "VAE",
-                                         "SO_GAAL", "MO_GAAL", "DeepSVDD", "AnoGAN", "ALAD", "R-Graph", "LUNAR".
+                                         "IForest", "INNE", "LSCP","LODA", "VAE", "SO_GAAL", "MO_GAAL", "DeepSVDD", "AnoGAN", "ALAD", "R-Graph".
                                          Additional available algorithms: FastABOD: call algorithm="ABOD" with method="fast",
                                          AvgKNN: call algorithm="KNN" with method="mean", MedKNN: call algorithm="KNN" with
                                          method="median". Default algorithm is "KNN". For more information regarding all the
@@ -1017,81 +978,115 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
     :return: Dataframe containing information for each movement record whether outlier or not.
     """
     if algorithm == "KNN":
+        from pyod.models.knn import KNN
         clf = KNN(**kwargs)
     elif algorithm == "ECOD":
+        from pyod.models.ecod import ECOD
         clf = ECOD(**kwargs)
     elif algorithm == "ABOD":
+        from pyod.models.abod import ABOD
         clf = ABOD(**kwargs)
     elif algorithm == "COPOD":
+        from pyod.models.copod import COPOD
         clf = COPOD(**kwargs)
     elif algorithm == "MAD":
+        from pyod.models.mad import MAD
         clf = MAD(**kwargs)
     elif algorithm == "SOS":
+        from pyod.models.sos import SOS
         clf = SOS(**kwargs)
     elif algorithm == "KDE":
+        from pyod.models.kde import KDE
         clf = KDE(**kwargs)
     elif algorithm == "Sampling":
+        from pyod.models.sampling import Sampling
         clf = Sampling(**kwargs)
     elif algorithm == "GMM":
+        from pyod.models.gmm import GMM
         clf = GMM(**kwargs)
     elif algorithm == "PCA":
+        from pyod.models.pca import PCA
         clf = PCA(**kwargs)
     elif algorithm == "KPCA":
+        from pyod.models.kpca import KPCA
         clf = KPCA(**kwargs)
     elif algorithm == "MCD":
+        from pyod.models.mcd import MCD
         clf = MCD(**kwargs)
     elif algorithm == "CD":
+        from pyod.models.cd import CD
         clf = CD(**kwargs)
     elif algorithm == "OCSVM":
+        from pyod.models.ocsvm import OCSVM
         clf = OCSVM(**kwargs)
     elif algorithm == "LMDD":
+        from pyod.models.lmdd import LMDD
         clf = LMDD(**kwargs)
     elif algorithm == "LOF":
+        from pyod.models.lof import LOF
         clf = LOF(**kwargs)
     elif algorithm == "COF":
+        from pyod.models.cof import COF
         clf = COF(**kwargs)
     elif algorithm == "CBLOF":
+        from pyod.models.cblof import CBLOF
         clf = CBLOF(**kwargs)
     elif algorithm == "LOCI":
+        from pyod.models.loci import LOCI
         clf = LOCI(**kwargs)
     elif algorithm == "HBOS":
+        from pyod.models.hbos import HBOS
         clf = HBOS(**kwargs)
     elif algorithm == "SOD":
+        from pyod.models.sod import SOD
         clf = SOD(**kwargs)
     elif algorithm == "ROD":
+        from pyod.models.rod import ROD
         clf = ROD(**kwargs)
     elif algorithm == "IForest":
+        from pyod.models.iforest import IForest
         clf = IForest(**kwargs)
     elif algorithm == "INNE":
+        from pyod.models.inne import INNE
         clf = INNE(**kwargs)
     elif algorithm == "FB" or algorithm == "FeatureBagging":
-        clf = FeatureBagging(**kwargs)
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
     elif algorithm == "LSCP":
+        from pyod.models.lscp import LSCP
         clf = LSCP(**kwargs)
     elif algorithm == "XGBOD":
-        clf = XGBOD(**kwargs)
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
     elif algorithm == "LODA":
+        from pyod.models.loda import LODA
         clf = LODA(**kwargs)
+        from pyod.models.loda import LODA
     elif algorithm == "SUOD":
-        clf = SUOD(**kwargs)
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
     elif algorithm == "AutoEncoder":
-        clf = AutoEncoder(**kwargs)
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
     elif algorithm == "VAE":
+        from pyod.models.vae import VAE
         clf = VAE(**kwargs)
     elif algorithm == "SO_GAAL":
+        from pyod.models.so_gaal import SO_GAAL
         clf = SO_GAAL(**kwargs)
     elif algorithm == "MO_GAAL":
+        from pyod.models.mo_gaal import MO_GAAL
         clf = MO_GAAL(**kwargs)
     elif algorithm == "DeepSVDD":
+        from pyod.models.deep_svdd import DeepSVDD
         clf = DeepSVDD(**kwargs)
     elif algorithm == "AnoGAN":
+        from pyod.models.anogan import AnoGAN
         clf = AnoGAN(**kwargs)
     elif algorithm == "ALAD":
+        from pyod.models.alad import ALAD
         clf = ALAD(**kwargs)
     elif algorithm == "R-Graph" or algorithm == "RGraph":
+        from pyod.models.rgraph import RGraph
         clf = RGraph(**kwargs)
-    #elif algorithm == "LUNAR":
-    #    clf = LUNAR(**kwargs)
+    elif algorithm == "LUNAR":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
 
     inp_data = dataset.loc[:, features]
 
@@ -1173,7 +1168,11 @@ def movement_stopping_durations(data, stop_threshold=0.5):
                 time_diff = df_list[index+1].time[0] - df.time[0]
             except:  # for the last phase
                time_diff = (df.time[len(df)-1] - df.time[0]) + (df.time[0] - df_list[index-1].time[len(df_list[index-1])-1])
-            time_df[f'Duration of phase {index+1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = time_diff
+            if len(time_df.columns) != 1:  # adjust if only one phase for mover
+                time_df[f'Duration of phase {index+1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = time_diff
+            else:
+                time_df[f'Duration of phase {index + 1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = len(df)
+
         df_dict[aid] = time_df
     return df_dict
 
@@ -1352,4 +1351,5 @@ def outlier_by_threshold(data, feature_thresholds, remove=False):
     if remove:
         data = data.loc[data['outlier_by_threshold'] == 0, :]
 
+    data['outlier_by_threshold'] = pd.to_numeric(data['outlier_by_threshold'], downcast='integer')
     return data
