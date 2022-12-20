@@ -6,7 +6,6 @@ from scipy.spatial.distance import pdist, squareform
 import tsfresh
 from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
-from pyod.models.knn import KNN
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from geoalchemy2 import functions, elements
@@ -19,6 +18,7 @@ import multiprocessing
 from functools import partial
 import re
 from pandas.api.types import is_numeric_dtype
+
 
 
 def grouping_data(processed_data, pick_vars=None, preprocessedMethod=False):
@@ -953,30 +953,141 @@ def explore_features_geospatial(preprocessed_data):
 
 
 def outlier_detection(dataset, features=["distance", "average_speed", "average_acceleration",
-                                         "stopped", "turning"], contamination=0.01, n_neighbors=5, method="mean",
-                      metric="minkowski"):
+                                         "stopped", "turning"], remove=False, algorithm="KNN", **kwargs):
     """
-    Detect outliers based on pyod KNN.
-    Note: User may decide upon contamination threshold, number of neighbors, method and metric.
-    For method three kNN detectors are supported:
-        -largest: use the distance to the kth neighbor as the outlier score
-        -mean(default): use the average of all k neighbors as the outlier score
-        -median: use the median of the distance to k neighbors as the outlier score
+    Detect outliers based on different pyod algorithms.
+    Note: User may decide on different parameters specific to algorithm chosen.
     :param dataset: Dataframe containing the movement records.
-    :param features: list of features to detect outliers upon.
-    :param contamination: float in (0., 0.5),  (default=0.01) The amount of contamination of the data set,
-    i.e. the proportion of outliers in the data set.
-    :param n_neighbors: int, (default = 5) Number of neighbors to use by default for k neighbors queries.
-    :param method: str, (default='largest') {'largest', 'mean', 'median'}
-    :param metric: string or callable, default 'minkowski' metric to use for distance computation. Any metric from
-    scikit-learn or scipy.spatial.distance can be used.
+    :param features: list of features to detect outliers upon. Default: ["distance", "average_speed", "average_acceleration",
+                                         "stopped", "turning"]
+    :param remove: Boolean deciding whether outliers should be removed in returned dataframe. Default: False (outliers are not removed).
+    :param algorithm: String defining which algorithm to use for finding the outliers. The following algorithms are available:
+                                        "KNN", "ECOD", "COPOD", "ABOD", "MAD", "SOS", "KDE", "Sampling", "GMM", "PCA", "KPCA",
+                                         "MCD", "CD", "OCSVM", "LMDD", "LOF", "COF", "CBLOF", "LOCI", "HBOS", "SOD", "ROD",
+                                         "IForest", "INNE", "LSCP","LODA", "VAE", "SO_GAAL", "MO_GAAL", "DeepSVDD", "AnoGAN", "ALAD", "R-Graph".
+                                         Additional available algorithms: FastABOD: call algorithm="ABOD" with method="fast",
+                                         AvgKNN: call algorithm="KNN" with method="mean", MedKNN: call algorithm="KNN" with
+                                         method="median". Default algorithm is "KNN". For more information regarding all the
+                                         algorithms refer to: https://pyod.readthedocs.io/en/latest/pyod.models.html#
+    :param kwargs: Specific to the algorithm additional parameters can be specified. For further information about the
+                                         algorithm-specific parameters once again refer to:
+                                         https://pyod.readthedocs.io/en/latest/pyod.models.html#
+                                         For the default algorithm "KNN" some additional parameters are for example:
+                                         contamination - the contamination threshold, n_neighbors - the number of neighbors,
+                                         method - which KNN to use, and metric - for distance computation.
     :return: Dataframe containing information for each movement record whether outlier or not.
     """
-    # you cant split up features to create a percent bar no?
-    clf = KNN(contamination=contamination,
-              n_neighbors=n_neighbors,
-              method=method,
-              metric=metric)
+    if algorithm == "KNN":
+        from pyod.models.knn import KNN
+        clf = KNN(**kwargs)
+    elif algorithm == "ECOD":
+        from pyod.models.ecod import ECOD
+        clf = ECOD(**kwargs)
+    elif algorithm == "ABOD":
+        from pyod.models.abod import ABOD
+        clf = ABOD(**kwargs)
+    elif algorithm == "COPOD":
+        from pyod.models.copod import COPOD
+        clf = COPOD(**kwargs)
+    elif algorithm == "MAD":
+        from pyod.models.mad import MAD
+        clf = MAD(**kwargs)
+    elif algorithm == "SOS":
+        from pyod.models.sos import SOS
+        clf = SOS(**kwargs)
+    elif algorithm == "KDE":
+        from pyod.models.kde import KDE
+        clf = KDE(**kwargs)
+    elif algorithm == "Sampling":
+        from pyod.models.sampling import Sampling
+        clf = Sampling(**kwargs)
+    elif algorithm == "GMM":
+        from pyod.models.gmm import GMM
+        clf = GMM(**kwargs)
+    elif algorithm == "PCA":
+        from pyod.models.pca import PCA
+        clf = PCA(**kwargs)
+    elif algorithm == "KPCA":
+        from pyod.models.kpca import KPCA
+        clf = KPCA(**kwargs)
+    elif algorithm == "MCD":
+        from pyod.models.mcd import MCD
+        clf = MCD(**kwargs)
+    elif algorithm == "CD":
+        from pyod.models.cd import CD
+        clf = CD(**kwargs)
+    elif algorithm == "OCSVM":
+        from pyod.models.ocsvm import OCSVM
+        clf = OCSVM(**kwargs)
+    elif algorithm == "LMDD":
+        from pyod.models.lmdd import LMDD
+        clf = LMDD(**kwargs)
+    elif algorithm == "LOF":
+        from pyod.models.lof import LOF
+        clf = LOF(**kwargs)
+    elif algorithm == "COF":
+        from pyod.models.cof import COF
+        clf = COF(**kwargs)
+    elif algorithm == "CBLOF":
+        from pyod.models.cblof import CBLOF
+        clf = CBLOF(**kwargs)
+    elif algorithm == "LOCI":
+        from pyod.models.loci import LOCI
+        clf = LOCI(**kwargs)
+    elif algorithm == "HBOS":
+        from pyod.models.hbos import HBOS
+        clf = HBOS(**kwargs)
+    elif algorithm == "SOD":
+        from pyod.models.sod import SOD
+        clf = SOD(**kwargs)
+    elif algorithm == "ROD":
+        from pyod.models.rod import ROD
+        clf = ROD(**kwargs)
+    elif algorithm == "IForest":
+        from pyod.models.iforest import IForest
+        clf = IForest(**kwargs)
+    elif algorithm == "INNE":
+        from pyod.models.inne import INNE
+        clf = INNE(**kwargs)
+    elif algorithm == "FB" or algorithm == "FeatureBagging":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
+    elif algorithm == "LSCP":
+        from pyod.models.lscp import LSCP
+        clf = LSCP(**kwargs)
+    elif algorithm == "XGBOD":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
+    elif algorithm == "LODA":
+        from pyod.models.loda import LODA
+        clf = LODA(**kwargs)
+        from pyod.models.loda import LODA
+    elif algorithm == "SUOD":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
+    elif algorithm == "AutoEncoder":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
+    elif algorithm == "VAE":
+        from pyod.models.vae import VAE
+        clf = VAE(**kwargs)
+    elif algorithm == "SO_GAAL":
+        from pyod.models.so_gaal import SO_GAAL
+        clf = SO_GAAL(**kwargs)
+    elif algorithm == "MO_GAAL":
+        from pyod.models.mo_gaal import MO_GAAL
+        clf = MO_GAAL(**kwargs)
+    elif algorithm == "DeepSVDD":
+        from pyod.models.deep_svdd import DeepSVDD
+        clf = DeepSVDD(**kwargs)
+    elif algorithm == "AnoGAN":
+        from pyod.models.anogan import AnoGAN
+        clf = AnoGAN(**kwargs)
+    elif algorithm == "ALAD":
+        from pyod.models.alad import ALAD
+        clf = ALAD(**kwargs)
+    elif algorithm == "R-Graph" or algorithm == "RGraph":
+        from pyod.models.rgraph import RGraph
+        clf = RGraph(**kwargs)
+    elif algorithm == "LUNAR":
+        warnings.warn('At the moment this algorithm is not supported by movekit.')
+
     inp_data = dataset.loc[:, features]
 
     clf.fit(inp_data)
@@ -989,6 +1100,8 @@ def outlier_detection(dataset, features=["distance", "average_speed", "average_a
         dataset["outlier"] = scores_pred
     else:
         dataset.insert(2, "outlier", scores_pred)
+    if remove:
+        dataset = dataset.loc[dataset["outlier"]==0, :]
     return dataset
 
 
@@ -1055,7 +1168,11 @@ def movement_stopping_durations(data, stop_threshold=0.5):
                 time_diff = df_list[index+1].time[0] - df.time[0]
             except:  # for the last phase
                time_diff = (df.time[len(df)-1] - df.time[0]) + (df.time[0] - df_list[index-1].time[len(df_list[index-1])-1])
-            time_df[f'Duration of phase {index+1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = time_diff
+            if len(time_df.columns) != 1:  # adjust if only one phase for mover
+                time_df[f'Duration of phase {index+1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = time_diff
+            else:
+                time_df[f'Duration of phase {index + 1} ({"stopping" if df["stopped"][0] == 1 else "moving"})'] = len(df)
+
         df_dict[aid] = time_df
     return df_dict
 
@@ -1152,3 +1269,87 @@ def extract_features_multiproccessing(data, fps=10, stop_threshold=0.5):
         regrouped_data = regrouped_data[cols]
 
         return regrouped_data
+
+
+def segment_data(data, feature, threshold, csv=False, fps=10, stop_threshold=0.5):
+    """
+    Segment data in subsets by feature values using a given threshold value. For instance, by using the average speed as feature split the dataset in segments above and below a given threshold.
+    :param data: dataframe containing the feature which is used to split the dataset. Note that if feature is 'distance', 'average_speed', 'average_acceleration', 'direction', 'stopped' or 'turning',
+    feature can also be extracted within the function. In that case one should define the input parameters to use when extract_features() is called.
+    :param feature: column name of the feature used to split data in subsets.
+    :param threshold: threshold used to split data according to feature value.
+    :param csv: Boolean, defining if each subset shall be exported locally as singular csv.
+    :param fps: used if features are not extracted before but within the function by calling extract_features():
+    size of window used to calculate average speed and average acceleration:
+    integer to define size of window for integer-formatted time or string to define size of window for datetime-formatted time (For possible units refer to:https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.)
+    :param stop_threshold: used if features are not extracted before but within the function by calling extract_features():
+    integer to specify threshold for average speed, such that we consider timestamp a "stop".
+    :return: dictionary with id of different movers as key and a list of all the subsets for this mover as values. Subsets are thereby stored as dataframe.
+    """
+    if feature not in data.columns:
+        if feature not in ['distance', 'average_speed', 'average_acceleration', 'direction', 'stopped', 'turning']:
+            warnings.warn('Given feature to segment data is not a column name of the data. Please redefine the feature or add feature to the data.')
+        else:
+            warnings.warn('Feature to segment data is missing and thus will be extracted first. Note that it is recommended to use function '
+                          'extract_features prior to this function to define values for calculation of average speed and stopping criteria.'
+                          'The returned Data Frame should afterwards be used as input for this function.')
+            data = extract_features(data, fps=fps, stop_threshold=stop_threshold)
+
+    data_groups = grouping_data(data)
+    df_dict = {}
+
+    for aid in data_groups.keys():
+        df = data_groups[aid]
+        df_dict[aid] = []
+        beg = 0
+        for i in range(1, len(df)):
+            if (df[feature][i] <= threshold and df[feature][i-1]>threshold):
+                phase_df = data_groups[aid].iloc[beg:i, :]
+                phase_df = phase_df.reset_index(drop=True)
+                df_dict[aid].append(phase_df)
+                beg = i
+            elif (df[feature][i] > threshold and df[feature][i-1]<=threshold):
+                phase_df = data_groups[aid].iloc[beg:i, :]
+                phase_df = phase_df.reset_index(drop=True)
+                df_dict[aid].append(phase_df)
+                beg = i
+        # for the last one
+        if ((df[feature][len(df) - 1] > threshold and df[feature][len(df) - 2] > threshold) or
+                (df[feature][len(df) - 1] <= threshold and df[feature][len(df) - 2] <= threshold)):
+            phase_df = data_groups[aid].iloc[beg:, :]
+            phase_df = phase_df.reset_index(drop=True)
+            df_dict[aid].append(phase_df)
+        else:
+            phase_df = data_groups[aid].iloc[(len(df) - 1):, :]
+            phase_df = phase_df.reset_index(drop=True)
+            df_dict[aid].append(phase_df)
+        print(f' For animal {aid} the trajectory was split in {len(df_dict[aid])} phases.')
+
+    if csv == True:
+        for aid in df_dict.keys():
+            for i in range(len(df_dict[aid])):
+                df_dict[aid][i].to_csv(f'{aid}_{i}.csv', index=False)
+
+    return df_dict
+
+
+def outlier_by_threshold(data, feature_thresholds, remove=False):
+    """
+    Identify outliers by user given features with specific minimum and maximum thresholds.
+    :param data: data on which outliers are detected.
+    :param feature_thresholds: dictionary containing the features as keys and the minimum/maximum threshold as two element list.
+    For example if one would only want to declare all data points having an average speed < 5 and > 10 as outliers:
+    feature_threshold = {'average_speed': [5,10]}
+    :param remove: Boolean deciding whether outliers should be removed in returned dataframe. Default: False (outliers are not removed).
+    :return: Dataframe containing information for each record whether it is an outlier according to the defined threshold values.
+    """
+    data['outlier_by_threshold'] = np.zeros(len(data))
+
+    for k in feature_thresholds.keys():
+        data.loc[(data[k] < feature_thresholds[k][0]) | (data[k] > feature_thresholds[k][1]), 'outlier_by_threshold'] = 1
+
+    if remove:
+        data = data.loc[data['outlier_by_threshold'] == 0, :]
+
+    data['outlier_by_threshold'] = pd.to_numeric(data['outlier_by_threshold'], downcast='integer')
+    return data
