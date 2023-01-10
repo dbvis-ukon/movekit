@@ -16,35 +16,30 @@ MOVEKIT
 __`movekit` supports different tasks:__
 
 * Data pre-processing
-  * Check data for variables required for movement analysis
   * Clean data (remove duplicates, drop missing values, etc.)
-  * Use interpolation to deal with missing values in data
-  * Normalize the data
-  * Filter the data
-  * Many more preprocessing methods
+  * Normalize and filter the data
+  * ...
 * Feature extraction:
-  * Extract different features such as the distance covered, the average speed, the average acceleration, the direction or the change of direction for individual movers in between every time step
-  * Apply time series analysis on these extracted features (f.e. mean and variance of speed for mover over time)
-  * Check different distances (euclidean & hausdorff) in between movers for different time steps
+  * Extract different features such as the distance covered, average speed, the average acceleration, etc. 
+  * Apply time series analysis on these extracted features
+  * Check different distances (euclidean & hausdorff) between movers
   * Detect outliers in data
-  * Examine time and duration of different phases of movement (moving and stopping) for each mover
-  * Analyze environment exploration of each mover
-  * Many more features can be extracted
+  * ...
 * Group-level analysis
   * Calculate centroids and medoids of the group of movers for different time steps
-  * Calculate the centroid's movement direction and compare it with individual mover's directions
   * Compute polarization of movers
-  * Identify different clusters in the data by applying various clustering algorithms
-  * Obtain dynamic time warping of trajectories of the different movers
-  * Many more group-level features can be extracted
+  * Identify different clusters/groups
+  * Obtain dynamic time warping of all mover trajectories 
+  * ...
 * Spatial data analysis:
   * Create convex hull, voronoi diagram and delaunay triangulation for all movers at each time step
   * Extract areas of the created objects
 * Network analysis with networkX
-  * Create network graphs created for each time step and examine their attributes (centroid, polarization, total distance, mean speed, ...)
+  * Create networks created for each time step and examine their attributes (centroid, polarization, total distance, mean speed, ...)
   * Investigate individual nodes of each time steps network graph
   * Investigate individual edges of each time steps network graph
   * Track development of network graphs over time
+  * ...
 * Plotting analysis results:
   * Create basic plots for features such as acceleration or speed
   * Plot movement of movers in static or animated images
@@ -71,7 +66,9 @@ The easiest way to install *movekit* is by using `pip` :
 
 ---
 
-## Demo
+## Docs & Demo
+
+The following website contains the [documentation](https://movekit.readthedocs.io/en/latest/)
 
 You can view a demo of common features here:
 [Jupyter Notebooks](examples/).
