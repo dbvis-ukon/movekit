@@ -1,6 +1,5 @@
 Extracting features
 ===========
-
 One can easily calculate features such as distance, direction, average speed, average acceleration, turning and stops of the mover with the `extract_features` function.
 
 **extract_features(data, fps=10, stop_threshold=0.5)**:
@@ -217,6 +216,34 @@ Geodata can be plotted on an interactive map by calling `plot_geodata`, afterwar
 
     map = mkit.plot_geodata(data)
     mkit.save_geodata(map, 'new_map')
+
+To find hot spots in the dataset the Getis-Ord\ :sup:`*`\  statistic is calculated for different space-time intervals. For
+a detailed description of the statistic please refer to https://sigspatial2016.sigspatial.org/giscup2016/problem. Using this Getis-Ord\ :sup:`*`\  statistic
+one can draw heatmaps for the intervals in a given time range.
+
+**getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3)**:
+    | Calculate the Getis-Ord G* statistic for each x-y-time interval of the data. Interval size is specified by input.
+    | param data: pandas Data frame containing the movement data in the columns x, y and time.
+    | param x_grids_per_t: int defining how many x intervals there are for each time step. The x axis is subdivided uniformly, i.e. if the maximum value of x in the data is 100 and the minimum value is 10, by setting x_grids_per_t = 3 for each time step there are 3 intervals ([10,40),[40,70),[70,100])
+    | param y_grids_per_t: int defining how many y intervals there are for each time step. The y axis is subdivided uniformly, i.e. if the maximum value of y in the data is 50 and the minimum value is 10, by setting y_grids_per_t = 4 for each time step there are 4 intervals ([10,20),[20,30),[30,40),[50,50]).
+    | param time_grids: int defining how many time intervals there are. The time axis is subdivided uniformly, i.e. if the maximum value of time in the data is 500 and the minimum value is 0, by setting time_grids = 5 there are 5 time intervals ([0,100),[100,200),[200,300),[300,400),[400,500])
+    | Note that if one defines f.e. x_grids_per_t = 3, y_grids_per_t = 3 and time_grids = 5 the space time cube used for calculating G* contains 3*3*5=45 intervals.
+    | return: Pandas data frame containing the Getis-Ord statistic for each examined interval (intervals are defined by six columns defining the respective start and end values of the intervals' x-coordinate, y-coordinate and time.
+
+**plot_heatmap(data, time0_start, time0_end, round_digits=1, font_size=10, linewidth=0.5)**:
+    | Plot a heatmap for the mover for user defined time interval.
+    | param data: data frame returned by function getis_ord(): Data frame containing xy- interval coordinates and respective Getis-Ord statistic.
+    | param time0_start: beginning time of the earliest interval included in the heatmap.
+    | param time0_end: beginning time of the latest interval included in the heatmap.
+    | param round_digits: for clear axis description the xy-values of the displayed intervals are rounded to have user defined number of digits.
+    | param font_size: for clear axis description font size of the axis ticks can be defined.
+    | param linewidth: width of the line dividing each cell in heatmap.
+
+.. code-block:: python
+
+    GO = mkit.getis_ord(data, x_grids_per_t=10, y_grids_per_t=10, time_grids=20)
+    mkit.plot_heatmap(GO, 2, 6)
+
 
 *****
 Splitting the trajectory of each animal in different subsets

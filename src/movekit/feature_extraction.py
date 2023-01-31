@@ -1371,6 +1371,8 @@ def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
     intervals ([0,100),[100,200),[200,300),[300,400),[400,500])
     Note that if one defines f.e. x_grids_per_t = 3, y_grids_per_t = 3 and time_grids = 5 the space time cube used for
     calculating G* contains 3*3*5=45 intervals.
+    return: Pandas data frame containing the Getis-Ord statistic for each examined interval (intervals are defined by six
+    columns defining the respective start and end values of the intervals' x-coordinate, y-coordinate and time.
     """
     # calculate interval values
     time_range = data['time'].max() - data['time'].min()
