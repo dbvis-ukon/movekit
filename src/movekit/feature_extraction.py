@@ -1353,3 +1353,87 @@ def outlier_by_threshold(data, feature_thresholds, remove=False):
 
     data['outlier_by_threshold'] = pd.to_numeric(data['outlier_by_threshold'], downcast='integer')
     return data
+
+
+def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
+    """
+    Calculate the Getis-Ord G* statistic for each x-y-time interval of the data. Interval size is specified by input.
+    For more information about how the statistic is calculated please refer to: https://sigspatial2016.sigspatial.org/giscup2016/problem
+    :param data: pandas Data frame containing the movement data in the columns x, y and time.
+    :param x_grids_per_t: int defining how many x intervals there are for each time step. The x axis is subdivided uniformly,
+    i.e. if the maximum value of x in the data is 100 and the minimum value is 10, by setting x_grids_per_t = 3 for each
+    time step there are 3 intervals ([10,40),[40,70),[70,100])
+    :param y_grids_per_t: int defining how many y intervals there are for each time step. The y axis is subdivided uniformly,
+    i.e. if the maximum value of y in the data is 50 and the minimum value is 10, by setting y_grids_per_t = 4 for each
+    time step there are 4 intervals ([10,20),[20,30),[30,40),[50,50])
+    :param time_grids: int defining how many time intervals there are. The time axis is subdivided uniformly, i.e. if
+    the maximum value of time in the data is 500 and the minimum value is 0, by setting time_grids = 5 there are 5 time
+    intervals ([0,100),[100,200),[200,300),[300,400),[400,500])
+    Note that if one defines f.e. x_grids_per_t = 3, y_grids_per_t = 3 and time_grids = 5 the space time cube used for
+    calculating G* contains 3*3*5=45 intervals.
+    return: Pandas data frame containing the Getis-Ord statistic for each examined interval (intervals are defined by six
+    columns defining the respective start and end values of the intervals' x-coordinate, y-coordinate and time.
+    """
+    # calculate interval values
+    time_range = data['time'].max() - data['time'].min()
+    time_min = data['time'].min()
+    x_range = data['x'].max() - data['x'].min()
+    x_min = data['x'].min()
+    y_range = data['y'].max() - data['y'].min()
+    y_min = data['y'].min()
+    int_length_x = x_range / x_grids_per_t
+    int_length_y = y_range / y_grids_per_t
+    int_length_t = time_range / time_grids
+    points = []
+    grid = []
+    for x in range(x_grids_per_t):
+        for y in range(y_grids_per_t):
+            for t in range(time_grids):
+                points.append((x, y, t))
+                grid.append(([x_min + x * int_length_x, x_min + (x+1) * int_length_x],
+                      [y_min + y * int_length_y, y_min + (y+1) * int_length_y],
+                      [time_min + t * int_length_t, time_min + (t+1) * int_length_t]))  # interval values for x, y, t
+    # assign observations to intervals
+    df = data[['x', 'y', 'time']]
+    scores = np.zeros(len(grid))
+    for r in range(len(data)):
+        for ind, i in enumerate(grid):
+            if (df.iloc[r, 0] >= i[0][0]) and (df.iloc[r, 0] < i[0][1]) and (df.iloc[r, 1] >= i[1][0]) and (df.iloc[r, 1] < i[1][1]) and (df.iloc[r, 2] >= i[2][0]) and (df.iloc[r, 2] < i[2][1]):
+                scores[ind] = scores[ind] + 1
+                break
+            elif (df.iloc[r, 0] == data['x'].max()) or (df.iloc[r, 1] == data['y'].max()) or (df.iloc[r, 2] == data['time'].max()):
+                if (df.iloc[r, 0] >= i[0][0]) and (df.iloc[r, 0] <= i[0][1]) and (df.iloc[r, 1] >= i[1][0]) and (
+                        df.iloc[r, 1] <= i[1][1]) and (df.iloc[r, 2] >= i[2][0]) and (df.iloc[r, 2] <= i[2][1]):
+                    scores[ind] = scores[ind] + 1  # observations having end values of last interval as value
+                    break
+
+    # calculate weights in space time cube
+    d = squareform(pdist(np.array(points)))
+    d[d <= 1.9] = 1
+    d[d > 1] = 0
+    for i in range(len(d)):
+        sum = d[i].sum()
+        d[i][d[i] == 1] = sum / len(d[i])
+
+    # calculate G*
+    n = len(scores)
+    nom_one = d @ scores  # first term nominator
+    x_mean = np.mean(scores)
+    nom_two = x_mean * np.sum(d, axis=1)  # second term nominator
+    S = np.sqrt(((scores ** 2).sum()) / n - x_mean ** 2)  # S
+    denom_root = np.sqrt((n * np.sum(d ** 2, axis=1) - (np.sum(d, axis=1)) ** 2) / (n - 1))  # denominator root
+    nom = nom_one - nom_two
+    denom = S * denom_root
+    G = nom / denom
+
+    # return g scores in data frame
+    score_df = pd.DataFrame({'time0': np.unique(grid, axis=0)[:, 2, 0].tolist(),
+              'time1': np.unique(grid, axis=0)[:, 2, 1].tolist(),
+              'x0': np.unique(grid, axis=0)[:, 0, 0].tolist(),
+              'x1': np.unique(grid, axis=0)[:, 0, 1].tolist(),
+              'y0': np.unique(grid, axis=0)[:, 1, 0].tolist(),
+              'y1': np.unique(grid, axis=0)[:, 1, 1].tolist(),
+              'Getis-Ord Score': G})
+    score_df.sort_values(['time0', 'x0', 'y0'], inplace=True)
+
+    return score_df

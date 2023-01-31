@@ -35,18 +35,26 @@ Read in data. Supported formats include `csv` and `xlsx` and `xls`. The function
    # data is not an integer but in time format DD-MM-YYYY:
    data = mkit.read_data(path, time_format = '%d-%m-%Y')
 
-Additionally movekit is able to read data stored as `geojson` or `json`.
+Additionally movekit is able to read data files containing data and geometry, such as GeoPackage, (Geo)json, Shapefile and many more.
+When importing the data one can define whether the movers' coordinates should be converted from the geometry object or if they are already
+given in the data additionally to the geometry.
 
-**read_geojson(path, animal_id="name", time="time")**:
-    | Function to import geojson files.
-    | param path: Complete path/relative path to file along with file name.
-    | param animal_id: Key name of the unique animal identifier (as defined as property value in the geojson object).
-    | param time: Key name of time (as defined as property value in the geojson object)
-    | return: Data frame in a format required for using the movekit package.
+**read_with_geometry(path, animal_id="name", time="time", x="x", y="y",  z="z", coordinate_conversion=False, time_format="undefined", geopandas = True)**:
+    | Function to import files containing both data and geometry (f.e. GeoPackage, (Geo)json, Shapefile and many more).
+    | param path: Complete path/relative path to file along with file name
+    | param animal_id: Key name of the unique animal identifier (as f.e. defined as property value in the geojson feature)
+    | param time: Key name of time (as defined f.e. as property value in the geojson feature)
+    | param x: Key name of x variable (as defined f.e. as property value in the geojson feature)
+    | param y: Key name of y variable (as defined f.e. as property value in the geojson feature)
+    | param z: Key name of z variable (as defined f.e. as property value in the geojson feature)
+    | param coordinate_conversion: Boolean defining whether the x,y (and z) coordinates are stored in geometry object of imported data (f.e. as geometry value in geojson feature). Note that if coordinate_conversion=True function searches for point object in geometry column and converts coordinates to individual columns of returned data frame. (In case of multiple geometries for an observation, so called 'geometry collections', the first point object is converted.)
+    | param time_format: If time is given in an unusual format, the format has to be indicated for the conversion.
+    | param geopandas: Boolean defining whether the returned data frame is a geopandas data frame (containing geometry objects in column 'geometry') or a pandas data frame (not containing a 'geometry' column).
+    | return: Geopandas or pandas data frame in a format required for using the movekit package.
 
 .. code-block:: python
 
-    data = mkit.read_geojson('file_path')
+    data = mkit.read_with_geometry('file_path')
 
 Movekit can also import animal movement data from the Movebank database. Note that there is also a notebook in the documentation showing some exemplary analysis for Movebank data.
 

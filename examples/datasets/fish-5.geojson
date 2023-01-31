@@ -1,0 +1,148 @@
+{
+ "type":"FeatureCollection",
+    "features":[{
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [20, 24]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [10.0, 53.0],[41.0, 18.0],[42.0, 14.0],[28, 15.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish1",
+        "time":1
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [122, 34]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [124.0, 43.0],[130.0, 31.0],[112.0, 32.0],[118, 36.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish2",
+        "time":1
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [88, 8]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [84.0, 13.0],[88.0, 26.0],[94.0, 2.0],[82.0, 6.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish3",
+        "time":1
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [49, 15]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [44.0, 11.0],[49.0, 11.0],[50.0, 17.0],[46.0, 16.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish4",
+        "time":1
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [37, 32]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [10.0, 53.0],[41.0, 18.0],[42.0, 14.0],[28, 15.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish1",
+        "time":2
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [128, 42]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [124.0, 43.0],[130.0, 31.0],[112.0, 32.0],[118, 36.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish2",
+        "time":2
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [85, 3]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [84.0, 13.0],[88.0, 26.0],[94.0, 2.0],[82.0, 6.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish3",
+        "time":2
+      }},
+      {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [{
+          "type": "Point",
+          "coordinates": [52, 13]
+        },{
+                    "type": "MultiPolygon",
+                    "coordinates":[[[
+                    [44.0, 11.0],[49.0, 11.0],[50.0, 17.0],[46.0, 16.0]
+                    ]]]
+                }]
+      },
+      "properties": {
+        "name": "fish4",
+        "time":2
+      }}
+      ]
+}

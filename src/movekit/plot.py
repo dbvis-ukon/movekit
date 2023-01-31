@@ -244,3 +244,23 @@ def save_animation_plot(animation_object, filename):
     clip = mp.VideoFileClip(f'{filename}.gif')
     clip.write_videofile(f'{filename}.mp4')
     """
+
+
+def plot_heatmap(data, time0_start, time0_end, round_digits=1, font_size=10, linewidth=0.5):
+    """
+    Plot a heatmap for the mover for user defined time interval.
+    :param data: data frame returned by function getis_ord(): Data frame containing xy- interval coordinates and respective Getis-Ord statistic.
+    :param time0_start: beginning time of the earliest interval included in the heatmap.
+    :param time0_end: beginning time of the latest interval included in the heatmap.
+    :param round_digits: for clear axis description the xy-values of the displayed intervals are rounded to have user defined number of digits.
+    :param font_size: for clear axis description font size of the axis ticks can be defined.
+    :param linewidth: width of the line dividing each cell in heatmap.
+    """
+    pd.options.mode.chained_assignment = None  # disable warning that we set values on slice of original dataframe
+    data = data.loc[(data['time0'] >= time0_start) & (data['time0'] <= time0_end), :]
+    data.loc[:, ['x0', 'x1', 'y0', 'y1']] = data[['x0', 'x1', 'y0', 'y1']].apply(lambda x: round(x, round_digits))
+    data = pd.pivot_table(data, values='Getis-Ord Score', index=['x0', 'x1'],
+               columns=['y0', 'y1'], aggfunc=np.mean)
+    ax = sns.heatmap(data, linewidth=linewidth, cmap='Reds')
+    ax.tick_params(labelsize=font_size)
+    plt.show()
