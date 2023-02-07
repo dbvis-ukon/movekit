@@ -405,4 +405,4 @@ def read_with_geometry(path, animal_id="name", time="time", x="x", y="y",  z="z"
     if not geopandas:  # if returned data frame is desired to be pandas df and not geopandas df
         data = pd.DataFrame(data.drop(columns=['geometry']))
 
-    return data
+    return data.reset_index(drop=True)
