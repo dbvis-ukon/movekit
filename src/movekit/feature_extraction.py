@@ -1436,4 +1436,4 @@ def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
               'Getis-Ord Score': G})
     score_df.sort_values(['time0', 'x0', 'y0'], inplace=True)
 
-    return score_df
+    return score_df.reset_index(drop=True)

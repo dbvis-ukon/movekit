@@ -259,8 +259,8 @@ def plot_heatmap(data, time0_start, time0_end, round_digits=1, font_size=10, lin
     pd.options.mode.chained_assignment = None  # disable warning that we set values on slice of original dataframe
     data = data.loc[(data['time0'] >= time0_start) & (data['time0'] <= time0_end), :]
     data.loc[:, ['x0', 'x1', 'y0', 'y1']] = data[['x0', 'x1', 'y0', 'y1']].apply(lambda x: round(x, round_digits))
-    data = pd.pivot_table(data, values='Getis-Ord Score', index=['x0', 'x1'],
-               columns=['y0', 'y1'], aggfunc=np.mean)
+    data = pd.pivot_table(data, values='Getis-Ord Score', index=['y0', 'y1'],
+               columns=['x0', 'x1'], aggfunc=np.mean)
     ax = sns.heatmap(data, linewidth=linewidth, cmap='Reds')
     ax.tick_params(labelsize=font_size)
     plt.show()
