@@ -846,12 +846,12 @@ def ts_feature(data, feature):
 def explore_features(data):
     """
     Show percentage of environment space explored by singular animal.
-    Using minumum and maximum of 2-D coordinates, given by 'x' and 'y' features in input DataFrame.
+    Using minumum and maximum of coordinates, given by 'x' and 'y' (and 'z') features in input DataFrame.
     :param data: pandas DataFrame, containing preprocessed movement records.
     :return: None.
     """
     # Compute global minimum and maximum if user
-    # has NOT specified the values-
+    # has NOT specified the values-^
     x_min = data['x'].min()
     x_max = data['x'].max()
 
@@ -862,6 +862,8 @@ def explore_features(data):
         is_3d = True
         z_min = data['z'].min()
         z_max = data['z'].max()
+    else:
+        is_3d = False
 
     # Group 'data' using 'animal_id' attribute-
     data_groups = grouping_data(data)
@@ -876,17 +878,13 @@ def explore_features(data):
         aid_y_max = data_groups[aid]['y'].max()
 
         print("\nAnimal ID: {0} covered % of area:".format(aid))
-        print("x-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
-            (x_min / aid_x_min) * 100, (aid_x_max / x_max) * 100))
-
-        print("y-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
-            (y_min / aid_y_min) * 100, (aid_y_max / y_max) * 100))
+        print(f'x-coordinates: {round(((aid_x_max-aid_x_min)/(x_max - x_min))*100, 2)}')
+        print(f'y-coordinates: {round(((aid_y_max - aid_y_min) / (y_max - y_min))*100, 2)}')
 
         if is_3d:
             aid_z_min = data_groups[aid]['z'].min()
             aid_z_max = data_groups[aid]['z'].max()
-            print("z-coordinates: minimum = {0:.2f}% & maximum = {1:.2f}%".format(
-                (z_min / aid_z_min) * 100, (aid_z_max / z_max) * 100))
+            print(f'z-coordinates: {round(((aid_z_max - aid_z_min) / (z_max - z_min))*100, 2)}')
 
     return None
 
