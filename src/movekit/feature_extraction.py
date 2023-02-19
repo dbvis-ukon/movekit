@@ -731,7 +731,7 @@ def compute_similarity(data, weights, p=2):
     df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance"):
-        groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w,
+        groups_df = df2.get_group(start).groupby('time', group_keys=False).apply(similarity_computation, w=w,
                                                                p=p)  # calculate distance for each time period
         df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
 
@@ -760,7 +760,7 @@ def compute_similarity_multiproccessing(data, weights, p=2):
     df2 = data.groupby('time')
     df3 = pd.DataFrame()  # empty df in which all the data frames containing the distance are merged
     for start in tqdm(df2.groups.keys(), position=0, desc="Computing euclidean distance", disable=True):
-        groups_df = df2.get_group(start).groupby('time').apply(similarity_computation, w=w,
+        groups_df = df2.get_group(start).groupby('time', group_keys=False).apply(similarity_computation, w=w,
                                                                p=p)  # calculate distance for each time period
         df3 = pd.concat([df3, groups_df])  # finally all dataframes are merged in df3
 
@@ -1207,7 +1207,7 @@ def hausdorff_distance(data, mover1=None, mover2=None):
                     hdf_distance = max(hdf_distance1, hdf_distance2)
                 dict[aid2] = hdf_distance
             aid_df = pd.DataFrame(dict, index=[aid1])
-            df = df.append(aid_df)
+            df = pd.concat([df, aid_df])
 
         return df
 

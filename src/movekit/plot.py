@@ -115,6 +115,7 @@ def plot_pace(avg_speed_data, feature="speed"):
     :return: None.
     """
 
+    warnings.simplefilter("ignore")
     if feature == "speed":
 
         g = sns.FacetGrid(avg_speed_data, row="animal_id")
