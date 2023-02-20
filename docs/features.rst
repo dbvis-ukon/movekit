@@ -177,7 +177,7 @@ To get the percentage environment space explored by singular animal one can use 
 
 **explore_features(data)**:
     | Show percentage of environment space explored by singular animal.
-    | Using minimum and maximum of 2-D coordinates, given by 'x' and 'y' features in input DataFrame.
+    | Using minimum and maximum of coordinates, given by 'x' and 'y' (and 'z') features in input DataFrame.
     | param data: pandas DataFrame, containing preprocessed movement records.
     | return: None.
 
