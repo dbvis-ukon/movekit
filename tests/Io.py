@@ -6,9 +6,10 @@ import math
 import pickle
 from pandas.errors import EmptyDataError
 from pandas import Timestamp
+import shapely
 
 from src.movekit.feature_extraction import *
-from src.movekit.io import parse_csv, parse_excel
+from src.movekit.io import parse_csv, parse_excel, read_with_geometry
 
 
 
@@ -133,6 +134,18 @@ class Test_IO(unittest.TestCase):
         pd.testing.assert_frame_equal(df1, df2)
         pd.testing.assert_frame_equal(df3, df4)
         #self.assertEqual(df1.all(), df2.all())
+
+
+    def test_read_with_geometry(self):
+        ref = {'animal_id': ['fish1', 'fish2', 'fish3', 'fish4', 'fish1', 'fish2', 'fish3', 'fish4'],
+               'time': [1, 1, 1, 1, 2, 2, 2, 2],
+               'x': [20, 122, 88, 49, 37, 128, 85, 52],
+               'y': [24, 34, 8, 15, 32, 42, 3, 13]}
+        ref = pd.DataFrame(ref)
+        case = read_with_geometry("/Users/timkleinlein/DbvisHiwi/movekit/examples/datasets/fish-5.geojson",
+                           coordinate_conversion=True)
+        pd.testing.assert_frame_equal(ref, case[['animal_id', 'time', 'x', 'y']], check_dtype=False)
+        self.assertIsInstance(case['geometry'][0], shapely.geometry.collection.GeometryCollection)
 
 
 if __name__ == '__main__':
