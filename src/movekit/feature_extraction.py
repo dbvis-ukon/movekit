@@ -1384,6 +1384,7 @@ def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
     int_length_t = time_range / time_grids
     points = []
     grid = []
+    scores = {}
     for x in range(x_grids_per_t):
         for y in range(y_grids_per_t):
             for t in range(time_grids):
@@ -1391,19 +1392,34 @@ def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
                 grid.append(([x_min + x * int_length_x, x_min + (x+1) * int_length_x],
                       [y_min + y * int_length_y, y_min + (y+1) * int_length_y],
                       [time_min + t * int_length_t, time_min + (t+1) * int_length_t]))  # interval values for x, y, t
+                scores[(x, y, t)] = 0
     # assign observations to intervals
     df = data[['x', 'y', 'time']]
-    scores = np.zeros(len(grid))
     for r in range(len(data)):
-        for ind, i in enumerate(grid):
-            if (df.iloc[r, 0] >= i[0][0]) and (df.iloc[r, 0] < i[0][1]) and (df.iloc[r, 1] >= i[1][0]) and (df.iloc[r, 1] < i[1][1]) and (df.iloc[r, 2] >= i[2][0]) and (df.iloc[r, 2] < i[2][1]):
-                scores[ind] = scores[ind] + 1
+        x_val, y_val, t_val = -1, -1, -1
+        for x in range(x_grids_per_t):
+            if (df.iloc[r, 0] >= (x_min + x * int_length_x)) and (df.iloc[r, 0] < (x_min + (x+1) * int_length_x)):
+                x_val = x
                 break
-            elif (df.iloc[r, 0] == data['x'].max()) or (df.iloc[r, 1] == data['y'].max()) or (df.iloc[r, 2] == data['time'].max()):
-                if (df.iloc[r, 0] >= i[0][0]) and (df.iloc[r, 0] <= i[0][1]) and (df.iloc[r, 1] >= i[1][0]) and (
-                        df.iloc[r, 1] <= i[1][1]) and (df.iloc[r, 2] >= i[2][0]) and (df.iloc[r, 2] <= i[2][1]):
-                    scores[ind] = scores[ind] + 1  # observations having end values of last interval as value
-                    break
+        if x_val == -1:
+            if df.iloc[r, 0] == data['x'].max():  # observations having end values of last interval as value
+                x_val = x
+        for y in range(y_grids_per_t):
+            if (df.iloc[r, 1] >= (y_min + y * int_length_y)) and (df.iloc[r, 1] < (y_min + (y+1) * int_length_y)):
+                y_val = y
+                break
+        if y_val == -1:
+            if df.iloc[r, 1] == data['y'].max():  # observations having end values of last interval as value
+                y_val = y
+        for t in range(time_grids):
+            if (df.iloc[r, 2] >= (time_min + t * int_length_t)) and (df.iloc[r, 2] < (time_min + (t+1) * int_length_t)):
+                t_val = t
+                break
+        if t_val == -1:
+            if df.iloc[r, 2] == data['time'].max():  # observations having end values of last interval as value
+                t_val = t
+        scores[(x_val, y_val, t_val)] = scores[(x_val, y_val, t_val)] + 1
+    scores = np.array(list(scores.values()))
 
     # calculate weights in space time cube
     d = squareform(pdist(np.array(points)))
@@ -1423,6 +1439,10 @@ def getis_ord(data, x_grids_per_t=3, y_grids_per_t=3, time_grids=3):
     nom = nom_one - nom_two
     denom = S * denom_root
     G = nom / denom
+    if not np.all(denom):
+        warnings.warn('The calculated Getis-Ord Scores are NaN for some intervals because the intervals are neighbors'
+                      ' with all other intervals. To avoid this problem one has to define either a higher number for '
+                      'x_grids_per_t  or y_grid_per_t or time_grids.')
 
     # return g scores in data frame
     score_df = pd.DataFrame({'time0': np.unique(grid, axis=0)[:, 2, 0].tolist(),
