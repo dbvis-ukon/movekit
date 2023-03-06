@@ -556,13 +556,13 @@ def group_movement(feats):
 
     group = pd.DataFrame({
         "total_dist":
-            data_dist.sum()['distance'],
+            data_dist.sum(numeric_only=True)['distance'],
         "mean_speed":
-            data_dist.mean()['average_speed'],
+            data_dist.mean(numeric_only=True)['average_speed'],
         "mean_acceleration":
-            data_dist.mean()['average_acceleration'],
+            data_dist.mean(numeric_only=True)['average_acceleration'],
         "mean_distance_centroid":
-            data_dist.mean()['distance_to_centroid']
+            data_dist.mean(numeric_only=True)['distance_to_centroid']
     })
 
     return group
